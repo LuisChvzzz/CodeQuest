@@ -29,7 +29,8 @@ class LeaderboardSystem {
         const cloudScores = await res.json();
         if (Array.isArray(cloudScores) && cloudScores.length > 0) {
           this.cloudAvailable = true;
-          localStorage.setItem(this.storageKey, JSON.stringify(cloudScores));
+          const cleanScores = this.deduplicateScores(cloudScores);
+          localStorage.setItem(this.storageKey, JSON.stringify(cleanScores));
           this.refreshUI();
         }
       }
@@ -96,12 +97,64 @@ class LeaderboardSystem {
     }
   }
 
-  // Obtener registros ordenados por puntuación de mayor a menor
+  // Identifica si dos registros corresponden al mismo usuario/jugador
+  isSameUser(a, b) {
+    if (!a || !b) return false;
+    // 1. Por ID único de cuenta (Firebase UID / usuario local)
+    if (a.userId && b.userId && String(a.userId).trim() === String(b.userId).trim()) {
+      return true;
+    }
+    // 2. Por correo electrónico registrado
+    if (a.userEmail && b.userEmail && String(a.userEmail).trim().toLowerCase() === String(b.userEmail).trim().toLowerCase()) {
+      return true;
+    }
+    // 3. Por nombre de héroe
+    if (a.name && b.name && String(a.name).trim().toLowerCase() === String(b.name).trim().toLowerCase()) {
+      return true;
+    }
+    return false;
+  }
+
+  // Limpia y deduplica la lista de registros consolidando el mejor progreso
+  deduplicateScores(scores) {
+    if (!Array.isArray(scores)) return [];
+    const unique = [];
+
+    for (const record of scores) {
+      if (!record || !record.name) continue;
+      const existingIdx = unique.findIndex(u => this.isSameUser(u, record));
+
+      if (existingIdx >= 0) {
+        const existing = unique[existingIdx];
+        if (Number(record.score || 0) > Number(existing.score || 0)) {
+          existing.score = Number(record.score || 0);
+          existing.title = record.title || existing.title;
+          existing.date = record.date || existing.date;
+        }
+        existing.medals = Math.max(Number(existing.medals || 0), Number(record.medals || 0));
+        existing.completed = existing.completed || !!record.completed;
+        if (record.userId) existing.userId = record.userId;
+        if (record.userEmail) existing.userEmail = record.userEmail;
+        if (record.name) existing.name = record.name;
+      } else {
+        unique.push({
+          ...record,
+          score: Number(record.score || 0),
+          medals: Number(record.medals || 0),
+          completed: !!record.completed
+        });
+      }
+    }
+
+    return unique.sort((a, b) => b.score - a.score);
+  }
+
+  // Obtener registros ordenados por puntuación de mayor a menor y deduplicados
   getScores() {
     try {
       const data = localStorage.getItem(this.storageKey);
       const list = data ? JSON.parse(data) : [];
-      return list.sort((a, b) => b.score - a.score);
+      return this.deduplicateScores(list);
     } catch (e) {
       console.error("Error al leer el ranking:", e);
       return [];
@@ -118,54 +171,61 @@ class LeaderboardSystem {
     return "Aventurero Novato";
   }
 
-  // Registrar o actualizar progreso del jugador en el Ranking Global
-  // (Permite registrar puntuación aún si no ha completado los 20 niveles y se sale al menú principal)
-  registerOrUpdateProgress(playerName, totalScore, medalsCount, completed = false) {
+  // Registrar o actualizar progreso del jugador en el Ranking Global evitando duplicados
+  registerOrUpdateProgress(playerName, totalScore, medalsCount, completed = false, user = null) {
     playerName = String(playerName || "Héroe Anónimo").trim();
     totalScore = Number(totalScore) || 0;
     medalsCount = Number(medalsCount) || 0;
 
-    const scores = this.getScores();
-    const cleanLower = playerName.toLowerCase();
-    const existingIndex = scores.findIndex(s => s.name && s.name.trim().toLowerCase() === cleanLower);
+    const activeUser = user || (typeof authManager !== 'undefined' ? authManager.getCurrentUser() : null);
+    const userId = activeUser ? activeUser.id : null;
+    const userEmail = activeUser ? activeUser.email : null;
+
+    let scores = this.getScores();
 
     const title = this.getTitleForMedals(medalsCount, completed);
     const date = new Date().toLocaleDateString('es-ES');
 
-    let targetRecord;
+    const candidateRecord = {
+      name: playerName,
+      score: totalScore,
+      medals: medalsCount,
+      title: title,
+      date: date,
+      completed: !!completed,
+      userId: userId,
+      userEmail: userEmail
+    };
 
+    const existingIndex = scores.findIndex(s => this.isSameUser(s, candidateRecord));
+
+    let targetRecord;
     if (existingIndex >= 0) {
-      // Si el jugador ya existe en la tabla, actualizamos si su nuevo puntaje es superior o igual
+      // Usuario ya existente en el ranking: Sobreescribir / actualizar conservando su mejor récord
       targetRecord = scores[existingIndex];
       if (totalScore >= targetRecord.score) {
         targetRecord.score = totalScore;
-        targetRecord.medals = Math.max(targetRecord.medals, medalsCount);
+        targetRecord.medals = Math.max(targetRecord.medals || 0, medalsCount);
         targetRecord.title = title;
         targetRecord.date = date;
         targetRecord.completed = targetRecord.completed || completed;
       } else {
-        // Conservar mejor puntaje previo pero actualizar medallas si consiguió más
-        targetRecord.medals = Math.max(targetRecord.medals, medalsCount);
+        targetRecord.medals = Math.max(targetRecord.medals || 0, medalsCount);
         if (targetRecord.medals > medalsCount) {
           targetRecord.title = this.getTitleForMedals(targetRecord.medals, targetRecord.completed);
         }
       }
+      targetRecord.name = playerName;
+      if (userId) targetRecord.userId = userId;
+      if (userEmail) targetRecord.userEmail = userEmail;
     } else {
-      // Nuevo participante en el ranking
-      targetRecord = {
-        name: playerName,
-        score: totalScore,
-        medals: medalsCount,
-        title,
-        date,
-        completed: !!completed
-      };
+      // Nuevo usuario en el ranking
+      targetRecord = candidateRecord;
       scores.push(targetRecord);
     }
 
-    scores.sort((a, b) => b.score - a.score);
-
-    // Guardar los mejores 100 localmente
+    // Deduplicar y guardar los mejores 100
+    scores = this.deduplicateScores(scores);
     const topScores = scores.slice(0, 100);
     localStorage.setItem(this.storageKey, JSON.stringify(topScores));
 
@@ -185,7 +245,8 @@ class LeaderboardSystem {
       if (res.ok) return res.json();
     }).then(data => {
       if (data && data.ranking) {
-        localStorage.setItem(this.storageKey, JSON.stringify(data.ranking));
+        const cleanCloud = this.deduplicateScores(data.ranking);
+        localStorage.setItem(this.storageKey, JSON.stringify(cleanCloud));
         this.refreshUI();
       }
     }).catch(() => {});
@@ -194,8 +255,8 @@ class LeaderboardSystem {
   }
 
   // Registrar partida finalizada (Tras derrotar al jefe 20)
-  registerCompletedGame(playerName, totalScore, medalsCount) {
-    return this.registerOrUpdateProgress(playerName, totalScore, medalsCount, true);
+  registerCompletedGame(playerName, totalScore, medalsCount, user = null) {
+    return this.registerOrUpdateProgress(playerName, totalScore, medalsCount, true, user);
   }
 
   // Renderizar la tabla de clasificación en el contenedor del modal

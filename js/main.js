@@ -1388,11 +1388,13 @@ class CodeQuestGame {
         this.saveGameProgress();
         if (typeof cloudRanking !== 'undefined' && typeof cloudRanking.registerOrUpdateProgress === 'function') {
           const isComplete = this.player.defeatedBosses && this.player.defeatedBosses.size >= 20;
+          const user = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
           cloudRanking.registerOrUpdateProgress(
             this.player.name,
             this.player.totalScore,
             this.player.medals ? this.player.medals.length : 0,
-            isComplete
+            isComplete,
+            user
           );
         }
       }
@@ -1517,7 +1519,8 @@ class CodeQuestGame {
     audioManager.playSfx('victory');
 
     // Registrar en el Ranking de la Nube (Requisito 7: Solo se registra si termina el juego)
-    const record = cloudRanking.registerCompletedGame(this.player.name, this.player.totalScore, this.player.medals.length);
+    const user = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
+    const record = cloudRanking.registerCompletedGame(this.player.name, this.player.totalScore, this.player.medals.length, user);
 
     const modal = document.getElementById('game-complete-modal');
     document.getElementById('comp-player-name').textContent = this.player.name;
@@ -1560,6 +1563,19 @@ class CodeQuestGame {
       this.updateMobileControlsVisibility();
 
     } else if (type === 'chest') {
+      // 1. Condicional de zona: Si el cofre pertenece a la zona de un jefe alto, validar que el jefe previo esté derrotado
+      if (data.requiredBoss && data.requiredBoss > 0) {
+        if (!this.player.defeatedBosses.has(data.requiredBoss)) {
+          audioManager.playSfx('wrong');
+          const reqBoss = BOSSES_DATA.find(b => b.id === data.requiredBoss);
+          const reqName = reqBoss ? reqBoss.name : `Jefe ${data.requiredBoss}`;
+          const currentBoss = BOSSES_DATA.find(b => b.id === data.bossId);
+          const currentName = currentBoss ? currentBoss.name : `Jefe ${data.bossId}`;
+          this.showToast(`🔒 ¡Cofre sellado mágicamente en la zona de ${currentName}! Debes derrotar primero al Jefe ${data.requiredBoss}: ${reqName}.`);
+          return;
+        }
+      }
+
       // Abrir Cofre y obtener 1 de 3 items: espada, poción o llaves (Requisito 4)
       data.opened = true;
 
@@ -1581,12 +1597,22 @@ class CodeQuestGame {
       this.saveGameProgress();
 
     } else if (type === 'boss') {
-      // Desafiar Jefe (Requiere 1 llave por jefe según Requisito 4)
+      // 1. Ya derrotado
       if (this.player.defeatedBosses.has(data.id)) {
         this.showToast(`Ya has derrotado a ${data.name}. ¡Su medalla brilla en tus recompensas!`);
         return;
       }
 
+      // 2. Condicional de orden obligatorio: Retar a los jefes en secuencia (1 -> 2 -> 3 -> ... -> 20)
+      if (data.id > 1 && !this.player.defeatedBosses.has(data.id - 1)) {
+        audioManager.playSfx('wrong');
+        const prevBoss = BOSSES_DATA.find(b => b.id === data.id - 1);
+        const prevName = prevBoss ? prevBoss.name : `Jefe ${data.id - 1}`;
+        this.showToast(`🔒 ¡El santuario de ${data.name} está sellado! Debes derrotar primero al Jefe ${data.id - 1}: ${prevName}.`);
+        return;
+      }
+
+      // 3. Desafiar Jefe (Requiere 1 llave por jefe según Requisito 4)
       if (this.player.keys <= 0) {
         audioManager.playSfx('wrong');
         this.showToast(`¡Necesitas 1 Llave de Mazmorra para desafiar a ${data.name}! Busca cofres en el reino.`);
@@ -1710,11 +1736,16 @@ class CodeQuestGame {
         const iconEl = touchActionBtn.querySelector('.touch-btn-icon');
         const subEl = touchActionBtn.querySelector('.touch-btn-sub');
         if (this.activeInteractEntity.type === 'boss') {
-          if (iconEl) iconEl.textContent = '⚔️';
-          if (subEl) subEl.textContent = '¡Batalla!';
+          const boss = this.activeInteractEntity.data;
+          const isDefeated = this.player.defeatedBosses.has(boss.id);
+          const isLocked = !isDefeated && boss.id > 1 && !this.player.defeatedBosses.has(boss.id - 1);
+          if (iconEl) iconEl.textContent = isDefeated ? '🏅' : (isLocked ? '🔒' : '⚔️');
+          if (subEl) subEl.textContent = isDefeated ? '¡Vencido!' : (isLocked ? '¡Sellado!' : '¡Batalla!');
         } else if (this.activeInteractEntity.type === 'chest') {
-          if (iconEl) iconEl.textContent = '📦';
-          if (subEl) subEl.textContent = '¡Abrir!';
+          const chest = this.activeInteractEntity.data;
+          const isLocked = !chest.opened && chest.requiredBoss > 0 && !this.player.defeatedBosses.has(chest.requiredBoss);
+          if (iconEl) iconEl.textContent = isLocked ? '🔒' : '📦';
+          if (subEl) subEl.textContent = isLocked ? '¡Sellado!' : '¡Abrir!';
         } else if (this.activeInteractEntity.type === 'sign') {
           if (iconEl) iconEl.textContent = '📜';
           if (subEl) subEl.textContent = '¡Leer!';
@@ -1782,14 +1813,16 @@ class CodeQuestGame {
     // 3. Dibujar Cofres
     this.map.chests.forEach(chest => {
       const pos = this.camera.toScreen(chest.x * 32, chest.y * 32);
-      this.renderer.drawChest(chest, pos.x, pos.y);
+      const isLocked = !chest.opened && chest.requiredBoss > 0 && !this.player.defeatedBosses.has(chest.requiredBoss);
+      this.renderer.drawChest(chest, pos.x, pos.y, isLocked);
     });
 
     // 4. Dibujar los 20 Jefes
     this.map.bosses.forEach(boss => {
       const pos = this.camera.toScreen(boss.position.x * 32, boss.position.y * 32);
       const isDefeated = this.player.defeatedBosses.has(boss.id);
-      this.renderer.drawBoss(boss, pos.x, pos.y, isDefeated);
+      const isLocked = !isDefeated && boss.id > 1 && !this.player.defeatedBosses.has(boss.id - 1);
+      this.renderer.drawBoss(boss, pos.x, pos.y, isDefeated, isLocked);
     });
 
     // 5. Dibujar al Jugador
@@ -1805,11 +1838,22 @@ class CodeQuestGame {
         entPos = this.camera.toScreen(this.activeInteractEntity.data.position.x * 32, this.activeInteractEntity.data.position.y * 32);
         promptText = "[E] Leer Dato";
       } else if (this.activeInteractEntity.type === 'chest') {
-        entPos = this.camera.toScreen(this.activeInteractEntity.data.x * 32, this.activeInteractEntity.data.y * 32);
-        promptText = "[E] Abrir Cofre";
+        const chest = this.activeInteractEntity.data;
+        const isLocked = !chest.opened && chest.requiredBoss > 0 && !this.player.defeatedBosses.has(chest.requiredBoss);
+        entPos = this.camera.toScreen(chest.x * 32, chest.y * 32);
+        promptText = isLocked ? "🔒 [E] Cofre Sellado" : "[E] Abrir Cofre";
       } else if (this.activeInteractEntity.type === 'boss') {
-        entPos = this.camera.toScreen(this.activeInteractEntity.data.position.x * 32, this.activeInteractEntity.data.position.y * 32);
-        promptText = `[E] Batalla (1 Llave)`;
+        const boss = this.activeInteractEntity.data;
+        const isDefeated = this.player.defeatedBosses.has(boss.id);
+        const isLocked = !isDefeated && boss.id > 1 && !this.player.defeatedBosses.has(boss.id - 1);
+        entPos = this.camera.toScreen(boss.position.x * 32, boss.position.y * 32);
+        if (isDefeated) {
+          promptText = `🏅 [E] ${boss.name} (Vencido)`;
+        } else if (isLocked) {
+          promptText = `🔒 [E] Bloqueado (Vence al Jefe ${boss.id - 1})`;
+        } else {
+          promptText = `[E] Batalla (1 Llave)`;
+        }
       }
 
       if (entPos) {

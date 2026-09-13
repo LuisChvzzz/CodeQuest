@@ -29,7 +29,7 @@ window.FIREBASE_CONFIG = {
   if (typeof firebase !== 'undefined') {
     const config = window.FIREBASE_CONFIG;
     const isConfigured = config && config.apiKey && config.apiKey !== "TU_API_KEY_AQUI" && !config.apiKey.includes("TU_API_KEY");
-    
+
     if (isConfigured) {
       try {
         if (!firebase.apps.length) {

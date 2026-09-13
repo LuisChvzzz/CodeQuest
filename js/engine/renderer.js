@@ -474,7 +474,7 @@ class PixelRenderer {
   }
 
   // Dibujar Cofres con cofre_cerrado.png y cofre_abierto.png sin artefactos visuales
-  drawChest(chest, px, py) {
+  drawChest(chest, px, py, isLocked = false) {
     const ctx = this.ctx;
 
     // Sombra sutil en la base del cofre
@@ -492,11 +492,24 @@ class PixelRenderer {
         ctx.fillRect(px + 5, py + 6, 22, 20);
       }
 
-      // Destello sutil en la cerradura dorada (sin desbordar al suelo)
-      const sparkle = (Math.sin(this.animTime * 6) + 1) * 0.5;
-      if (sparkle > 0.45) {
-        ctx.fillStyle = `rgba(255, 255, 220, ${sparkle * 0.9})`;
-        ctx.fillRect(px + 15, py + 16, 2, 2);
+      if (isLocked) {
+        // Barrera mágica carmesí/púrpura indicando que el cofre está sellado por un jefe previo
+        const lockPulse = (Math.sin(this.animTime * 4 + chest.id) + 1) * 0.5;
+        ctx.strokeStyle = `rgba(239, 68, 68, ${0.4 + lockPulse * 0.4})`;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(px + 4, py + 5, 24, 22);
+
+        // Icono de candado pequeño sobre el cofre
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🔒', px + 16, py + 3);
+      } else {
+        // Destello sutil en la cerradura dorada (sin desbordar al suelo)
+        const sparkle = (Math.sin(this.animTime * 6) + 1) * 0.5;
+        if (sparkle > 0.45) {
+          ctx.fillStyle = `rgba(255, 255, 220, ${sparkle * 0.9})`;
+          ctx.fillRect(px + 15, py + 16, 2, 2);
+        }
       }
     } else {
       // Cofre abierto mostrando el interior saqueado
@@ -519,16 +532,14 @@ class PixelRenderer {
     ctx.fillRect(px + 5, py + 6, 22, 14);
     ctx.fillStyle = '#fef3c7';
     ctx.fillRect(px + 7, py + 8, 18, 10);
-    ctx.strokeStyle = '#92400e';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(px + 5, py + 6, 22, 14);
-    ctx.fillStyle = '#78350f';
-    ctx.font = '9px monospace';
-    ctx.fillText("📜", px + 11, py + 16);
+    ctx.fillStyle = '#92400e';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('JAVA', px + 16, py + 16);
   }
 
   // Dibujar los 20 Jefes usando 'assets/images/enemigo{id}.png' (16x16)
-  drawBoss(boss, px, py, isDefeated = false) {
+  drawBoss(boss, px, py, isDefeated = false, isLocked = false) {
     const ctx = this.ctx;
     const hover = Math.sin(this.animTime * 3.5 + boss.id) * 3;
     const by = py + hover;
@@ -549,10 +560,10 @@ class PixelRenderer {
       return;
     }
 
-    // Aura mágica según el nivel de dificultad
+    // Aura mágica según el nivel de dificultad o aura de bloqueo si está sellado
     const auraPulse = (Math.sin(this.animTime * 4 + boss.id) + 1) * 0.5;
-    ctx.fillStyle = boss.color;
-    ctx.globalAlpha = 0.15 + auraPulse * 0.2;
+    ctx.fillStyle = isLocked ? '#ef4444' : boss.color;
+    ctx.globalAlpha = isLocked ? (0.2 + auraPulse * 0.25) : (0.15 + auraPulse * 0.2);
     ctx.beginPath();
     ctx.arc(px + 16, by + 14, 18, 0, Math.PI * 2);
     ctx.fill();
@@ -561,23 +572,31 @@ class PixelRenderer {
     // Dibujar sprite real del enemigo (16x16 escalado a 32x32)
     const bossImg = this.bossImgs[boss.id];
     if (bossImg && bossImg.complete && bossImg.naturalWidth > 0) {
+      if (isLocked) {
+        ctx.filter = 'grayscale(40%) brightness(0.85)';
+      }
       ctx.drawImage(bossImg, px, by - 2, 32, 32);
+      ctx.filter = 'none';
     } else {
       ctx.fillStyle = boss.color;
       ctx.fillRect(px + 6, by + 4, 20, 20);
     }
 
-    // Badge de Nivel flotante
+    // Badge de Nivel flotante o Candado
     ctx.fillStyle = '#1e1b4b';
     ctx.fillRect(px + 2, by - 12, 28, 10);
-    ctx.strokeStyle = boss.color;
+    ctx.strokeStyle = isLocked ? '#ef4444' : boss.color;
     ctx.lineWidth = 1.5;
     ctx.strokeRect(px + 2, by - 12, 28, 10);
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 7px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(`LVL ${boss.level}`, px + 16, by - 4);
+    if (isLocked) {
+      ctx.fillText(`🔒 LV ${boss.level}`, px + 16, by - 4);
+    } else {
+      ctx.fillText(`LVL ${boss.level}`, px + 16, by - 4);
+    }
 
     ctx.restore();
   }
