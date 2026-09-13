@@ -353,7 +353,13 @@ class BattleManager {
     this.currentQuestion.options.forEach((optText, index) => {
       const btn = document.createElement('button');
       btn.className = 'btn-retro btn-option';
-      btn.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + index)})</span> ${optText}`;
+
+      const letterSpan = document.createElement('span');
+      letterSpan.className = 'option-letter';
+      letterSpan.textContent = `${String.fromCharCode(65 + index)}) `;
+
+      btn.appendChild(letterSpan);
+      btn.appendChild(document.createTextNode(optText));
       btn.addEventListener('click', () => this.handleAnswer(index));
       optionsContainer.appendChild(btn);
     });

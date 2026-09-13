@@ -911,13 +911,13 @@ const QUESTIONS_DATA = {
       "order": 5,
       "question": "[5/20] ¿Qué secuencia de escape representa un salto de línea en una cadena?",
       "options": [
-        "\t",
-        "\n",
-        "\b",
-        "\r"
+        "\\t",
+        "\\n",
+        "\\b",
+        "\\r"
       ],
       "correct": 1,
-      "explanation": "\n inserta un salto de línea."
+      "explanation": "'\\n' inserta un salto de línea (newline)."
     },
     {
       "id": "4_6",
@@ -925,13 +925,13 @@ const QUESTIONS_DATA = {
       "order": 6,
       "question": "[6/20] ¿Qué secuencia de escape inserta una tabulación horizontal?",
       "options": [
-        "\n",
-        "\t",
+        "\\n",
+        "\\t",
         "\\s",
         "\\h"
       ],
       "correct": 1,
-      "explanation": "\t inserta una tabulación."
+      "explanation": "'\\t' inserta una tabulación horizontal."
     },
     {
       "id": "4_7",
@@ -1079,13 +1079,13 @@ const QUESTIONS_DATA = {
       "order": 17,
       "question": "[17/20] ¿Qué secuencia de escape representa la barra invertida literal?",
       "options": [
-        "\\",
+        "\\\\",
         "//",
-        "\b",
-        "\u0000"
+        "\\b",
+        "\\0"
       ],
       "correct": 0,
-      "explanation": "\\ imprime una única barra invertida."
+      "explanation": "'\\\\' imprime una única barra invertida literal."
     },
     {
       "id": "4_18",
