@@ -107,6 +107,14 @@ class BattleManager {
     this.attackFrame = 0;
     this.currentQuestionIndex = 0;
 
+    // Obtener las 20 preguntas del jefe y barajar su orden aleatoriamente en cada enfrentamiento (Fisher-Yates)
+    const baseQuestions = QUESTIONS_DATA[boss.level] || QUESTIONS_DATA[boss.id] || QUESTIONS_DATA[1] || [];
+    this.currentBossQuestions = [...baseQuestions];
+    for (let i = this.currentBossQuestions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.currentBossQuestions[i], this.currentBossQuestions[j]] = [this.currentBossQuestions[j], this.currentBossQuestions[i]];
+    }
+
     // Iniciar música específica del jefe (assets/audio/jefe{id}.mp3)
     audioManager.startMusic('battle', boss.id);
 
@@ -318,8 +326,10 @@ class BattleManager {
     this.inventoryPanel.classList.add('hidden');
     this.questionPanel.classList.remove('hidden');
 
-    // Banco de 20 preguntas del jefe actual
-    const qList = QUESTIONS_DATA[this.activeBoss.level] || QUESTIONS_DATA[this.activeBoss.id] || QUESTIONS_DATA[1];
+    // Banco de 20 preguntas barajadas del jefe actual
+    const qList = (this.currentBossQuestions && this.currentBossQuestions.length > 0)
+      ? this.currentBossQuestions
+      : (QUESTIONS_DATA[this.activeBoss.level] || QUESTIONS_DATA[this.activeBoss.id] || QUESTIONS_DATA[1]);
     const rawQuestion = qList[this.currentQuestionIndex % qList.length];
     this.currentQuestionIndex++;
 
@@ -421,16 +431,51 @@ class BattleManager {
         this.updatePlayerBattleStats();
         this.animateSprite(this.playerSpriteCanvas, 'flash-red');
 
-        this.setDialog(`¡Incorrecto! ${this.currentQuestion.explanation}\n${this.activeBoss.name} contraataca y te quita ${bossDmg} corazón(es).`);
+        const expl = this.currentQuestion.explanation ? `\n\n📖 Explicación: ${this.currentQuestion.explanation}` : '';
+        this.setDialog(`❌ ¡Incorrecto!${expl}\n\n💥 ${this.activeBoss.name} contraataca y te quita ${bossDmg} corazón(es).\n\n💡 (Toca este recuadro o presiona Espacio para continuar ➡️)`);
 
-        setTimeout(() => {
+        // Tiempo suficiente para leer la explicación con calma (mínimo 6.5s, dinámico según longitud)
+        const explLength = (this.currentQuestion.explanation || '').length;
+        const readDelay = Math.max(6500, Math.min(9500, 4500 + explLength * 35));
+
+        if (this.advanceTimeout) clearTimeout(this.advanceTimeout);
+
+        const cleanupAdvance = () => {
+          if (this.advanceTimeout) {
+            clearTimeout(this.advanceTimeout);
+            this.advanceTimeout = null;
+          }
+          if (this.battleDialogEl) {
+            this.battleDialogEl.removeEventListener('click', onAdvance);
+            this.battleDialogEl.style.cursor = 'default';
+          }
+          window.removeEventListener('keydown', onAdvanceKey);
+        };
+
+        const onAdvance = () => {
+          cleanupAdvance();
           if (this.game.player.hearts <= 0) {
             this.handleDefeat();
           } else {
             this.isAnswering = false;
             this.showMainMenu();
           }
-        }, 2200);
+        };
+
+        const onAdvanceKey = (e) => {
+          if (e.code === 'Space' || e.code === 'Enter') {
+            e.preventDefault();
+            onAdvance();
+          }
+        };
+
+        if (this.battleDialogEl) {
+          this.battleDialogEl.style.cursor = 'pointer';
+          this.battleDialogEl.addEventListener('click', onAdvance);
+        }
+        window.addEventListener('keydown', onAdvanceKey);
+
+        this.advanceTimeout = setTimeout(onAdvance, readDelay);
       }, 700);
     }
   }
@@ -569,6 +614,13 @@ class BattleManager {
   }
 
   closeBattleQuietly() {
+    if (this.advanceTimeout) {
+      clearTimeout(this.advanceTimeout);
+      this.advanceTimeout = null;
+    }
+    if (this.battleDialogEl) {
+      this.battleDialogEl.style.cursor = 'default';
+    }
     this.resumeBattle();
     this.stopCombatAnimationLoop();
     this.overlay.classList.add('hidden');

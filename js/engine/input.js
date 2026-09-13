@@ -22,6 +22,14 @@ class InputHandler {
       this.keys[e.code] = false;
       this.justPressed[e.code] = false;
     });
+
+    // Limpiar teclas al perder el foco (minimizar ventana, cambiar de pestaña, etc.)
+    window.addEventListener('blur', () => {
+      this.keys = {};
+      this.justPressed = {};
+      this.touchDirs = { up: false, down: false, left: false, right: false };
+      this.touchInteract = false;
+    });
   }
 
   isDown(code) {

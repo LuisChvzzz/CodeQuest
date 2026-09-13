@@ -209,6 +209,8 @@ class CodeQuestGame {
 
     this.activeInteractEntity = null;
     this.toastTimer = null;
+    this.inventoryOpenedFromPause = false;
+    this.rewardsOpenedFromPause = false;
 
     this.initDOM();
     this.initCanvasSize();
@@ -315,7 +317,7 @@ class CodeQuestGame {
     document.getElementById('btn-pause-inventory').addEventListener('click', () => {
       audioManager.playSfx('click');
       document.getElementById('pause-modal').classList.add('hidden');
-      this.showInventoryModal();
+      this.showInventoryModal(true);
     });
 
     document.getElementById('btn-pause-restart').addEventListener('click', () => {
@@ -328,7 +330,8 @@ class CodeQuestGame {
 
     document.getElementById('btn-pause-rewards').addEventListener('click', () => {
       audioManager.playSfx('click');
-      this.showRewardsModal();
+      document.getElementById('pause-modal').classList.add('hidden');
+      this.showRewardsModal(true);
     });
 
     document.getElementById('btn-pause-exit').addEventListener('click', () => {
@@ -338,10 +341,15 @@ class CodeQuestGame {
     });
 
     // Inventario Fuera de Batalla (Requisito 2)
-    document.getElementById('btn-close-inventory').addEventListener('click', () => {
+    const handleCloseInv = () => {
       audioManager.playSfx('click');
       this.hideInventoryModal();
-    });
+    };
+    document.getElementById('btn-close-inventory').addEventListener('click', handleCloseInv);
+    const btnCloseInvBottom = document.getElementById('btn-close-inventory-bottom');
+    if (btnCloseInvBottom) {
+      btnCloseInvBottom.addEventListener('click', handleCloseInv);
+    }
 
     document.getElementById('btn-use-potion-inventory').addEventListener('click', () => {
       this.usePotionFromInventory();
@@ -359,28 +367,60 @@ class CodeQuestGame {
         }
       }
 
-      // Pausar combate con ESC o P cuando está en batalla
-      if (this.gameState === 'battle' && (e.key === 'Escape' || e.key === 'p' || e.key === 'P')) {
+      // Manejo universal y jerárquico de tecla Escape (ESC)
+      if (e.key === 'Escape') {
         e.preventDefault();
-        if (this.battle) {
-          this.battle.togglePause();
+
+        // 1. Pausar / reanudar combate si está en batalla
+        if (this.gameState === 'battle') {
+          if (this.battle) this.battle.togglePause();
+          return;
         }
-        return;
+
+        // 2. Cerrar inventario si está abierto
+        const invModal = document.getElementById('inventory-modal');
+        if (invModal && !invModal.classList.contains('hidden')) {
+          this.hideInventoryModal();
+          return;
+        }
+
+        // 3. Cerrar vitrina de recompensas si está abierta
+        const rewModal = document.getElementById('rewards-modal');
+        if (rewModal && !rewModal.classList.contains('hidden')) {
+          this.hideRewardsModal();
+          return;
+        }
+
+        // 4. Cerrar letrero si está abierto
+        const signModal = document.getElementById('sign-modal');
+        if (signModal && !signModal.classList.contains('hidden')) {
+          signModal.classList.add('hidden');
+          this.gameState = 'playing';
+          this.updateMobileControlsVisibility();
+          return;
+        }
+
+        // 5. Cerrar menú de pausa y reanudar partida si el menú de pausa está abierto
+        const pauseModal = document.getElementById('pause-modal');
+        if (pauseModal && !pauseModal.classList.contains('hidden')) {
+          this.resumeGame();
+          return;
+        }
+
+        // 6. Abrir menú de pausa si se está explorando el mapa normalmente
+        if (this.gameState === 'playing') {
+          this.pauseGame();
+          return;
+        }
       }
 
+      // Tecla G para alternar inventario
       if (e.key === 'g' || e.key === 'G') {
-        if (this.gameState === 'playing') {
-          const invModal = document.getElementById('inventory-modal');
-          if (invModal.classList.contains('hidden')) {
-            this.showInventoryModal();
-          } else {
-            this.hideInventoryModal();
-          }
-        } else if (this.gameState === 'paused') {
-          const invModal = document.getElementById('inventory-modal');
-          if (!invModal.classList.contains('hidden')) {
-            this.hideInventoryModal();
-          }
+        const invModal = document.getElementById('inventory-modal');
+        if (invModal && !invModal.classList.contains('hidden')) {
+          this.hideInventoryModal();
+        } else if (this.gameState === 'playing' || this.gameState === 'paused') {
+          this.showInventoryModal(this.gameState === 'paused');
         }
       }
     });
@@ -388,15 +428,34 @@ class CodeQuestGame {
     // Cerrar Recompensas
     document.getElementById('btn-close-rewards').addEventListener('click', () => {
       audioManager.playSfx('click');
-      document.getElementById('rewards-modal').classList.add('hidden');
-      this.updateMobileControlsVisibility();
+      this.hideRewardsModal();
     });
 
     // Cerrar Letrero de Dato Curioso
     document.getElementById('btn-close-sign').addEventListener('click', () => {
       audioManager.playSfx('click');
       document.getElementById('sign-modal').classList.add('hidden');
+      this.gameState = 'playing';
       this.updateMobileControlsVisibility();
+    });
+
+    // Cerrar modales automáticamente al hacer clic en el backdrop oscuro exterior
+    ['inventory-modal', 'rewards-modal', 'sign-modal'].forEach((modalId) => {
+      const modalEl = document.getElementById(modalId);
+      if (modalEl) {
+        modalEl.addEventListener('click', (e) => {
+          if (e.target === modalEl) {
+            audioManager.playSfx('click');
+            if (modalId === 'inventory-modal') this.hideInventoryModal();
+            else if (modalId === 'rewards-modal') this.hideRewardsModal();
+            else {
+              modalEl.classList.add('hidden');
+              this.gameState = 'playing';
+              this.updateMobileControlsVisibility();
+            }
+          }
+        });
+      }
     });
 
     // Pantalla de Gran Victoria (Fin del juego tras derrotar al jefe 20: Ranking y Menú)
@@ -687,9 +746,15 @@ class CodeQuestGame {
   }
 
   // Inventario accesible en cualquier momento (Requisito 2)
-  showInventoryModal() {
-    audioManager.playSfx('click');
+  showInventoryModal(fromPause = false) {
     const modal = document.getElementById('inventory-modal');
+    const isAlreadyOpen = modal && !modal.classList.contains('hidden');
+
+    if (!isAlreadyOpen) {
+      this.inventoryOpenedFromPause = fromPause || (this.gameState === 'paused');
+      this.gameState = 'paused';
+    }
+    audioManager.playSfx('click');
     document.getElementById('inv-player-name').textContent = this.player.name || "Héroe";
 
     // Corazones visuales
@@ -711,7 +776,20 @@ class CodeQuestGame {
   }
 
   hideInventoryModal() {
-    document.getElementById('inventory-modal').classList.add('hidden');
+    const modal = document.getElementById('inventory-modal');
+    if (modal) modal.classList.add('hidden');
+
+    if (this.inventoryOpenedFromPause) {
+      this.inventoryOpenedFromPause = false;
+      document.getElementById('pause-modal').classList.remove('hidden');
+    } else {
+      this.gameState = 'playing';
+      audioManager.stopSfx('pause');
+    }
+
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
     this.updateMobileControlsVisibility();
   }
 
@@ -731,8 +809,12 @@ class CodeQuestGame {
     this.player.hearts = Math.min(this.player.maxHearts, this.player.hearts + 1);
     audioManager.playSfx('potion');
     this.updateHud();
-    this.showInventoryModal(); // Refrescar modal
+    this.showInventoryModal(this.inventoryOpenedFromPause); // Refrescar modal conservando estado de origen
     this.showToast(`¡Bebiste una poción! Salud restaurada a (${this.player.hearts}/${this.player.maxHearts} corazones).`);
+
+    // Desenfocar el botón para que no capture eventos de teclado involuntarios
+    const btn = document.getElementById('btn-use-potion-inventory');
+    if (btn) btn.blur();
   }
 
   startNewGame() {
@@ -832,6 +914,8 @@ class CodeQuestGame {
     document.getElementById('game-complete-modal').classList.add('hidden');
     document.getElementById('game-over-modal').classList.add('hidden');
     document.getElementById('inventory-modal').classList.add('hidden');
+    document.getElementById('rewards-modal').classList.add('hidden');
+    document.getElementById('sign-modal').classList.add('hidden');
     document.getElementById('story-lore-modal').classList.add('hidden');
     document.getElementById('main-menu-overlay').classList.remove('hidden');
     audioManager.startMusic('menu');
@@ -857,7 +941,15 @@ class CodeQuestGame {
   }
 
   // Mostrar vitrina de recompensas (Requisito 7)
-  showRewardsModal() {
+  showRewardsModal(fromPause = false) {
+    const modal = document.getElementById('rewards-modal');
+    const isAlreadyOpen = modal && !modal.classList.contains('hidden');
+
+    if (!isAlreadyOpen) {
+      this.rewardsOpenedFromPause = fromPause || (this.gameState === 'paused');
+      this.gameState = 'paused';
+    }
+
     const grid = document.getElementById('rewards-grid');
     grid.innerHTML = '';
 
@@ -896,6 +988,21 @@ class CodeQuestGame {
     });
 
     document.getElementById('rewards-modal').classList.remove('hidden');
+    this.updateMobileControlsVisibility();
+  }
+
+  hideRewardsModal() {
+    document.getElementById('rewards-modal').classList.add('hidden');
+    if (this.rewardsOpenedFromPause) {
+      this.rewardsOpenedFromPause = false;
+      document.getElementById('pause-modal').classList.remove('hidden');
+    } else {
+      this.gameState = 'playing';
+    }
+
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
     this.updateMobileControlsVisibility();
   }
 
