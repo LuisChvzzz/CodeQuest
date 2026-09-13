@@ -411,7 +411,7 @@ class CodeQuestGame {
           <ul class="story-list">
             <li><strong>🧠 Combate de Programación:</strong> Responde acertadamente a las preguntas de Java para asestar tajos críticos. Respuestas consecutivas activan combos con multiplicadores de daño y puntos.</li>
             <li><strong>⚠️ Castigo de Sintaxis:</strong> Si eliges una opción incorrecta, el jefe contraatacará y perderás 1 corazón de vida.</li>
-            <li><strong>⏳ Voto de Resurrección:</strong> Si tus 5 corazones caen a cero, serás derrotado. Podrás revivir tu espíritu, pero a cambio todo tu progreso y el mapa se reiniciarán desde cero. ¡Protege tu vida con devoción, <span class="story-highlight">${pName}</span>!</li>
+            <li><strong>⏳ Gracia de la Resurrección:</strong> Si tus 5 corazones caen a cero, caerás en batalla, pero la gracia de la JVM te protegerá: reaparecerás en la Plaza Central conservando todas tus medallas, espadas, cofres y progreso acumulado para volver a intentarlo.</li>
           </ul>
         `
       },
@@ -573,6 +573,40 @@ class CodeQuestGame {
     this.updateMobileControlsVisibility();
     audioManager.startMusic('explore');
     this.showToast(`¡Bienvenido a Code Quest, ${this.player.name}! Explora el reino y domina Java.`);
+  }
+
+  // Reaparecer conservando el progreso del héroe (medallas, ataque, cofres y puntaje)
+  respawnWithProgress() {
+    audioManager.stopSfx('gameover');
+    audioManager.stopSfx('pause');
+    audioManager.stopMusic();
+
+    // 1. Restaurar salud completa (5 corazones)
+    this.player.hearts = this.player.maxHearts;
+
+    // 2. Conservar progreso acumulado (ataque, medallas, jefes derrotados, puntaje y cofres abiertos)
+    // Garantizar que tenga recursos para continuar
+    if (this.player.keys < 1) {
+      this.player.keys = 1; // 1 llave mínima para retar al siguiente jefe
+    }
+    if (this.player.potions < 1) {
+      this.player.potions = 1; // 1 poción de auxilio
+    }
+
+    // 3. Reubicar al jugador en la Plaza Central segura (Pueblo del Compilador)
+    this.player.x = 31 * 32;
+    this.player.y = 32 * 32;
+    this.player.direction = 'down';
+
+    // 4. Centrar cámara y actualizar HUD
+    this.camera.follow(this.player.x + 12, this.player.y + 14);
+    this.updateHud();
+
+    // 5. Reactivar juego y música de exploración
+    this.gameState = 'playing';
+    this.updateMobileControlsVisibility();
+    audioManager.startMusic('explore');
+    this.showToast(`¡Has reaparecido en la Plaza Central! Tu progreso, medallas y espadas están a salvo.`);
   }
 
   pauseGame() {

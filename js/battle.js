@@ -390,8 +390,7 @@ class BattleManager {
         audioManager.stopMusic();
         gameOverModal.classList.add('hidden');
         this.closeBattleQuietly();
-        this.game.startNewGame(); // Reinicia todo el progreso del héroe (Requisitos 3 y 4)
-        this.game.showToast("¡Has revivido en la Plaza Central! Tu progreso se ha reiniciado por completo.");
+        this.game.respawnWithProgress(); // Reaparece conservando todo su progreso
       };
     }
 
