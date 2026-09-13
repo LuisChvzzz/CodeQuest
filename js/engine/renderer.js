@@ -143,6 +143,7 @@ class PixelRenderer {
         break;
       }
 
+      case 5: // Compatibilidad para arenas de jefes con tierra_relleno.png
       case 1: { // Camino empedrado con tierra_relleno.png y flecos de pasto (Requisito 1)
         ctx.fillStyle = '#5c4a38';
         ctx.fillRect(px, py, size, size);
@@ -248,17 +249,6 @@ class PixelRenderer {
         break;
       }
 
-      case 5: { // Santuario JVM: obsidiana y runas mágicas
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(px, py, size, size);
-        ctx.fillStyle = '#1e1b4b';
-        ctx.fillRect(px + 2, py + 2, size - 4, size - 4);
-        const runePulse = (Math.sin(this.animTime * 4) + 1) * 0.5;
-        ctx.fillStyle = `rgba(251, 191, 36, ${0.7 + runePulse * 0.3})`;
-        ctx.fillRect(px + size / 2 - 1, py + 4, 2, size - 8);
-        ctx.fillRect(px + 4, py + size / 2 - 1, size - 8, 2);
-        break;
-      }
 
       case 7: { // Agua con ondas decoradas con agua_decorada.png (Requisito 6)
         const waterImg = this.terrainSprites.water;

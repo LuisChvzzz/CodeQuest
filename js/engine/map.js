@@ -77,7 +77,7 @@ class WorldMap {
       { id: 17, x: 55, y: 41, w: 5, h: 5 },
       { id: 18, x: 41, y: 55, w: 5, h: 5 },
       { id: 19, x: 55, y: 55, w: 5, h: 5 },
-      { id: 20, x: 48, y: 48, w: 7, h: 7, tile: 5 } // Gran Santuario de la JVM (obsidiana y runas)
+      { id: 20, x: 48, y: 48, w: 7, h: 7 } // Gran Arena del Jefe 20 (tierra_relleno.png)
     ];
 
     arenas.forEach(a => {
@@ -104,12 +104,9 @@ class WorldMap {
     fillRect(8, 54, 15, 2, 1);
 
     // Red Sureste (Jefes 16-20):
-    fillRect(47, 31, 2, 14, 1); // Camino hasta la puerta norte del Santuario JVM (y: 31..44)
+    fillRect(47, 31, 2, 25, 1); // Camino vertical continuo que conecta Jefes 16, 17, 20, 18 y 19
     fillRect(41, 40, 15, 2, 1);
     fillRect(41, 54, 15, 2, 1);
-
-    // Reafirmar el Gran Santuario de la JVM como suelo puro de obsidiana y runas (y: 45..51, x: 45..51)
-    fillRect(45, 45, 7, 7, 5);
 
     // 6. Cuerpos de Agua: Lagos y ríos escénicos (Requisito 6)
     // Lagos en áreas de pasto alejados de caminos
