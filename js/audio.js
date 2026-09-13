@@ -164,6 +164,24 @@ class SoundEngine {
           });
           break;
 
+        case 'retreat':
+        case 'flee':
+          // Efecto de pasos rápidos y huida de combate
+          [300, 360, 440, 520].forEach((freq, idx) => {
+            const o = this.webCtx.createOscillator();
+            const g = this.webCtx.createGain();
+            o.type = 'triangle';
+            o.frequency.setValueAtTime(freq, t + idx * 0.08);
+            o.frequency.exponentialRampToValueAtTime(freq * 0.7, t + idx * 0.08 + 0.12);
+            g.gain.setValueAtTime(0.25 * this.volume, t + idx * 0.08);
+            g.gain.exponentialRampToValueAtTime(0.01, t + idx * 0.08 + 0.12);
+            o.connect(g);
+            g.connect(this.webCtx.destination);
+            o.start(t + idx * 0.08);
+            o.stop(t + idx * 0.08 + 0.12);
+          });
+          break;
+
         case 'chest':
         case 'sword':
         case 'key':

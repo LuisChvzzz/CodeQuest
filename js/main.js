@@ -1,3 +1,178 @@
+// Sistema de Lluvia de Medallas Animada para la Gran Victoria Final (Fin del Juego)
+class MedalsRainSystem {
+  constructor() {
+    this.canvas = document.getElementById('medals-rain-canvas');
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.particles = [];
+    this.sparkles = [];
+    this.isRunning = false;
+    this.animReq = null;
+    this.medalImages = {};
+    this.preloadMedalImages();
+
+    window.addEventListener('resize', () => {
+      if (this.isRunning) this.resizeCanvas();
+    });
+  }
+
+  preloadMedalImages() {
+    for (let i = 1; i <= 20; i++) {
+      const img = new Image();
+      img.src = `assets/images/medalla${i}.png`;
+      this.medalImages[i] = img;
+    }
+  }
+
+  resizeCanvas() {
+    if (!this.canvas) return;
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
+
+  start(playerMedals = []) {
+    if (!this.canvas) return;
+    this.stop();
+    this.resizeCanvas();
+    this.isRunning = true;
+    this.particles = [];
+    this.sparkles = [];
+
+    // Usar las medallas obtenidas o el set completo de 1 a 20
+    const availableIds = (playerMedals && playerMedals.length > 0)
+      ? playerMedals.map(m => m.bossId)
+      : Array.from({ length: 20 }, (_, i) => i + 1);
+
+    const count = Math.min(50, Math.max(30, Math.floor(window.innerWidth / 28)));
+
+    for (let i = 0; i < count; i++) {
+      this.particles.push(this.createParticle(availableIds, true));
+    }
+
+    // Chispas doradas de celebración
+    for (let i = 0; i < 40; i++) {
+      this.sparkles.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height,
+        size: Math.random() * 4 + 2,
+        speedY: Math.random() * 60 + 40,
+        speedX: (Math.random() - 0.5) * 40,
+        color: ['#fef08a', '#fbbf24', '#f59e0b', '#38bdf8', '#4ade80'][Math.floor(Math.random() * 5)],
+        alpha: Math.random() * 0.7 + 0.3,
+        twinkleSpeed: Math.random() * 4 + 2
+      });
+    }
+
+    this.lastTime = performance.now();
+    this.loop();
+  }
+
+  createParticle(availableIds, initial = false) {
+    const id = availableIds[Math.floor(Math.random() * availableIds.length)];
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    return {
+      medalId: id,
+      x: Math.random() * (w + 40) - 20,
+      baseX: Math.random() * (w + 40) - 20,
+      y: initial ? Math.random() * (h + 80) - 80 : -60 - Math.random() * 100,
+      speedY: Math.random() * 120 + 90,
+      swaySpeed: Math.random() * 2 + 1.2,
+      swayAmp: Math.random() * 25 + 15,
+      swayOffset: Math.random() * Math.PI * 2,
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 2.2,
+      size: Math.random() * 14 + 32, // 32 a 46 píxeles
+      alpha: Math.random() * 0.2 + 0.8
+    };
+  }
+
+  stop() {
+    this.isRunning = false;
+    if (this.animReq) {
+      cancelAnimationFrame(this.animReq);
+      this.animReq = null;
+    }
+    if (this.ctx && this.canvas) {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+  }
+
+  loop() {
+    if (!this.isRunning) return;
+    const now = performance.now();
+    const dt = Math.min(0.1, (now - this.lastTime) / 1000);
+    this.lastTime = now;
+
+    this.update(dt, now / 1000);
+    this.draw(now / 1000);
+
+    this.animReq = requestAnimationFrame(() => this.loop());
+  }
+
+  update(dt, time) {
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    const availableIds = Array.from({ length: 20 }, (_, i) => i + 1);
+
+    for (const p of this.particles) {
+      p.y += p.speedY * dt;
+      p.rotation += p.rotationSpeed * dt;
+      p.x = p.baseX + Math.sin(time * p.swaySpeed + p.swayOffset) * p.swayAmp;
+
+      if (p.y > h + 60) {
+        Object.assign(p, this.createParticle(availableIds, false));
+      }
+    }
+
+    for (const s of this.sparkles) {
+      s.y += s.speedY * dt;
+      s.x += s.speedX * dt;
+      if (s.y > h + 20) {
+        s.y = -10;
+        s.x = Math.random() * w;
+      }
+    }
+  }
+
+  draw(time) {
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.imageSmoothingEnabled = false;
+
+    // Dibujar chispas doradas mágicas
+    for (const s of this.sparkles) {
+      const alpha = s.alpha * (0.6 + 0.4 * Math.sin(time * s.twinkleSpeed));
+      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Dibujar medallas cayendo
+    for (const p of this.particles) {
+      const img = this.medalImages[p.medalId];
+      if (!img || !img.complete || img.naturalWidth === 0) continue;
+
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation);
+
+      // Sombra dorada
+      ctx.shadowColor = 'rgba(245, 158, 11, 0.45)';
+      ctx.shadowBlur = 8;
+
+      ctx.drawImage(img, -p.size / 2, -p.size / 2, p.size, p.size);
+      ctx.restore();
+    }
+
+    ctx.globalAlpha = 1.0;
+    ctx.shadowBlur = 0;
+  }
+}
+
 // Controlador Principal de Code Quest: Aventura RPG Medieval de Java
 class CodeQuestGame {
   constructor() {
@@ -7,6 +182,7 @@ class CodeQuestGame {
     this.camera = null;
     this.map = null;
     this.battle = null;
+    this.medalsRain = null;
 
     this.gameState = 'menu'; // 'menu', 'playing', 'battle', 'paused', 'complete'
     this.lastTime = 0;
@@ -55,6 +231,7 @@ class CodeQuestGame {
     this.map = new WorldMap();
     this.camera = new Camera(this.canvas.width, this.canvas.height, this.map.width * 32, this.map.height * 32);
     this.battle = new BattleManager(this);
+    this.medalsRain = new MedalsRainSystem();
 
     // Botones del Menú Principal
     document.getElementById('btn-new-game').addEventListener('click', () => {
@@ -170,7 +347,7 @@ class CodeQuestGame {
       this.usePotionFromInventory();
     });
 
-    // Atajo de teclado 'G' para abrir/cerrar inventario y 'Espacio/Enter' para historia
+    // Atajos de teclado y eventos
     window.addEventListener('keydown', (e) => {
       // Avanzar prólogo con Enter o Espacio si el modal de historia está abierto
       const storyModal = document.getElementById('story-lore-modal');
@@ -180,6 +357,15 @@ class CodeQuestGame {
           this.nextStoryChapter();
           return;
         }
+      }
+
+      // Pausar combate con ESC o P cuando está en batalla
+      if (this.gameState === 'battle' && (e.key === 'Escape' || e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        if (this.battle) {
+          this.battle.togglePause();
+        }
+        return;
       }
 
       if (e.key === 'g' || e.key === 'G') {
@@ -213,11 +399,21 @@ class CodeQuestGame {
       this.updateMobileControlsVisibility();
     });
 
-    // Pantalla de Gran Victoria (Fin del juego tras derrotar al jefe 20)
+    // Pantalla de Gran Victoria (Fin del juego tras derrotar al jefe 20: Ranking y Menú)
+    const btnCompRanking = document.getElementById('btn-complete-ranking');
+    if (btnCompRanking) {
+      btnCompRanking.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        cloudRanking.renderLeaderboard('ranking-table-body');
+        document.getElementById('ranking-modal').classList.remove('hidden');
+      });
+    }
+
     const btnFinish = document.getElementById('btn-finish-game');
     if (btnFinish) {
       btnFinish.addEventListener('click', () => {
         audioManager.playSfx('click');
+        if (this.medalsRain) this.medalsRain.stop();
         document.getElementById('game-complete-modal').classList.add('hidden');
         this.returnToMainMenu();
       });
@@ -627,10 +823,13 @@ class CodeQuestGame {
     audioManager.stopSfx('pause');
     audioManager.stopSfx('gameover'); // Asegurar detención de audio de game over
     audioManager.stopMusic();
+    if (this.medalsRain) this.medalsRain.stop();
     this.gameState = 'menu';
     this.updateMobileControlsVisibility();
     document.getElementById('game-hud').classList.add('hidden');
     document.getElementById('battle-screen').classList.add('hidden');
+    document.getElementById('battle-pause-modal').classList.add('hidden');
+    document.getElementById('game-complete-modal').classList.add('hidden');
     document.getElementById('game-over-modal').classList.add('hidden');
     document.getElementById('inventory-modal').classList.add('hidden');
     document.getElementById('story-lore-modal').classList.add('hidden');
@@ -734,6 +933,11 @@ class CodeQuestGame {
       medalsList.appendChild(mBadge);
     });
 
+    // Iniciar lluvia de medallas cayendo en pantalla
+    if (this.medalsRain) {
+      this.medalsRain.start(this.player.medals);
+    }
+
     modal.classList.remove('hidden');
     this.updateMobileControlsVisibility();
   }
@@ -801,6 +1005,13 @@ class CodeQuestGame {
       if (this.input.isPause) {
         audioManager.playSfx('click');
         this.resumeGame();
+      }
+      return;
+    }
+
+    if (this.gameState === 'battle') {
+      if (this.input.isPause) {
+        if (this.battle) this.battle.togglePause();
       }
       return;
     }

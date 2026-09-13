@@ -42,24 +42,58 @@ class BattleManager {
     this.btnInventory = document.getElementById('btn-battle-inventory');
     this.btnBackAction = document.getElementById('btn-battle-back');
 
+    // Elementos del DOM para Pausa y Retirada en Combate
+    this.btnBattlePause = document.getElementById('btn-battle-pause');
+    this.pauseModal = document.getElementById('battle-pause-modal');
+    this.btnResume = document.getElementById('btn-battle-resume');
+    this.btnRetreat = document.getElementById('btn-battle-retreat');
+    this.playerCombatantBox = document.getElementById('battle-player-combatant-box');
+
+    this.isPaused = false;
+    this.isEscaping = false;
+
     this.setupListeners();
   }
 
   setupListeners() {
     this.btnAttack.addEventListener('click', () => {
+      if (this.isEscaping || this.isPaused) return;
       audioManager.playSfx('click');
       this.showQuestion();
     });
 
     this.btnInventory.addEventListener('click', () => {
+      if (this.isEscaping || this.isPaused) return;
       audioManager.playSfx('click');
       this.showInventory();
     });
 
     this.btnBackAction.addEventListener('click', () => {
+      if (this.isEscaping || this.isPaused) return;
       audioManager.playSfx('click');
       this.showMainMenu();
     });
+
+    // Control de Pausa en Combate
+    if (this.btnBattlePause) {
+      this.btnBattlePause.addEventListener('click', () => {
+        if (!this.isEscaping) this.togglePause();
+      });
+    }
+
+    if (this.btnResume) {
+      this.btnResume.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        this.resumeBattle();
+      });
+    }
+
+    if (this.btnRetreat) {
+      this.btnRetreat.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        this.handleRetreat();
+      });
+    }
   }
 
   startBattle(boss) {
@@ -101,6 +135,103 @@ class BattleManager {
     if (this.game.updateMobileControlsVisibility) {
       this.game.updateMobileControlsVisibility();
     }
+
+    // Resetear estados de pausa y huida
+    this.isPaused = false;
+    this.isEscaping = false;
+    if (this.pauseModal) this.pauseModal.classList.add('hidden');
+    if (this.playerCombatantBox) this.playerCombatantBox.classList.remove('player-escaping');
+    if (this.btnAttack) this.btnAttack.disabled = false;
+    if (this.btnInventory) this.btnInventory.disabled = false;
+    if (this.btnBattlePause) this.btnBattlePause.disabled = false;
+  }
+
+  // Pausa de Combate
+  pauseBattle() {
+    if (this.isEscaping) return;
+    this.isPaused = true;
+    audioManager.playSfx('pause');
+    if (this.pauseModal) {
+      this.pauseModal.classList.remove('hidden');
+    }
+  }
+
+  resumeBattle() {
+    this.isPaused = false;
+    audioManager.stopSfx('pause');
+    if (this.pauseModal) {
+      this.pauseModal.classList.add('hidden');
+    }
+  }
+
+  togglePause() {
+    if (this.isPaused) {
+      this.resumeBattle();
+    } else {
+      this.pauseBattle();
+    }
+  }
+
+  // Retirada del Combate con Animación de Escape
+  handleRetreat() {
+    if (this.isEscaping) return;
+    this.resumeBattle(); // Cerrar modal de pausa
+    this.isEscaping = true;
+    this.isAnswering = true; // Bloquear selección de preguntas o botones
+
+    // Deshabilitar interacción durante el escape
+    if (this.btnAttack) this.btnAttack.disabled = true;
+    if (this.btnInventory) this.btnInventory.disabled = true;
+    if (this.btnBattlePause) this.btnBattlePause.disabled = true;
+
+    this.setDialog("¡El héroe decide retirarse del combate! Huida táctica hacia un lugar seguro...");
+    audioManager.playSfx('retreat');
+
+    // Desplazar al jugador a la derecha hacia fuera de la pantalla
+    if (this.playerCombatantBox) {
+      this.playerCombatantBox.classList.add('player-escaping');
+    }
+
+    // Al terminar la animación (~1.55s), finalizar la retirada
+    setTimeout(() => {
+      this.finishRetreat();
+    }, 1550);
+  }
+
+  finishRetreat() {
+    if (this.playerCombatantBox) {
+      this.playerCombatantBox.classList.remove('player-escaping');
+    }
+    if (this.btnAttack) this.btnAttack.disabled = false;
+    if (this.btnInventory) this.btnInventory.disabled = false;
+    if (this.btnBattlePause) this.btnBattlePause.disabled = false;
+
+    this.isEscaping = false;
+    this.isAnswering = false;
+
+    // Cerrar la pantalla de combate
+    this.closeBattleQuietly();
+
+    // Reubicar al jugador a una distancia prudente en el mapa (48px al sur del jefe)
+    // para no reiniciar la interacción accidentalmente
+    if (this.game && this.game.player) {
+      this.game.player.y += 48;
+      this.game.player.direction = 'down';
+      // Limitar bordes del mapa
+      this.game.player.y = Math.min(this.game.player.y, (this.game.map.height - 3) * 32);
+      this.game.camera.follow(this.game.player.x + 12, this.game.player.y + 14);
+      this.game.updateHud();
+    }
+
+    // Reanudar música de exploración y estado de juego
+    audioManager.startMusic('explore');
+    this.game.gameState = 'playing';
+    if (this.game.updateMobileControlsVisibility) {
+      this.game.updateMobileControlsVisibility();
+    }
+
+    // Notificación clara: Los ítems usados (llave y pociones) se han consumido y no se recuperan
+    this.game.showToast("¡Te has retirado de la batalla! Los ítems consumidos (llaves y pociones) no se pueden recuperar.");
   }
 
   updateBossHpBar() {
@@ -366,10 +497,11 @@ class BattleManager {
     btnAccept.onclick = () => {
       audioManager.playSfx('click');
       modal.classList.add('hidden');
+      const defeatedBossId = this.activeBoss ? this.activeBoss.id : null;
       this.closeBattle();
 
       // Verificar si venció al último jefe (Jefe 20)
-      if (this.activeBoss.id === 20 || this.game.player.defeatedBosses.size >= 20) {
+      if (defeatedBossId === 20 || this.game.player.defeatedBosses.size >= 20) {
         this.game.handleGameComplete();
       }
     };
@@ -408,10 +540,15 @@ class BattleManager {
   }
 
   closeBattleQuietly() {
+    this.resumeBattle();
     this.stopCombatAnimationLoop();
     this.overlay.classList.add('hidden');
     this.activeBoss = null;
     this.isAnswering = false;
+    this.isEscaping = false;
+    if (this.playerCombatantBox) {
+      this.playerCombatantBox.classList.remove('player-escaping');
+    }
     if (this.game.updateMobileControlsVisibility) {
       this.game.updateMobileControlsVisibility();
     }
@@ -487,7 +624,20 @@ class BattleManager {
     pCtx.ellipse(80, 146, 42, 10, 0, 0, Math.PI * 2);
     pCtx.fill();
 
-    if (this.isAttacking) {
+    if (this.isEscaping) {
+      // Animación de retirada: el héroe corre/camina hacia la derecha
+      const walkRightSprites = this.game.renderer.playerSprites.walk.right;
+      const walkFrame = Math.floor((time * 7) % 2); // Alternar entre frame 0 y frame 1
+      const escapeImg = walkRightSprites[walkFrame] || walkRightSprites[0];
+
+      if (escapeImg && escapeImg.complete && escapeImg.naturalWidth > 0) {
+        // jugador_caminando_derecha (14x18 escalado a 84x108)
+        pCtx.drawImage(escapeImg, 38, 22 - pHover, 84, 108);
+      } else {
+        pCtx.fillStyle = '#38bdf8';
+        pCtx.fillRect(35, 20 - pHover, 90, 115);
+      }
+    } else if (this.isAttacking) {
       // Animación activa de espadazo usando jugador_ataque_1, 2 o 3 con avance hacia el jefe (arriba y adelante)
       const attackSprites = this.game.renderer.playerSprites.attack;
       const atkImg = attackSprites[this.attackFrame] || attackSprites[0];
