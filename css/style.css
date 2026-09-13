@@ -822,28 +822,38 @@ html, body {
 }
 
 .battle-pause-box .box-desc {
-  font-size: 14px;
-  color: #e2e8f0;
-  margin-bottom: 14px;
+  font-size: 15px;
+  color: #451a03;
+  margin-bottom: 16px;
   line-height: 1.5;
+  font-weight: 600;
 }
 
 .retreat-warning-note {
-  background: rgba(180, 83, 9, 0.2);
-  border: 1px solid #d97706;
-  border-radius: 6px;
-  padding: 10px 14px;
-  font-size: 12px;
-  color: #fef08a;
-  line-height: 1.5;
-  margin-bottom: 20px;
+  background: #2b0c0c;
+  border: 2px solid #ef4444;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #ffffff;
+  line-height: 1.6;
+  margin-bottom: 22px;
   text-align: left;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.retreat-warning-note strong {
+  color: #fef08a;
+  font-weight: 800;
+  text-shadow: 0 0 8px rgba(254, 240, 138, 0.4);
 }
 
 .retreat-warning-note em {
   font-style: normal;
   color: #fca5a5;
-  font-weight: 700;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .battle-pause-actions {

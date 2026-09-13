@@ -318,19 +318,39 @@ class BattleManager {
     this.inventoryPanel.classList.add('hidden');
     this.questionPanel.classList.remove('hidden');
 
-    // Banco de 20 preguntas ordenadas del jefe actual (sin azar, secuencial 1..20)
+    // Banco de 20 preguntas del jefe actual
     const qList = QUESTIONS_DATA[this.activeBoss.level] || QUESTIONS_DATA[this.activeBoss.id] || QUESTIONS_DATA[1];
-    const question = qList[this.currentQuestionIndex % qList.length];
-    this.currentQuestion = question;
+    const rawQuestion = qList[this.currentQuestionIndex % qList.length];
     this.currentQuestionIndex++;
+
+    // Barajar los incisos al azar para que la respuesta correcta varíe libremente entre A, B, C y D
+    const mappedOptions = rawQuestion.options.map((text, idx) => ({
+      text,
+      isCorrect: idx === rawQuestion.correct
+    }));
+
+    // Algoritmo de Fisher-Yates
+    for (let i = mappedOptions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [mappedOptions[i], mappedOptions[j]] = [mappedOptions[j], mappedOptions[i]];
+    }
+
+    const shuffledOptions = mappedOptions.map(item => item.text);
+    const newCorrectIndex = mappedOptions.findIndex(item => item.isCorrect);
+
+    this.currentQuestion = {
+      ...rawQuestion,
+      options: shuffledOptions,
+      correct: newCorrectIndex
+    };
 
     const qTitle = document.getElementById('battle-question-text');
     const optionsContainer = document.getElementById('battle-options-container');
 
-    qTitle.textContent = question.question;
+    qTitle.textContent = this.currentQuestion.question;
     optionsContainer.innerHTML = '';
 
-    question.options.forEach((optText, index) => {
+    this.currentQuestion.options.forEach((optText, index) => {
       const btn = document.createElement('button');
       btn.className = 'btn-retro btn-option';
       btn.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + index)})</span> ${optText}`;
@@ -500,9 +520,12 @@ class BattleManager {
       const defeatedBossId = this.activeBoss ? this.activeBoss.id : null;
       this.closeBattle();
 
-      // Verificar si venció al último jefe (Jefe 20)
-      if (defeatedBossId === 20 || this.game.player.defeatedBosses.size >= 20) {
+      // Verificar si venció a todos los 20 jefes para terminar el juego (Requisito: no basta solo con vencer al jefe 20)
+      if (this.game.player.defeatedBosses.size >= 20) {
         this.game.handleGameComplete();
+      } else if (defeatedBossId === 20) {
+        const remaining = 20 - this.game.player.defeatedBosses.size;
+        this.game.showToast(`¡Derrotaste al Jefe 20! Pero aún debes vencer a ${remaining} jefe(s) restante(s) para completar el juego.`);
       }
     };
   }
