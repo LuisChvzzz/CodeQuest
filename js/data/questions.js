@@ -5643,3 +5643,16 @@ const QUESTIONS_DATA = {
     }
   ]
 };
+
+// Congelar recursivamente el banco de preguntas para evitar mutaciones o trampas desde la consola
+(function() {
+  if (typeof QUESTIONS_DATA !== 'undefined') {
+    Object.freeze(QUESTIONS_DATA);
+    for (const key in QUESTIONS_DATA) {
+      if (Array.isArray(QUESTIONS_DATA[key])) {
+        Object.freeze(QUESTIONS_DATA[key]);
+        QUESTIONS_DATA[key].forEach(q => Object.freeze(q));
+      }
+    }
+  }
+})();

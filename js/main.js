@@ -1271,10 +1271,15 @@ class CodeQuestGame {
 }
 
 // Iniciar al cargar el DOM con soporte para carga inmediata o diferida
+let activeGameSession = null;
 function startCodeQuest() {
-  if (!window.gameInstance) {
-    window.gameInstance = new CodeQuestGame();
-    console.log("🎮 Code Quest iniciado con éxito.");
+  if (!activeGameSession) {
+    activeGameSession = new CodeQuestGame();
+    // Solo exponer en el objeto window si el modo desarrollador está explícitamente activo (?dev=true)
+    if (window.__CODE_QUEST_DEV__) {
+      window.gameInstance = activeGameSession;
+      console.log("🎮 Code Quest iniciado en Modo Desarrollador (?dev=true).");
+    }
   }
 }
 
