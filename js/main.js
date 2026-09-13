@@ -249,7 +249,8 @@ class CodeQuestGame {
       btnContinueGame.addEventListener('click', () => {
         audioManager.playSfx('click');
         if (typeof saveSystem !== 'undefined') {
-          const latest = saveSystem.getLatestSave();
+          const user = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
+          const latest = saveSystem.getLatestSaveForUser(user);
           if (latest) {
             this.loadSavedGame(latest);
             return;
@@ -280,7 +281,7 @@ class CodeQuestGame {
       document.getElementById('ranking-modal').classList.add('hidden');
     });
 
-    // Modal de Nombre de Personaje y Carga de Partida Guardada Existente
+    // Modal de Nombre de Personaje y Carga de Partida Guardada Existente (Aislada por Usuario)
     const nameInput = document.getElementById('player-name-input');
     const promptInfo = document.getElementById('saved-game-prompt-info');
     const detailsEl = document.getElementById('saved-game-details');
@@ -293,7 +294,8 @@ class CodeQuestGame {
         if (promptInfo) promptInfo.classList.add('hidden');
         return;
       }
-      const saved = (typeof saveSystem !== 'undefined') ? saveSystem.getSave(val) : null;
+      const user = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
+      const saved = (typeof saveSystem !== 'undefined') ? saveSystem.getSaveForUser(user, val) : null;
       if (saved) {
         if (promptInfo) promptInfo.classList.remove('hidden');
         if (detailsEl) {
@@ -316,7 +318,8 @@ class CodeQuestGame {
       btnLoadSaved.addEventListener('click', () => {
         audioManager.playSfx('click');
         const val = nameInput.value.trim();
-        const saved = (typeof saveSystem !== 'undefined') ? saveSystem.getSave(val) : null;
+        const user = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
+        const saved = (typeof saveSystem !== 'undefined') ? saveSystem.getSaveForUser(user, val) : null;
         if (saved) {
           document.getElementById('name-prompt-modal').classList.add('hidden');
           this.loadSavedGame(saved);
@@ -741,6 +744,8 @@ class CodeQuestGame {
         if (menuOverlay) menuOverlay.classList.add('hidden');
         if (authOverlay) authOverlay.classList.remove('hidden');
         if (userBadge) userBadge.classList.add('hidden');
+        const btnContinue = document.getElementById('btn-continue-game');
+        if (btnContinue) btnContinue.classList.add('hidden');
       }
     };
 
@@ -981,7 +986,12 @@ class CodeQuestGame {
       btnContinue.classList.add('hidden');
       return;
     }
-    const latest = saveSystem.getLatestSave();
+    const user = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
+    if (!user) {
+      btnContinue.classList.add('hidden');
+      return;
+    }
+    const latest = saveSystem.getLatestSaveForUser(user);
     if (latest && latest.name) {
       const medCount = latest.medals ? latest.medals.length : 0;
       btnContinue.textContent = `▶️ Continuar: ${latest.name} (${medCount}/20 🏅)`;
@@ -999,6 +1009,8 @@ class CodeQuestGame {
       ? this.map.getChestsState() 
       : [];
 
+    const user = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
+
     const stateToSave = {
       name: this.player.name,
       hearts: this.player.hearts,
@@ -1012,10 +1024,12 @@ class CodeQuestGame {
       x: this.player.x,
       y: this.player.y,
       direction: this.player.direction || 'down',
-      chests: chestsState
+      chests: chestsState,
+      userId: user ? user.id : null,
+      userEmail: user ? user.email : null
     };
 
-    saveSystem.saveGame(this.player.name, stateToSave);
+    saveSystem.saveGame(this.player.name, stateToSave, user);
     this.checkAndRefreshContinueButton();
   }
 

@@ -316,6 +316,11 @@ class AuthManager {
     try {
       localStorage.removeItem(this.sessionKey);
     } catch (e) {}
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+      try {
+        firebase.auth().signOut();
+      } catch (e) {}
+    }
   }
 
   // Obtener usuario actualmente conectado
