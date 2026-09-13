@@ -102,14 +102,24 @@ class CodeQuestGame {
       this.finishStoryIntro();
     });
 
-    // Control de Audio (Mute / Unmute)
-    const btnMute = document.getElementById('btn-sound-toggle');
-    if (btnMute) {
-      btnMute.addEventListener('click', () => {
-        const muted = audioManager.toggleMute();
-        btnMute.textContent = muted ? '🔇 Silenciado' : '🔊 Sonido: ON';
-      });
-    }
+    // Control de Audio Universal (Mute / Unmute) para Menú, HUD y Pausa
+    const handleSoundToggle = (e) => {
+      if (e) e.stopPropagation();
+      const isMuted = audioManager.toggleMute();
+      this.updateAllSoundButtons(isMuted);
+    };
+
+    const btnMuteMenu = document.getElementById('btn-sound-toggle');
+    if (btnMuteMenu) btnMuteMenu.addEventListener('click', handleSoundToggle);
+
+    const btnMuteHud = document.getElementById('btn-sound-hud');
+    if (btnMuteHud) btnMuteHud.addEventListener('click', handleSoundToggle);
+
+    const btnMutePause = document.getElementById('btn-pause-sound');
+    if (btnMutePause) btnMutePause.addEventListener('click', handleSoundToggle);
+
+    // Inicializar Banner de Recomendación de Modo Horizontal
+    this.initOrientationBanner();
 
     // Botón de Pausa en pantalla
     const btnPauseHud = document.getElementById('btn-pause-hud');
@@ -308,6 +318,53 @@ class CodeQuestGame {
     } else {
       controls.classList.add('hidden');
     }
+  }
+
+  // Sincronizar todos los botones de sonido de la interfaz
+  updateAllSoundButtons(isMuted) {
+    const text = isMuted ? '🔇 Silenciado' : '🔊 Sonido: ON';
+    const iconOnly = isMuted ? '🔇' : '🔊';
+
+    const btnMenu = document.getElementById('btn-sound-toggle');
+    if (btnMenu) btnMenu.textContent = text;
+
+    const btnPause = document.getElementById('btn-pause-sound');
+    if (btnPause) btnPause.textContent = text;
+
+    const btnHud = document.getElementById('btn-sound-hud');
+    if (btnHud) btnHud.textContent = iconOnly;
+  }
+
+  // Inicializar Banner flotante de sugerencia de rotación horizontal
+  initOrientationBanner() {
+    const banner = document.getElementById('orientation-suggestion-banner');
+    const btnClose = document.getElementById('btn-close-orientation');
+    if (!banner) return;
+
+    let bannerDismissed = false;
+
+    if (btnClose) {
+      btnClose.addEventListener('click', () => {
+        banner.classList.add('hidden');
+        bannerDismissed = true;
+      });
+    }
+
+    const checkOrientation = () => {
+      if (bannerDismissed) return;
+      const isMobileTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 1024);
+      const isPortrait = window.innerHeight > window.innerWidth;
+
+      if (isMobileTouch && isPortrait && this.gameState !== 'menu') {
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+    };
+
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    setTimeout(checkOrientation, 500);
   }
 
   showNamePrompt() {
@@ -985,6 +1042,7 @@ if (document.readyState === 'loading') {
 // Desbloqueo universal de audio con el primer clic o toque en cualquier parte de la pantalla
 const unlockAudioOnGesture = () => {
   if (typeof audioManager !== 'undefined') {
+    if (audioManager.isMuted) return; // Si el usuario ya lo silenció, no forzar música
     if (!audioManager.currentMusic) {
       audioManager.startMusic('menu');
     } else if (audioManager.currentMusic.paused && !audioManager.isMuted) {

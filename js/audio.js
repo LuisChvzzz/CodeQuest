@@ -41,14 +41,17 @@ class SoundEngine {
 
     const track = this.audioElements[key];
     if (track) {
+      track.muted = this.isMuted;
       track.volume = this.isMuted ? 0 : this.volume;
-      const playPromise = track.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.log("Audio espera interacción del usuario:", err.message);
-        });
-      }
       this.currentMusic = track;
+      if (!this.isMuted) {
+        const playPromise = track.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.log("Audio espera interacción del usuario:", err.message);
+          });
+        }
+      }
     }
   }
 
@@ -234,9 +237,35 @@ class SoundEngine {
 
   toggleMute() {
     this.isMuted = !this.isMuted;
+
+    // Pausar o reanudar y silenciar música actual (imprescindible para iOS Safari)
     if (this.currentMusic) {
+      this.currentMusic.muted = this.isMuted;
       this.currentMusic.volume = this.isMuted ? 0 : this.volume;
+      if (this.isMuted) {
+        this.currentMusic.pause();
+      } else {
+        this.currentMusic.play().catch(() => {});
+      }
     }
+
+    // Silenciar todos los elementos HTML5 Audio precargados
+    Object.values(this.audioElements).forEach(audio => {
+      if (audio) {
+        audio.muted = this.isMuted;
+        audio.volume = this.isMuted ? 0 : this.volume;
+      }
+    });
+
+    // Suspender o reanudar el AudioContext sintético
+    if (this.webCtx && this.webCtx.state !== 'closed') {
+      if (this.isMuted) {
+        this.webCtx.suspend().catch(() => {});
+      } else if (this.webCtx.state === 'suspended') {
+        this.webCtx.resume().catch(() => {});
+      }
+    }
+
     return this.isMuted;
   }
 }

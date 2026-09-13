@@ -242,27 +242,28 @@ html, body {
    ========================================================================== */
 
 .toast {
-  position: absolute;
-  bottom: 24px;
+  position: fixed;
+  top: 72px;
+  bottom: auto;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(15, 23, 42, 0.95);
   border: 2px solid var(--gold-primary);
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
-  padding: 12px 24px;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.7);
+  padding: 10px 22px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #fef08a;
-  z-index: 50;
+  z-index: 120;
   text-align: center;
   max-width: 90%;
   pointer-events: none;
-  animation: slideUp 0.25s ease-out;
+  animation: slideDownToast 0.25s ease-out;
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translate(-50%, 15px); }
+@keyframes slideDownToast {
+  from { opacity: 0; transform: translate(-50%, -15px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
@@ -1265,13 +1266,13 @@ html, body {
 
 .mobile-controls-container {
   position: fixed;
-  bottom: 18px;
+  bottom: calc(26px + env(safe-area-inset-bottom, 0px));
   left: 0;
   right: 0;
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding: 0 20px;
+  padding: 0 16px;
   z-index: 150;
   pointer-events: none; /* Dejar pasar toques fuera de los botones */
   user-select: none;
@@ -1283,67 +1284,69 @@ html, body {
   display: none !important;
 }
 
-/* Cruceta Virtual D-Pad */
+/* Cruceta Virtual D-Pad (Estilo Genshin Impact: Vidrio Traslúcido con Brillo Dorado) */
 .virtual-dpad {
   display: flex;
   flex-direction: column;
   align-items: center;
   pointer-events: auto;
-  background: rgba(15, 23, 42, 0.75);
-  padding: 8px;
+  background: rgba(15, 23, 42, 0.35);
+  padding: 6px;
   border-radius: 50%;
-  border: 2px solid rgba(251, 191, 36, 0.4);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(251, 191, 36, 0.15);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  border: 1.5px solid rgba(254, 240, 138, 0.35);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 0 10px rgba(254, 240, 138, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .dpad-middle {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .dpad-center {
-  width: 44px;
-  height: 44px;
-  background: radial-gradient(circle, #334155 0%, #1e293b 100%);
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle, rgba(51, 65, 85, 0.35) 0%, rgba(30, 41, 59, 0.2) 100%);
   border-radius: 8px;
-  border: 1px solid #475569;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .dpad-btn {
-  width: 52px;
-  height: 52px;
-  background: linear-gradient(145deg, #1e293b, #0f172a);
-  border: 2px solid #64748b;
+  width: 50px;
+  height: 50px;
+  background: rgba(30, 41, 59, 0.42);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
   border-radius: 12px;
-  color: #f8fafc;
-  font-size: 20px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 19px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   transition: transform 0.05s ease, background 0.05s ease, border-color 0.05s ease;
 }
 
 .dpad-btn:active, .dpad-btn.active {
-  background: linear-gradient(145deg, #d97706, #b45309);
-  border-color: #fef08a;
+  background: rgba(217, 119, 6, 0.75);
+  border-color: rgba(254, 240, 138, 0.95);
   color: #ffffff;
   transform: scale(0.92);
-  box-shadow: 0 0 12px rgba(251, 191, 36, 0.8);
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.7);
 }
 
-/* Botones de Acción Táctiles (Mochila y Acción [E]) */
+/* Botones de Acción Táctiles (Mochila y Acción [E]) - Traslúcidos */
 .virtual-actions {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   align-items: flex-end;
   pointer-events: auto;
 }
@@ -1359,20 +1362,22 @@ html, body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-  transition: transform 0.08s ease, filter 0.08s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.08s ease, filter 0.08s ease, background 0.15s ease;
 }
 
 .touch-inv-btn {
-  width: 58px;
-  height: 58px;
-  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
-  border: 2px solid var(--gold-primary);
+  width: 56px;
+  height: 56px;
+  background: rgba(30, 41, 59, 0.42);
+  border: 1.5px solid rgba(251, 191, 36, 0.45);
   color: #fef08a;
 }
 
 .touch-inv-btn .touch-btn-icon {
-  font-size: 24px;
+  font-size: 22px;
 }
 
 .touch-inv-btn .touch-btn-sub {
@@ -1382,18 +1387,18 @@ html, body {
 }
 
 .touch-interact-btn {
-  width: 72px;
-  height: 72px;
-  background: linear-gradient(145deg, #b45309 0%, #78350f 100%);
-  border: 3px solid #fef08a;
+  width: 68px;
+  height: 68px;
+  background: rgba(180, 83, 9, 0.48);
+  border: 2px solid rgba(254, 240, 138, 0.6);
   color: #ffffff;
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.3);
 }
 
 .touch-interact-btn.entity-nearby {
   animation: pulse-action 1.2s infinite alternate;
   border-color: #ffffff;
-  background: linear-gradient(145deg, #d97706 0%, #92400e 100%);
+  background: rgba(217, 119, 6, 0.78);
 }
 
 @keyframes pulse-action {
@@ -1402,7 +1407,7 @@ html, body {
 }
 
 .touch-interact-btn .touch-btn-icon {
-  font-size: 28px;
+  font-size: 26px;
 }
 
 .touch-interact-btn .touch-btn-sub {
@@ -1414,6 +1419,64 @@ html, body {
 .touch-action-btn:active, .touch-action-btn.active {
   transform: scale(0.92);
   filter: brightness(1.25);
+}
+
+/* Banner de Orientación Horizontal para Móviles */
+.orientation-banner {
+  position: fixed;
+  top: 58px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  max-width: 92vw;
+  width: 440px;
+  pointer-events: auto;
+  animation: slideDownToast 0.3s ease-out;
+}
+
+.orientation-banner-body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1.5px solid var(--gold-primary);
+  border-radius: 30px;
+  padding: 8px 14px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.orientation-banner-icon {
+  font-size: 18px;
+  animation: rotate-hint 2.5s infinite ease-in-out;
+}
+
+@keyframes rotate-hint {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg); }
+}
+
+.orientation-banner-msg {
+  font-size: 11.5px;
+  color: #fef08a;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.btn-orientation-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 15px;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.btn-orientation-close:hover {
+  color: #ffffff;
 }
 
 /* ==========================================================================
@@ -1527,76 +1590,303 @@ html, body {
     font-size: 11px;
   }
 
-  /* Interfaz de Batalla en Pantallas Móviles */
+  /* Interfaz de Batalla en Pantallas Móviles Verticales (Portrait) */
   .battle-overlay {
-    padding: 8px 8px 14px 8px;
+    padding: 6px 8px;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   .battle-arena {
-    padding: 10px;
-    gap: 10px;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px 8px;
+    gap: 6px;
+    background-size: 16px 16px;
+  }
+
+  .boss-combatant {
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .player-combatant {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    width: 100%;
+    gap: 8px;
   }
 
   .combatant-hud {
-    padding: 8px 10px;
+    min-width: 0;
+    flex: 1;
+    padding: 6px 8px;
   }
 
   .combatant-hud h3 {
-    font-size: 13px;
+    font-size: 12px;
+    margin: 0;
+  }
+
+  .hp-bar-container {
+    height: 10px;
+  }
+
+  .hp-text {
+    font-size: 9.5px;
+  }
+
+  .player-stat-pill {
+    font-size: 8px;
+    padding: 2px 6px;
+  }
+
+  .player-battle-stats-row {
+    margin-top: 3px;
+    gap: 4px;
+  }
+
+  .battle-mini-stat {
+    font-size: 9px;
+    padding: 1px 4px;
   }
 
   .combatant-sprite-wrapper canvas {
-    width: 100px;
-    height: 100px;
+    width: 72px !important;
+    height: 72px !important;
   }
 
   .battle-interface {
-    height: auto;
+    flex: 1;
+    display: flex;
     flex-direction: column;
-    padding: 10px;
-    gap: 10px;
+    justify-content: flex-end;
+    padding: 6px 8px;
+    gap: 6px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .battle-dialog-box {
-    min-height: 48px;
-    padding: 8px 12px;
+    min-height: 38px;
+    padding: 6px 10px;
   }
 
   .battle-dialog-box p {
-    font-size: 12px;
+    font-size: 11px;
+    line-height: 1.3;
   }
 
   .battle-options-box {
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
   }
 
   .btn-combat-action {
-    min-height: 48px;
-    font-size: 12px;
+    min-height: 42px;
+    font-size: 11px;
+    padding: 8px 10px;
   }
 
   .battle-question-box {
-    padding: 10px;
+    padding: 6px 8px;
+    gap: 6px;
   }
 
-  .battle-question-text {
-    font-size: 13px;
+  .question-header .q-badge {
+    font-size: 8px;
+    padding: 2px 6px;
+  }
+
+  .question-header h3 {
+    font-size: 12px;
+    line-height: 1.35;
+    margin: 2px 0 4px 0;
   }
 
   .battle-options-grid {
-    grid-template-columns: 1fr;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2x2 para que quepan las 4 opciones sin tapar al jugador */
+    gap: 6px;
   }
 
-  .battle-option-btn {
-    padding: 12px 10px;
-    font-size: 12px;
-    min-height: 48px;
+  .btn-option {
+    padding: 8px 8px;
+    font-size: 11px;
+    min-height: 40px;
+    line-height: 1.25;
   }
 
   .battle-inv-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   MODO HORIZONTAL / LANDSCAPE (PANTALLAS ANCHAS CON POCA ALTURA <= 600px)
+   Distribución a 2 Columnas: Izquierda (Jefe + Jugador), Derecha (Preguntas)
+   ========================================================================== */
+@media (orientation: landscape) and (max-height: 600px), (max-height: 520px) {
+  .battle-overlay {
+    flex-direction: row !important;
+    padding: 6px 12px !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  /* Columna Izquierda: Arena de Combate (46% del ancho) */
+  .battle-arena {
+    flex: 0 0 46% !important;
+    max-width: 46% !important;
+    height: 100% !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    align-items: stretch !important;
+    padding: 6px 8px !important;
+    gap: 6px !important;
+  }
+
+  .boss-combatant {
+    flex-direction: row-reverse !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .player-combatant {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .combatant-hud {
+    min-width: 0 !important;
+    flex: 1 !important;
+    padding: 4px 8px !important;
+  }
+
+  .combatant-hud h3 {
+    font-size: 11px !important;
+    margin: 0 !important;
+  }
+
+  .name-row {
+    margin-bottom: 2px !important;
+  }
+
+  .hp-bar-container {
+    height: 8px !important;
+  }
+
+  .hp-text {
+    font-size: 9px !important;
+  }
+
+  .player-battle-stats-row {
+    margin-top: 2px !important;
+    gap: 3px !important;
+  }
+
+  .battle-mini-stat {
+    font-size: 8.5px !important;
+    padding: 1px 3px !important;
+  }
+
+  .combatant-sprite-wrapper canvas {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  /* Columna Derecha: Interfaz de Preguntas y Respuestas (52% del ancho) */
+  .battle-interface {
+    flex: 0 0 52% !important;
+    max-width: 52% !important;
+    height: 100% !important;
+    padding: 6px 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .battle-dialog-box {
+    min-height: 28px !important;
+    padding: 4px 8px !important;
+  }
+
+  .battle-dialog-box p {
+    font-size: 10.5px !important;
+    line-height: 1.25 !important;
+  }
+
+  .battle-options-box {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+  }
+
+  .btn-combat-action {
+    min-height: 38px !important;
+    font-size: 11px !important;
+    padding: 6px 8px !important;
+  }
+
+  .battle-question-box {
+    padding: 4px 6px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    flex: 1 !important;
+  }
+
+  .question-header .q-badge {
+    font-size: 7.5px !important;
+    padding: 1px 5px !important;
+  }
+
+  .question-header h3 {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+    margin: 2px 0 !important;
+    max-height: 52px !important;
+    overflow-y: auto !important;
+  }
+
+  .battle-options-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 4px !important;
+  }
+
+  .btn-option {
+    padding: 5px 6px !important;
+    font-size: 10px !important;
+    min-height: 34px !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Reducir altura de modales en horizontal móvil */
+  .modal-box {
+    max-height: 92vh !important;
+    padding: 12px 16px !important;
   }
 }
 

@@ -12,7 +12,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=7">
+  <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
 
@@ -58,11 +58,23 @@
     </div>
 
     <div class="hud-actions">
+      <button id="btn-sound-hud" class="btn-hud btn-sound-hud" title="Silenciar / Activar Sonido">
+        🔊
+      </button>
       <button id="btn-pause-hud" class="btn-hud" title="Pausar Partida (ESC)">
         ⏸️ PAUSA
       </button>
     </div>
   </header>
+
+  <!-- Sugerencia de Rotación Horizontal para Móviles -->
+  <aside id="orientation-suggestion-banner" class="orientation-banner hidden">
+    <div class="orientation-banner-body">
+      <span class="orientation-banner-icon">🔄</span>
+      <span class="orientation-banner-msg">Sugerencia: <strong>Gira tu móvil en horizontal</strong> para la mejor vista de combate.</span>
+      <button id="btn-close-orientation" class="btn-orientation-close" aria-label="Cerrar aviso">✕</button>
+    </div>
+  </aside>
 
   <!-- Controles Táctiles en Pantalla para Dispositivos Móviles (D-Pad y Botones de Acción) -->
   <div id="mobile-controls" class="mobile-controls-container hidden">
@@ -245,6 +257,7 @@
       <h2>⚔️ Juego en Pausa ⚔️</h2>
       <div class="pause-buttons-list">
         <button id="btn-pause-resume" class="btn-retro btn-primary">▶️ Reanudar</button>
+        <button id="btn-pause-sound" class="btn-retro btn-secondary">🔊 Sonido: ON</button>
         <button id="btn-pause-inventory" class="btn-retro btn-secondary">🎒 Inventario (G)</button>
         <button id="btn-pause-rewards" class="btn-retro btn-secondary">🏅 Recompensas</button>
         <button id="btn-pause-restart" class="btn-retro btn-warning">🔄 Reiniciar</button>
@@ -483,18 +496,18 @@
   </div>
 
   <!-- Scripts del Juego con control de versión para evitar caché antiguo -->
-  <script src="js/lib/phaser.min.js?v=7"></script>
-  <script src="js/engine/phaser_game.js?v=7"></script>
-  <script src="js/audio.js?v=7"></script>
-  <script src="js/data/bosses.js?v=7"></script>
-  <script src="js/data/questions.js?v=7"></script>
-  <script src="js/data/lore.js?v=7"></script>
-  <script src="js/engine/renderer.js?v=7"></script>
-  <script src="js/engine/input.js?v=7"></script>
-  <script src="js/engine/camera.js?v=7"></script>
-  <script src="js/engine/map.js?v=7"></script>
-  <script src="js/battle.js?v=7"></script>
-  <script src="js/leaderboard.js?v=7"></script>
-  <script src="js/main.js?v=7"></script>
+  <script src="js/lib/phaser.min.js?v=8"></script>
+  <script src="js/engine/phaser_game.js?v=8"></script>
+  <script src="js/audio.js?v=8"></script>
+  <script src="js/data/bosses.js?v=8"></script>
+  <script src="js/data/questions.js?v=8"></script>
+  <script src="js/data/lore.js?v=8"></script>
+  <script src="js/engine/renderer.js?v=8"></script>
+  <script src="js/engine/input.js?v=8"></script>
+  <script src="js/engine/camera.js?v=8"></script>
+  <script src="js/engine/map.js?v=8"></script>
+  <script src="js/battle.js?v=8"></script>
+  <script src="js/leaderboard.js?v=8"></script>
+  <script src="js/main.js?v=8"></script>
 </body>
 </html>
