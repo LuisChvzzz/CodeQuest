@@ -118,6 +118,12 @@ class AuthManager {
     return { success: true, user: this.sanitizeUser(user) };
   }
 
+  // Obtener cuentas de Google registradas en este dispositivo
+  getGoogleAccounts() {
+    const accounts = this.getAccounts();
+    return accounts.filter(a => a.provider === 'google' || (a.email && a.email.endsWith('@gmail.com')));
+  }
+
   // Inicio de sesión con Cuenta de Google
   loginWithGoogle(emailOrObj, heroName) {
     let email = '';
@@ -129,8 +135,8 @@ class AuthManager {
     }
     heroName = String(heroName || '').trim();
 
-    if (!email || !email.includes('@')) {
-      email = 'jugador.google@gmail.com';
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      return { success: false, message: 'Por favor ingresa un correo de Google válido (ej: usuario@gmail.com).' };
     }
     if (!heroName) {
       heroName = email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -155,7 +161,9 @@ class AuthManager {
       this.saveAccounts(accounts);
     } else {
       user.provider = 'google';
-      if (!user.heroName) user.heroName = heroName;
+      if (heroName && heroName !== 'Google') {
+        user.heroName = heroName;
+      }
       user.name = user.heroName;
       this.saveAccounts(accounts);
     }

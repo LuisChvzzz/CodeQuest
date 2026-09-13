@@ -689,41 +689,52 @@ class CodeQuestGame {
     const userText = document.getElementById('menu-user-text');
     const btnLogout = document.getElementById('btn-logout-session');
 
+    // Botones y campos del formulario de autenticación
     const btnGoogle = document.getElementById('btn-google-login');
     const tabLogin = document.getElementById('tab-auth-login');
     const tabRegister = document.getElementById('tab-auth-register');
     const authForm = document.getElementById('auth-form');
-    const authNameGroup = document.getElementById('auth-name-group');
+    const authUsernameGroup = document.getElementById('auth-username-group');
+    const authUsernameInput = document.getElementById('auth-username-input');
+    const authEmailInput = document.getElementById('auth-email-input');
+    const authPasswordInput = document.getElementById('auth-password-input');
+    const authFeedbackMsg = document.getElementById('auth-feedback-msg');
     const authSubmitBtn = document.getElementById('btn-auth-submit');
     const authGuestBtn = document.getElementById('btn-auth-guest');
-    const authError = document.getElementById('auth-error-msg');
-    const authSuccess = document.getElementById('auth-success-msg');
+
+    // Elementos del Modal de Cuenta Google
+    const googleModal = document.getElementById('google-account-modal');
+    const googleAccountsList = document.getElementById('google-accounts-list');
+    const googleAddCard = document.getElementById('google-add-account-card');
+    const googleCustomForm = document.getElementById('google-custom-form');
+    const googleCustomEmail = document.getElementById('google-custom-email');
+    const googleCustomName = document.getElementById('google-custom-name');
+    const googleFeedbackMsg = document.getElementById('google-feedback-msg');
+    const btnCancelGoogleCustom = document.getElementById('btn-cancel-google-custom');
+    const btnCloseGoogleModal = document.getElementById('btn-close-google-modal');
 
     let currentMode = 'login'; // 'login' | 'register'
 
     const showMessage = (msg, isSuccess = false) => {
-      if (!authSuccess || !authError) return;
-      if (isSuccess) {
-        authSuccess.textContent = msg;
-        authSuccess.classList.remove('hidden');
-        authError.classList.add('hidden');
-      } else {
-        authError.textContent = msg;
-        authError.classList.remove('hidden');
-        authSuccess.classList.add('hidden');
-      }
+      if (!authFeedbackMsg) return;
+      authFeedbackMsg.textContent = msg;
+      authFeedbackMsg.className = isSuccess ? 'auth-msg success' : 'auth-msg error';
+      authFeedbackMsg.classList.remove('hidden');
     };
 
     const clearMessages = () => {
-      if (authError) authError.classList.add('hidden');
-      if (authSuccess) authSuccess.classList.add('hidden');
+      if (authFeedbackMsg) {
+        authFeedbackMsg.classList.add('hidden');
+        authFeedbackMsg.textContent = '';
+      }
     };
 
     const updateSessionUI = (user) => {
       if (user) {
         if (authOverlay) authOverlay.classList.add('hidden');
+        if (googleModal) googleModal.classList.add('hidden');
         if (menuOverlay) menuOverlay.classList.remove('hidden');
-        if (userText) userText.textContent = user.name || user.email || 'Jugador';
+        if (userText) userText.textContent = `Conectado: ${user.heroName || user.name || user.email || 'Héroe'}`;
         if (userBadge) userBadge.classList.remove('hidden');
         this.checkAndRefreshContinueButton();
       } else {
@@ -739,8 +750,8 @@ class CodeQuestGame {
         currentMode = 'login';
         tabLogin.classList.add('active');
         tabRegister.classList.remove('active');
-        if (authNameGroup) authNameGroup.classList.add('hidden');
-        if (authSubmitBtn) authSubmitBtn.textContent = 'Entrar al Reino';
+        if (authUsernameGroup) authUsernameGroup.classList.add('hidden');
+        if (authSubmitBtn) authSubmitBtn.textContent = '⚔️ Entrar al Reino';
         clearMessages();
       });
 
@@ -748,55 +759,171 @@ class CodeQuestGame {
         currentMode = 'register';
         tabRegister.classList.add('active');
         tabLogin.classList.remove('active');
-        if (authNameGroup) authNameGroup.classList.remove('hidden');
-        if (authSubmitBtn) authSubmitBtn.textContent = 'Crear Cuenta y Jugar';
+        if (authUsernameGroup) authUsernameGroup.classList.remove('hidden');
+        if (authSubmitBtn) authSubmitBtn.textContent = '⚔️ Crear Cuenta y Jugar';
         clearMessages();
       });
     }
 
-    // Google Sign-in
-    if (btnGoogle) {
-      btnGoogle.addEventListener('click', async () => {
-        audioManager.playSfx('click');
-        clearMessages();
-        if (typeof authManager === 'undefined') return;
-        const res = await authManager.loginWithGoogle();
-        if (res.success) {
-          showMessage("¡Bienvenido con tu cuenta de Google!", true);
-          setTimeout(() => updateSessionUI(res.user), 400);
-        } else {
-          showMessage(res.message);
-        }
-      });
-    }
-
-    // Formulario Correo y Contraseña
+    // Formulario de Inicio de Sesión / Registro por Correo
     if (authForm) {
-      authForm.addEventListener('submit', async (e) => {
+      authForm.addEventListener('submit', (e) => {
         e.preventDefault();
         clearMessages();
         if (typeof authManager === 'undefined') return;
-        const email = document.getElementById('auth-email').value;
-        const password = document.getElementById('auth-password').value;
+
+        const email = authEmailInput ? authEmailInput.value.trim() : '';
+        const password = authPasswordInput ? authPasswordInput.value.trim() : '';
 
         if (currentMode === 'register') {
-          const name = document.getElementById('auth-name').value;
-          const res = await authManager.register(name, email, password);
+          const heroName = authUsernameInput ? authUsernameInput.value.trim() : '';
+          if (!heroName) {
+            showMessage("Por favor ingresa un nombre para tu héroe.");
+            if (authUsernameInput) authUsernameInput.focus();
+            return;
+          }
+          if (!email) {
+            showMessage("Por favor ingresa tu correo electrónico.");
+            if (authEmailInput) authEmailInput.focus();
+            return;
+          }
+          if (!password) {
+            showMessage("Por favor ingresa una contraseña.");
+            if (authPasswordInput) authPasswordInput.focus();
+            return;
+          }
+
+          const res = authManager.register(heroName, email, password);
           if (res.success) {
             showMessage("¡Cuenta creada exitosamente! Iniciando aventura...", true);
-            setTimeout(() => updateSessionUI(res.user), 500);
+            setTimeout(() => updateSessionUI(res.user), 400);
           } else {
             showMessage(res.message);
           }
         } else {
-          const res = await authManager.login(email, password);
+          if (!email || !password) {
+            showMessage("Por favor ingresa tu correo y contraseña.");
+            return;
+          }
+          const res = authManager.login(email, password);
           if (res.success) {
-            showMessage("¡Sesión iniciada con éxito!", true);
+            showMessage(`¡Sesión iniciada con éxito! Bienvenido, ${res.user.heroName || res.user.name}`, true);
             setTimeout(() => updateSessionUI(res.user), 400);
           } else {
             showMessage(res.message);
           }
         }
+      });
+    }
+
+    // Renderizado del Selector de Cuentas de Google
+    const renderGoogleAccounts = () => {
+      if (!googleAccountsList) return;
+      googleAccountsList.innerHTML = '';
+
+      const accounts = (typeof authManager !== 'undefined') ? authManager.getGoogleAccounts() : [];
+      if (accounts.length === 0) {
+        // Si no hay cuentas previas, desplegar directamente el formulario para ingresar la suya
+        if (googleCustomForm) googleCustomForm.classList.remove('hidden');
+        if (googleAddCard) googleAddCard.classList.add('hidden');
+        if (btnCancelGoogleCustom) btnCancelGoogleCustom.classList.add('hidden');
+        return;
+      }
+
+      // Si hay cuentas previas, listarlas y dar la opción de usar otra
+      if (googleCustomForm) googleCustomForm.classList.add('hidden');
+      if (googleAddCard) googleAddCard.classList.remove('hidden');
+      if (btnCancelGoogleCustom) btnCancelGoogleCustom.classList.remove('hidden');
+
+      accounts.forEach(acc => {
+        const card = document.createElement('div');
+        card.className = 'google-account-card';
+        const initial = (acc.heroName || acc.name || acc.email || 'G').charAt(0).toUpperCase();
+        card.innerHTML = `
+          <div class="google-avatar-circle">${initial}</div>
+          <div class="google-account-meta">
+            <div class="google-account-title">${acc.heroName || acc.name || 'Héroe Google'}</div>
+            <div class="google-account-email">${acc.email}</div>
+          </div>
+        `;
+        card.addEventListener('click', () => {
+          audioManager.playSfx('click');
+          const res = authManager.loginWithGoogle(acc.email, acc.heroName || acc.name);
+          if (res.success) {
+            updateSessionUI(res.user);
+          }
+        });
+        googleAccountsList.appendChild(card);
+      });
+    };
+
+    // Abrir Modal de Google
+    if (btnGoogle) {
+      btnGoogle.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        clearMessages();
+        if (googleFeedbackMsg) {
+          googleFeedbackMsg.classList.add('hidden');
+          googleFeedbackMsg.textContent = '';
+        }
+        renderGoogleAccounts();
+        if (googleModal) googleModal.classList.remove('hidden');
+        if (googleCustomEmail) googleCustomEmail.focus();
+      });
+    }
+
+    // Botón para usar otra cuenta en el modal de Google
+    if (googleAddCard) {
+      googleAddCard.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        if (googleCustomForm) googleCustomForm.classList.remove('hidden');
+        if (googleAddCard) googleAddCard.classList.add('hidden');
+        if (googleCustomEmail) googleCustomEmail.focus();
+      });
+    }
+
+    // Cancelar agregar otra cuenta y volver a la lista
+    if (btnCancelGoogleCustom) {
+      btnCancelGoogleCustom.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        if (googleCustomForm) googleCustomForm.classList.add('hidden');
+        if (googleAddCard) googleAddCard.classList.remove('hidden');
+      });
+    }
+
+    // Formulario de cuenta personalizada de Google
+    if (googleCustomForm) {
+      googleCustomForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = googleCustomEmail ? googleCustomEmail.value.trim() : '';
+        const heroName = googleCustomName ? googleCustomName.value.trim() : '';
+
+        if (!email || !email.includes('@')) {
+          if (googleFeedbackMsg) {
+            googleFeedbackMsg.textContent = 'Por favor ingresa un correo de Google válido (ejemplo: tu_nombre@gmail.com)';
+            googleFeedbackMsg.classList.remove('hidden');
+          }
+          return;
+        }
+
+        const res = authManager.loginWithGoogle(email, heroName);
+        if (res.success) {
+          if (googleFeedbackMsg) googleFeedbackMsg.classList.add('hidden');
+          updateSessionUI(res.user);
+        } else {
+          if (googleFeedbackMsg) {
+            googleFeedbackMsg.textContent = res.message;
+            googleFeedbackMsg.classList.remove('hidden');
+          }
+        }
+      });
+    }
+
+    // Cerrar modal de Google
+    if (btnCloseGoogleModal) {
+      btnCloseGoogleModal.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        if (googleModal) googleModal.classList.add('hidden');
       });
     }
 
