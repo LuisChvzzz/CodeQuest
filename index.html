@@ -104,9 +104,83 @@
     </div>
   </div>
 
+  <!-- 0. Pantalla de Inicio de Sesión y Autenticación (Google / Correo y Contraseña) -->
+  <section id="auth-screen-overlay" class="menu-overlay auth-overlay">
+    <div class="menu-content auth-content">
+      <div class="game-logo-container">
+        <div class="logo-shield">☕ ⚔️ 🛡️</div>
+        <h1 class="game-title">CODE QUEST</h1>
+        <p class="game-subtitle">Acceso al Reino Sagrado de Java</p>
+      </div>
+
+      <div class="auth-card">
+        <h2 class="auth-card-title">Identificación del Héroe</h2>
+        <p class="auth-card-desc">Inicia sesión para guardar y sincronizar tu progreso, medallas y récord en el reino.</p>
+
+        <!-- Botón de Google Sign-In -->
+        <button id="btn-google-login" class="btn-google pulse-hover" type="button">
+          <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Continuar con Google</span>
+        </button>
+
+        <div class="auth-divider">
+          <span>o con tu correo y contraseña</span>
+        </div>
+
+        <!-- Selector de pestañas: Iniciar Sesión / Registrarse -->
+        <div class="auth-tabs">
+          <button id="tab-auth-login" class="auth-tab active" type="button">Iniciar Sesión</button>
+          <button id="tab-auth-register" class="auth-tab" type="button">Crear Cuenta</button>
+        </div>
+
+        <!-- Formulario Correo y Contraseña -->
+        <form id="auth-form" onsubmit="return false;" class="auth-form">
+          <div id="auth-username-group" class="input-group hidden">
+            <label for="auth-username-input">Nombre de tu Héroe:</label>
+            <input type="text" id="auth-username-input" maxlength="18" placeholder="Ej: Gosling, Valquiria..." autocomplete="username">
+          </div>
+
+          <div class="input-group">
+            <label for="auth-email-input">Correo Electrónico:</label>
+            <input type="email" id="auth-email-input" placeholder="correo@ejemplo.com" autocomplete="email" required>
+          </div>
+
+          <div class="input-group">
+            <label for="auth-password-input">Contraseña:</label>
+            <input type="password" id="auth-password-input" placeholder="••••••••" autocomplete="current-password" required>
+          </div>
+
+          <div id="auth-feedback-msg" class="auth-msg hidden"></div>
+
+          <button id="btn-auth-submit" class="btn-retro btn-primary" type="submit" style="width: 100%; margin-top: 10px;">
+            ⚔️ Entrar al Reino
+          </button>
+        </form>
+
+        <div class="auth-footer-actions">
+          <button id="btn-auth-guest" class="btn-link-subtle" type="button">
+            👤 Continuar como Invitado (Sin guardar en la nube)
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- 1. Menú Principal (Requisito 1) -->
-  <section id="main-menu-overlay" class="menu-overlay">
+  <section id="main-menu-overlay" class="menu-overlay hidden">
     <div class="menu-content">
+      <!-- Barra de Usuario Conectado -->
+      <div id="menu-user-badge" class="menu-user-pill">
+        <span class="user-pill-icon">🛡️</span>
+        <span id="menu-user-text">Conectado: Héroe</span>
+        <button id="btn-logout-session" class="btn-pill-logout" title="Cerrar Sesión / Cambiar Cuenta" type="button">🚪 Salir</button>
+      </div>
+
       <div class="game-logo-container">
         <div class="logo-shield">☕ ⚔️ 🛡️</div>
         <h1 class="game-title">CODE QUEST</h1>
@@ -114,20 +188,24 @@
       </div>
 
       <div class="menu-buttons-list">
-        <button id="btn-new-game" class="btn-retro btn-primary pulse-hover">
+        <!-- Botón de Continuar Partida (Se muestra automáticamente si existe partida guardada) -->
+        <button id="btn-continue-game" class="btn-retro btn-warning pulse-hover hidden" type="button">
+          <span class="btn-icon">▶️</span> CONTINUAR AVENTURA
+        </button>
+        <button id="btn-new-game" class="btn-retro btn-primary pulse-hover" type="button">
           <span class="btn-icon">⚔️</span> NUEVA PARTIDA
         </button>
-        <button id="btn-how-to-play" class="btn-retro btn-secondary">
+        <button id="btn-how-to-play" class="btn-retro btn-secondary" type="button">
           <span class="btn-icon">📜</span> CÓMO JUGAR
         </button>
-        <button id="btn-ranking" class="btn-retro btn-secondary">
+        <button id="btn-ranking" class="btn-retro btn-secondary" type="button">
           <span class="btn-icon">🏆</span> RANKING GLOBAL
         </button>
       </div>
 
       <div class="menu-footer">
-        <button id="btn-sound-toggle" class="btn-pill">🔊 Sonido: ON</button>
-        <span class="version-tag">v1.0 Cloud Edition • Mundo RPG 2D</span>
+        <button id="btn-sound-toggle" class="btn-pill" type="button">🔊 Sonido: ON</button>
+        <span class="version-tag">v1.1 Auth & Cloud Edition • Mundo RPG 2D</span>
       </div>
     </div>
   </section>
@@ -137,14 +215,31 @@
     <div class="modal-box parchment-box">
       <div class="box-header">
         <h2>Inscripción del Héroe</h2>
+        <button id="btn-close-name-modal" class="btn-close" type="button">✖</button>
       </div>
       <p class="box-desc">Antes de adentrarte en el Reino de Java, ¿por qué nombre te recordarán las leyendas?</p>
+      
       <div class="input-group">
         <label for="player-name-input">Nombre de tu Personaje:</label>
         <input type="text" id="player-name-input" maxlength="18" placeholder="Ej: Gosling, Valquiria..." autocomplete="off">
       </div>
-      <div class="modal-actions">
-        <button id="btn-start-adventure" class="btn-retro btn-primary">
+
+      <!-- Aviso si ya existe una partida previa para este nombre -->
+      <div id="saved-game-prompt-info" class="saved-game-notice hidden">
+        <div class="saved-notice-badge">💾 Partida Guardada Encontrada</div>
+        <p id="saved-game-notice-details">Hemos encontrado una partida guardada con este nombre.</p>
+        <div class="modal-actions" style="gap: 10px; margin-top: 10px;">
+          <button id="btn-load-existing-game" class="btn-retro btn-warning" type="button">
+            ▶️ Continuar Partida Guardada
+          </button>
+          <button id="btn-overwrite-existing-game" class="btn-retro btn-danger" type="button">
+            🔄 Empezar de Nuevo (Sobrescribir)
+          </button>
+        </div>
+      </div>
+
+      <div id="name-modal-standard-actions" class="modal-actions">
+        <button id="btn-start-adventure" class="btn-retro btn-primary" type="button">
           ¡Comenzar Aventura!
         </button>
       </div>
@@ -562,8 +657,10 @@
   <script src="js/engine/input.js?v=9"></script>
   <script src="js/engine/camera.js?v=9"></script>
   <script src="js/engine/map.js?v=9"></script>
-  <script src="js/battle.js?v=9"></script>
-  <script src="js/leaderboard.js?v=9"></script>
-  <script src="js/main.js?v=9"></script>
+  <script src="js/battle.js?v=10"></script>
+  <script src="js/leaderboard.js?v=10"></script>
+  <script src="js/auth.js?v=10"></script>
+  <script src="js/save_system.js?v=10"></script>
+  <script src="js/main.js?v=10"></script>
 </body>
 </html>

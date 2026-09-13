@@ -364,6 +364,20 @@ class WorldMap {
     }));
   }
 
+  getChestsState() {
+    return (this.chests || []).map(c => ({ id: c.id, opened: !!c.opened }));
+  }
+
+  restoreChests(savedStates) {
+    if (!savedStates || !Array.isArray(savedStates)) return;
+    const stateMap = new Map(savedStates.map(s => [s.id, s.opened]));
+    (this.chests || []).forEach(c => {
+      if (stateMap.has(c.id)) {
+        c.opened = !!stateMap.get(c.id);
+      }
+    });
+  }
+
   // Obtener tiles vecinos para transiciones
   getTileNeighbors(col, row) {
     const getT = (x, y) => (x >= 0 && x < this.width && y >= 0 && y < this.height) ? this.tiles[y][x] : -1;

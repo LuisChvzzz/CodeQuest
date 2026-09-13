@@ -235,11 +235,29 @@ class CodeQuestGame {
     this.battle = new BattleManager(this);
     this.medalsRain = new MedalsRainSystem();
 
+    // Inicializar Sistema de Autenticación (Google / Correo / Invitado)
+    this.initAuthUI();
+
     // Botones del Menú Principal
     document.getElementById('btn-new-game').addEventListener('click', () => {
       audioManager.playSfx('click');
       this.showNamePrompt();
     });
+
+    const btnContinueGame = document.getElementById('btn-continue-game');
+    if (btnContinueGame) {
+      btnContinueGame.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        if (typeof saveSystem !== 'undefined') {
+          const latest = saveSystem.getLatestSave();
+          if (latest) {
+            this.loadSavedGame(latest);
+            return;
+          }
+        }
+        this.showNamePrompt();
+      });
+    }
 
     document.getElementById('btn-how-to-play').addEventListener('click', () => {
       audioManager.playSfx('click');
@@ -262,10 +280,52 @@ class CodeQuestGame {
       document.getElementById('ranking-modal').classList.add('hidden');
     });
 
-    // Modal de Nombre de Personaje (Requisito 2 y 5)
-    document.getElementById('btn-start-adventure').addEventListener('click', () => {
-      const nameInput = document.getElementById('player-name-input');
+    // Modal de Nombre de Personaje y Carga de Partida Guardada Existente
+    const nameInput = document.getElementById('player-name-input');
+    const promptInfo = document.getElementById('saved-game-prompt-info');
+    const detailsEl = document.getElementById('saved-game-details');
+    const btnLoadSaved = document.getElementById('btn-load-existing-game');
+
+    const handleNameCheck = () => {
+      if (!nameInput) return;
       const val = nameInput.value.trim();
+      if (!val) {
+        if (promptInfo) promptInfo.classList.add('hidden');
+        return;
+      }
+      const saved = (typeof saveSystem !== 'undefined') ? saveSystem.getSave(val) : null;
+      if (saved) {
+        if (promptInfo) promptInfo.classList.remove('hidden');
+        if (detailsEl) {
+          const medCount = saved.medals ? saved.medals.length : 0;
+          const score = (saved.totalScore || 0).toLocaleString();
+          const atq = saved.attack || 25;
+          detailsEl.innerHTML = `🛡️ Medallas: <strong>${medCount}/20</strong> | ⚔️ Ataque: <strong>${atq}</strong> | 🏆 Puntaje: <strong>${score} PTS</strong>`;
+        }
+      } else {
+        if (promptInfo) promptInfo.classList.add('hidden');
+      }
+    };
+
+    if (nameInput) {
+      nameInput.addEventListener('input', handleNameCheck);
+      nameInput.addEventListener('change', handleNameCheck);
+    }
+
+    if (btnLoadSaved) {
+      btnLoadSaved.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        const val = nameInput.value.trim();
+        const saved = (typeof saveSystem !== 'undefined') ? saveSystem.getSave(val) : null;
+        if (saved) {
+          document.getElementById('name-prompt-modal').classList.add('hidden');
+          this.loadSavedGame(saved);
+        }
+      });
+    }
+
+    document.getElementById('btn-start-adventure').addEventListener('click', () => {
+      const val = nameInput ? nameInput.value.trim() : "";
       this.player.name = val || "Caballero Java";
       audioManager.playSfx('click');
       document.getElementById('name-prompt-modal').classList.add('hidden');
@@ -622,9 +682,259 @@ class CodeQuestGame {
     setTimeout(checkOrientation, 500);
   }
 
+  initAuthUI() {
+    const authOverlay = document.getElementById('auth-screen-overlay');
+    const menuOverlay = document.getElementById('main-menu-overlay');
+    const userBadge = document.getElementById('menu-user-badge');
+    const userText = document.getElementById('menu-user-text');
+    const btnLogout = document.getElementById('btn-logout-session');
+
+    const btnGoogle = document.getElementById('btn-google-login');
+    const tabLogin = document.getElementById('tab-auth-login');
+    const tabRegister = document.getElementById('tab-auth-register');
+    const authForm = document.getElementById('auth-form');
+    const authNameGroup = document.getElementById('auth-name-group');
+    const authSubmitBtn = document.getElementById('btn-auth-submit');
+    const authGuestBtn = document.getElementById('btn-auth-guest');
+    const authError = document.getElementById('auth-error-msg');
+    const authSuccess = document.getElementById('auth-success-msg');
+
+    let currentMode = 'login'; // 'login' | 'register'
+
+    const showMessage = (msg, isSuccess = false) => {
+      if (!authSuccess || !authError) return;
+      if (isSuccess) {
+        authSuccess.textContent = msg;
+        authSuccess.classList.remove('hidden');
+        authError.classList.add('hidden');
+      } else {
+        authError.textContent = msg;
+        authError.classList.remove('hidden');
+        authSuccess.classList.add('hidden');
+      }
+    };
+
+    const clearMessages = () => {
+      if (authError) authError.classList.add('hidden');
+      if (authSuccess) authSuccess.classList.add('hidden');
+    };
+
+    const updateSessionUI = (user) => {
+      if (user) {
+        if (authOverlay) authOverlay.classList.add('hidden');
+        if (menuOverlay) menuOverlay.classList.remove('hidden');
+        if (userText) userText.textContent = user.name || user.email || 'Jugador';
+        if (userBadge) userBadge.classList.remove('hidden');
+        this.checkAndRefreshContinueButton();
+      } else {
+        if (menuOverlay) menuOverlay.classList.add('hidden');
+        if (authOverlay) authOverlay.classList.remove('hidden');
+        if (userBadge) userBadge.classList.add('hidden');
+      }
+    };
+
+    // Pestañas Login / Registro
+    if (tabLogin && tabRegister) {
+      tabLogin.addEventListener('click', () => {
+        currentMode = 'login';
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
+        if (authNameGroup) authNameGroup.classList.add('hidden');
+        if (authSubmitBtn) authSubmitBtn.textContent = 'Entrar al Reino';
+        clearMessages();
+      });
+
+      tabRegister.addEventListener('click', () => {
+        currentMode = 'register';
+        tabRegister.classList.add('active');
+        tabLogin.classList.remove('active');
+        if (authNameGroup) authNameGroup.classList.remove('hidden');
+        if (authSubmitBtn) authSubmitBtn.textContent = 'Crear Cuenta y Jugar';
+        clearMessages();
+      });
+    }
+
+    // Google Sign-in
+    if (btnGoogle) {
+      btnGoogle.addEventListener('click', async () => {
+        audioManager.playSfx('click');
+        clearMessages();
+        if (typeof authManager === 'undefined') return;
+        const res = await authManager.loginWithGoogle();
+        if (res.success) {
+          showMessage("¡Bienvenido con tu cuenta de Google!", true);
+          setTimeout(() => updateSessionUI(res.user), 400);
+        } else {
+          showMessage(res.message);
+        }
+      });
+    }
+
+    // Formulario Correo y Contraseña
+    if (authForm) {
+      authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearMessages();
+        if (typeof authManager === 'undefined') return;
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+
+        if (currentMode === 'register') {
+          const name = document.getElementById('auth-name').value;
+          const res = await authManager.register(name, email, password);
+          if (res.success) {
+            showMessage("¡Cuenta creada exitosamente! Iniciando aventura...", true);
+            setTimeout(() => updateSessionUI(res.user), 500);
+          } else {
+            showMessage(res.message);
+          }
+        } else {
+          const res = await authManager.login(email, password);
+          if (res.success) {
+            showMessage("¡Sesión iniciada con éxito!", true);
+            setTimeout(() => updateSessionUI(res.user), 400);
+          } else {
+            showMessage(res.message);
+          }
+        }
+      });
+    }
+
+    // Modo Invitado
+    if (authGuestBtn) {
+      authGuestBtn.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        if (typeof authManager === 'undefined') return;
+        const user = authManager.loginAsGuest();
+        updateSessionUI(user);
+      });
+    }
+
+    // Botón Cerrar Sesión
+    if (btnLogout) {
+      btnLogout.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        if (typeof authManager === 'undefined') return;
+        authManager.logout();
+        updateSessionUI(null);
+      });
+    }
+
+    // Comprobar sesión actual existente al iniciar
+    if (typeof authManager !== 'undefined') {
+      const existingUser = authManager.getCurrentUser();
+      updateSessionUI(existingUser);
+    }
+  }
+
+  checkAndRefreshContinueButton() {
+    const btnContinue = document.getElementById('btn-continue-game');
+    if (!btnContinue) return;
+    if (typeof saveSystem === 'undefined') {
+      btnContinue.classList.add('hidden');
+      return;
+    }
+    const latest = saveSystem.getLatestSave();
+    if (latest && latest.name) {
+      const medCount = latest.medals ? latest.medals.length : 0;
+      btnContinue.textContent = `▶️ Continuar: ${latest.name} (${medCount}/20 🏅)`;
+      btnContinue.classList.remove('hidden');
+    } else {
+      btnContinue.classList.add('hidden');
+    }
+  }
+
+  saveGameProgress() {
+    if (!this.player || !this.player.name) return;
+    if (typeof saveSystem === 'undefined') return;
+
+    const chestsState = (this.map && typeof this.map.getChestsState === 'function') 
+      ? this.map.getChestsState() 
+      : [];
+
+    const stateToSave = {
+      name: this.player.name,
+      hearts: this.player.hearts,
+      maxHearts: this.player.maxHearts,
+      attack: this.player.attack,
+      potions: this.player.potions,
+      keys: this.player.keys,
+      medals: this.player.medals || [],
+      defeatedBosses: Array.from(this.player.defeatedBosses || []),
+      totalScore: this.player.totalScore || 0,
+      x: this.player.x,
+      y: this.player.y,
+      direction: this.player.direction || 'down',
+      chests: chestsState
+    };
+
+    saveSystem.saveGame(this.player.name, stateToSave);
+    this.checkAndRefreshContinueButton();
+  }
+
+  loadSavedGame(saveData) {
+    if (!saveData) return;
+
+    // 1. Restaurar datos del jugador
+    this.player.name = saveData.name || "Caballero Java";
+    this.player.hearts = (saveData.hearts !== undefined) ? saveData.hearts : 5;
+    this.player.maxHearts = (saveData.maxHearts !== undefined) ? saveData.maxHearts : 5;
+    this.player.attack = (saveData.attack !== undefined) ? saveData.attack : 25;
+    this.player.potions = (saveData.potions !== undefined) ? saveData.potions : 2;
+    this.player.keys = (saveData.keys !== undefined) ? saveData.keys : 20;
+    this.player.medals = Array.isArray(saveData.medals) ? [...saveData.medals] : [];
+    this.player.defeatedBosses = new Set(Array.isArray(saveData.defeatedBosses) ? saveData.defeatedBosses : []);
+    this.player.totalScore = saveData.totalScore ?? 0;
+
+    // 2. Restaurar posición en mapa
+    this.player.x = (saveData.x !== undefined) ? saveData.x : 31 * 32;
+    this.player.y = (saveData.y !== undefined) ? saveData.y : 32 * 32;
+    this.player.direction = saveData.direction || 'down';
+
+    // 3. Restaurar estado de cofres del mapa
+    if (this.map && saveData.chests && typeof this.map.restoreChests === 'function') {
+      this.map.restoreChests(saveData.chests);
+    }
+
+    // 4. Centrar cámara
+    if (this.camera) {
+      this.camera.follow(this.player.x + 12, this.player.y + 14);
+    }
+
+    // 5. Actualizar HUD
+    this.updateHud();
+
+    // 6. Detener músicas previas
+    audioManager.stopSfx('gameover');
+    audioManager.stopSfx('pause');
+    audioManager.stopMusic();
+
+    // 7. Cerrar modales y menú
+    document.getElementById('main-menu-overlay').classList.add('hidden');
+    document.getElementById('name-prompt-modal').classList.add('hidden');
+    document.getElementById('story-lore-modal').classList.add('hidden');
+    document.getElementById('game-hud').classList.remove('hidden');
+
+    this.gameState = 'playing';
+    this.updateMobileControlsVisibility();
+    audioManager.startMusic('explore');
+
+    const medalsCount = this.player.medals.length;
+    this.showToast(`¡Partida cargada! Bienvenido de nuevo, ${this.player.name} (${medalsCount}/20 medallas, ${this.player.totalScore.toLocaleString()} PTS).`);
+  }
+
   showNamePrompt() {
+    const user = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
+    const nameInput = document.getElementById('player-name-input');
+    if (nameInput && user && user.name && user.name !== 'Invitado') {
+      nameInput.value = user.name;
+    }
     document.getElementById('name-prompt-modal').classList.remove('hidden');
-    document.getElementById('player-name-input').focus();
+    if (nameInput) {
+      nameInput.focus();
+      // Disparar chequeo de partida guardada para el nombre actual
+      nameInput.dispatchEvent(new Event('input'));
+    }
   }
 
   // Instrucciones iniciales y Prólogo Narrativo de Bytevalia con personalización
@@ -884,6 +1194,7 @@ class CodeQuestGame {
     this.gameState = 'playing';
     this.updateMobileControlsVisibility();
     audioManager.startMusic('explore');
+    this.saveGameProgress();
     this.showToast(`¡Has reaparecido en la Plaza Central! Tu progreso, medallas y espadas están a salvo.`);
   }
 
@@ -906,6 +1217,26 @@ class CodeQuestGame {
     audioManager.stopSfx('gameover'); // Asegurar detención de audio de game over
     audioManager.stopMusic();
     if (this.medalsRain) this.medalsRain.stop();
+
+    // Guardar progreso y registrar estadísticas en ranking si hay avance
+    if (this.player && this.player.name) {
+      const hasProgress = (this.player.totalScore > 0) || 
+                          (this.player.medals && this.player.medals.length > 0) || 
+                          (this.player.defeatedBosses && this.player.defeatedBosses.size > 0);
+      if (hasProgress) {
+        this.saveGameProgress();
+        if (typeof cloudRanking !== 'undefined' && typeof cloudRanking.registerOrUpdateProgress === 'function') {
+          const isComplete = this.player.defeatedBosses && this.player.defeatedBosses.size >= 20;
+          cloudRanking.registerOrUpdateProgress(
+            this.player.name,
+            this.player.totalScore,
+            this.player.medals ? this.player.medals.length : 0,
+            isComplete
+          );
+        }
+      }
+    }
+
     this.gameState = 'menu';
     this.updateMobileControlsVisibility();
     document.getElementById('game-hud').classList.add('hidden');
@@ -917,6 +1248,8 @@ class CodeQuestGame {
     document.getElementById('rewards-modal').classList.add('hidden');
     document.getElementById('sign-modal').classList.add('hidden');
     document.getElementById('story-lore-modal').classList.add('hidden');
+
+    this.checkAndRefreshContinueButton();
     document.getElementById('main-menu-overlay').classList.remove('hidden');
     audioManager.startMusic('menu');
   }
@@ -1047,6 +1380,7 @@ class CodeQuestGame {
 
     modal.classList.remove('hidden');
     this.updateMobileControlsVisibility();
+    this.saveGameProgress();
   }
 
   // Interacción del jugador con objetos y personajes
@@ -1083,6 +1417,7 @@ class CodeQuestGame {
       }
 
       this.updateHud();
+      this.saveGameProgress();
 
     } else if (type === 'boss') {
       // Desafiar Jefe (Requiere 1 llave por jefe según Requisito 4)

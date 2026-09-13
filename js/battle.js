@@ -240,6 +240,9 @@ class BattleManager {
 
     // Notificación clara: Los ítems usados (llave y pociones) se han consumido y no se recuperan
     this.game.showToast("¡Te has retirado de la batalla! Los ítems consumidos (llaves y pociones) no se pueden recuperar.");
+    if (this.game && typeof this.game.saveGameProgress === 'function') {
+      this.game.saveGameProgress();
+    }
   }
 
   updateBossHpBar() {
@@ -543,6 +546,10 @@ class BattleManager {
     this.game.player.defeatedBosses.add(this.activeBoss.id);
     this.game.player.totalScore += earnedPoints;
     this.game.updateHud();
+
+    if (this.game && typeof this.game.saveGameProgress === 'function') {
+      this.game.saveGameProgress();
+    }
 
     // Mostrar Modal de Victoria sobre el jefe
     this.showVictoryModal(medalObj);

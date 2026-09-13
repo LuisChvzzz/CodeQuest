@@ -108,36 +108,79 @@ class LeaderboardSystem {
     }
   }
 
-  // Registrar partida finalizada (En la nube y en almacenamiento local)
-  registerCompletedGame(playerName, totalScore, medalsCount) {
+  // Obtener título honorífico en base a las medallas obtenidas
+  getTitleForMedals(medalsCount, completed = false) {
+    if (completed || medalsCount >= 20) return "Gran Maestro Java";
+    if (medalsCount >= 15) return "Archimago de Java";
+    if (medalsCount >= 10) return "Caballero del Objeto";
+    if (medalsCount >= 5) return "Paladín de la Sintaxis";
+    if (medalsCount >= 1) return "Aprendiz de Java";
+    return "Aventurero Novato";
+  }
+
+  // Registrar o actualizar progreso del jugador en el Ranking Global
+  // (Permite registrar puntuación aún si no ha completado los 20 niveles y se sale al menú principal)
+  registerOrUpdateProgress(playerName, totalScore, medalsCount, completed = false) {
+    playerName = String(playerName || "Héroe Anónimo").trim();
+    totalScore = Number(totalScore) || 0;
+    medalsCount = Number(medalsCount) || 0;
+
     const scores = this.getScores();
+    const cleanLower = playerName.toLowerCase();
+    const existingIndex = scores.findIndex(s => s.name && s.name.trim().toLowerCase() === cleanLower);
 
-    const newRecord = {
-      name: playerName || "Héroe Anónimo",
-      score: totalScore,
-      medals: medalsCount,
-      title: "Gran Maestro Java",
-      date: new Date().toLocaleDateString('es-ES'),
-      completed: true
-    };
+    const title = this.getTitleForMedals(medalsCount, completed);
+    const date = new Date().toLocaleDateString('es-ES');
 
-    scores.push(newRecord);
+    let targetRecord;
+
+    if (existingIndex >= 0) {
+      // Si el jugador ya existe en la tabla, actualizamos si su nuevo puntaje es superior o igual
+      targetRecord = scores[existingIndex];
+      if (totalScore >= targetRecord.score) {
+        targetRecord.score = totalScore;
+        targetRecord.medals = Math.max(targetRecord.medals, medalsCount);
+        targetRecord.title = title;
+        targetRecord.date = date;
+        targetRecord.completed = targetRecord.completed || completed;
+      } else {
+        // Conservar mejor puntaje previo pero actualizar medallas si consiguió más
+        targetRecord.medals = Math.max(targetRecord.medals, medalsCount);
+        if (targetRecord.medals > medalsCount) {
+          targetRecord.title = this.getTitleForMedals(targetRecord.medals, targetRecord.completed);
+        }
+      }
+    } else {
+      // Nuevo participante en el ranking
+      targetRecord = {
+        name: playerName,
+        score: totalScore,
+        medals: medalsCount,
+        title,
+        date,
+        completed: !!completed
+      };
+      scores.push(targetRecord);
+    }
+
     scores.sort((a, b) => b.score - a.score);
 
-    // Guardar los mejores 100 localmente de inmediato
+    // Guardar los mejores 100 localmente
     const topScores = scores.slice(0, 100);
     localStorage.setItem(this.storageKey, JSON.stringify(topScores));
 
     // Notificar actualización en tiempo real entre pestañas
     if (this.broadcast) {
-      this.broadcast.postMessage({ type: 'RANKING_UPDATED' });
+      try {
+        this.broadcast.postMessage({ type: 'RANKING_UPDATED' });
+      } catch (e) {}
     }
 
-    // Enviar a la nube global si está disponible (Vercel Serverless / API)
+    // Enviar a la nube si está disponible
     fetch('/api/leaderboard', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newRecord)
+      body: JSON.stringify(targetRecord)
     }).then(res => {
       if (res.ok) return res.json();
     }).then(data => {
@@ -145,12 +188,14 @@ class LeaderboardSystem {
         localStorage.setItem(this.storageKey, JSON.stringify(data.ranking));
         this.refreshUI();
       }
-    }).catch(err => {
-      // Guardado local garantizado
-      console.log("Récord guardado localmente (Offline fallback).");
-    });
+    }).catch(() => {});
 
-    return newRecord;
+    return targetRecord;
+  }
+
+  // Registrar partida finalizada (Tras derrotar al jefe 20)
+  registerCompletedGame(playerName, totalScore, medalsCount) {
+    return this.registerOrUpdateProgress(playerName, totalScore, medalsCount, true);
   }
 
   // Renderizar la tabla de clasificación en el contenedor del modal
@@ -203,6 +248,7 @@ class LeaderboardSystem {
   }
 
   refreshUI() {
+    if (typeof document === 'undefined') return;
     this.renderLeaderboard('ranking-table-body');
   }
 }
