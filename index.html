@@ -12,7 +12,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
 
@@ -63,6 +63,32 @@
       </button>
     </div>
   </header>
+
+  <!-- Controles Táctiles en Pantalla para Dispositivos Móviles (D-Pad y Botones de Acción) -->
+  <div id="mobile-controls" class="mobile-controls-container hidden">
+    <!-- Cruceta Virtual D-Pad -->
+    <div class="virtual-dpad" id="virtual-dpad-box">
+      <button id="dpad-up" class="dpad-btn dpad-up" aria-label="Arriba">▲</button>
+      <div class="dpad-middle">
+        <button id="dpad-left" class="dpad-btn dpad-left" aria-label="Izquierda">◀</button>
+        <div class="dpad-center"></div>
+        <button id="dpad-right" class="dpad-btn dpad-right" aria-label="Derecha">▶</button>
+      </div>
+      <button id="dpad-down" class="dpad-btn dpad-down" aria-label="Abajo">▼</button>
+    </div>
+
+    <!-- Botones de Acción Táctiles -->
+    <div class="virtual-actions">
+      <button id="btn-touch-inventory" class="touch-action-btn touch-inv-btn" aria-label="Mochila / Inventario">
+        <span class="touch-btn-icon">🎒</span>
+        <span class="touch-btn-sub">Mochila</span>
+      </button>
+      <button id="btn-touch-action" class="touch-action-btn touch-interact-btn" aria-label="Interactuar / Acción [E]">
+        <span class="touch-btn-icon">⚔️</span>
+        <span class="touch-btn-sub">[E] Acción</span>
+      </button>
+    </div>
+  </div>
 
   <!-- 1. Menú Principal (Requisito 1) -->
   <section id="main-menu-overlay" class="menu-overlay">
@@ -457,18 +483,18 @@
   </div>
 
   <!-- Scripts del Juego con control de versión para evitar caché antiguo -->
-  <script src="js/lib/phaser.min.js?v=6"></script>
-  <script src="js/engine/phaser_game.js?v=6"></script>
-  <script src="js/audio.js?v=6"></script>
-  <script src="js/data/bosses.js?v=6"></script>
-  <script src="js/data/questions.js?v=6"></script>
-  <script src="js/data/lore.js?v=6"></script>
-  <script src="js/engine/renderer.js?v=6"></script>
-  <script src="js/engine/input.js?v=6"></script>
-  <script src="js/engine/camera.js?v=6"></script>
-  <script src="js/engine/map.js?v=6"></script>
-  <script src="js/battle.js?v=6"></script>
-  <script src="js/leaderboard.js?v=6"></script>
-  <script src="js/main.js?v=6"></script>
+  <script src="js/lib/phaser.min.js?v=7"></script>
+  <script src="js/engine/phaser_game.js?v=7"></script>
+  <script src="js/audio.js?v=7"></script>
+  <script src="js/data/bosses.js?v=7"></script>
+  <script src="js/data/questions.js?v=7"></script>
+  <script src="js/data/lore.js?v=7"></script>
+  <script src="js/engine/renderer.js?v=7"></script>
+  <script src="js/engine/input.js?v=7"></script>
+  <script src="js/engine/camera.js?v=7"></script>
+  <script src="js/engine/map.js?v=7"></script>
+  <script src="js/battle.js?v=7"></script>
+  <script src="js/leaderboard.js?v=7"></script>
+  <script src="js/main.js?v=7"></script>
 </body>
 </html>

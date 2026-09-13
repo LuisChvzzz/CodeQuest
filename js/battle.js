@@ -96,6 +96,11 @@ class BattleManager {
 
     // Desplegar pantalla
     this.overlay.classList.remove('hidden');
+
+    // Ocultar controles táctiles durante el combate para no obstruir preguntas
+    if (this.game.updateMobileControlsVisibility) {
+      this.game.updateMobileControlsVisibility();
+    }
   }
 
   updateBossHpBar() {
@@ -408,12 +413,18 @@ class BattleManager {
     this.overlay.classList.add('hidden');
     this.activeBoss = null;
     this.isAnswering = false;
+    if (this.game.updateMobileControlsVisibility) {
+      this.game.updateMobileControlsVisibility();
+    }
   }
 
   closeBattle() {
     this.closeBattleQuietly();
     audioManager.startMusic('explore');
     this.game.gameState = 'playing';
+    if (this.game.updateMobileControlsVisibility) {
+      this.game.updateMobileControlsVisibility();
+    }
   }
 
   startCombatAnimationLoop() {

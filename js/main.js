@@ -193,23 +193,121 @@ class CodeQuestGame {
     document.getElementById('btn-close-rewards').addEventListener('click', () => {
       audioManager.playSfx('click');
       document.getElementById('rewards-modal').classList.add('hidden');
+      this.updateMobileControlsVisibility();
     });
 
     // Cerrar Letrero de Dato Curioso
     document.getElementById('btn-close-sign').addEventListener('click', () => {
       audioManager.playSfx('click');
       document.getElementById('sign-modal').classList.add('hidden');
+      this.updateMobileControlsVisibility();
     });
 
     // Pantalla de Gran Victoria (Fin del juego tras derrotar al jefe 20)
-    document.getElementById('btn-finish-game').addEventListener('click', () => {
-      audioManager.playSfx('click');
-      document.getElementById('game-complete-modal').classList.add('hidden');
-      this.returnToMainMenu();
-    });
+    const btnFinish = document.getElementById('btn-finish-game');
+    if (btnFinish) {
+      btnFinish.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        document.getElementById('game-complete-modal').classList.add('hidden');
+        this.returnToMainMenu();
+      });
+    }
+
+    // Inicializar controles táctiles móviles
+    this.initMobileControls();
 
     // Iniciar música del menú
     audioManager.startMusic('menu');
+  }
+
+  // Configuración de Controles Táctiles en Pantalla para Dispositivos Móviles
+  initMobileControls() {
+    this.isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 1024);
+
+    const dpadButtons = [
+      { id: 'dpad-up', dir: 'up' },
+      { id: 'dpad-down', dir: 'down' },
+      { id: 'dpad-left', dir: 'left' },
+      { id: 'dpad-right', dir: 'right' }
+    ];
+
+    dpadButtons.forEach(({ id, dir }) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+
+      const press = (e) => {
+        if (e && e.cancelable) e.preventDefault();
+        this.input.touchDirs[dir] = true;
+        btn.classList.add('active');
+        if (navigator.vibrate) navigator.vibrate(10);
+      };
+
+      const release = (e) => {
+        if (e && e.cancelable) e.preventDefault();
+        this.input.touchDirs[dir] = false;
+        btn.classList.remove('active');
+      };
+
+      btn.addEventListener('touchstart', press, { passive: false });
+      btn.addEventListener('touchend', release, { passive: false });
+      btn.addEventListener('touchcancel', release, { passive: false });
+      btn.addEventListener('mousedown', press);
+      btn.addEventListener('mouseup', release);
+      btn.addEventListener('mouseleave', release);
+    });
+
+    // Botón de Acción Táctil ([E] / Interactuar / Batalla / Abrir Cofre)
+    const btnAction = document.getElementById('btn-touch-action');
+    if (btnAction) {
+      const doAction = (e) => {
+        if (e && e.cancelable) e.preventDefault();
+        this.input.touchInteract = true;
+        btnAction.classList.add('active');
+        setTimeout(() => btnAction.classList.remove('active'), 120);
+        if (navigator.vibrate) navigator.vibrate(15);
+      };
+      btnAction.addEventListener('touchstart', doAction, { passive: false });
+      btnAction.addEventListener('click', doAction);
+    }
+
+    // Botón de Mochila / Inventario Táctil ([G])
+    const btnInv = document.getElementById('btn-touch-inventory');
+    if (btnInv) {
+      const toggleInv = (e) => {
+        if (e && e.cancelable) e.preventDefault();
+        const modal = document.getElementById('inventory-modal');
+        if (modal.classList.contains('hidden')) {
+          this.showInventoryModal();
+        } else {
+          this.hideInventoryModal();
+        }
+        if (navigator.vibrate) navigator.vibrate(12);
+      };
+      btnInv.addEventListener('touchstart', toggleInv, { passive: false });
+      btnInv.addEventListener('click', toggleInv);
+    }
+
+    // Detección automática al redimensionar o rotar el dispositivo
+    window.addEventListener('resize', () => {
+      this.isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 1024);
+      this.updateMobileControlsVisibility();
+    });
+  }
+
+  updateMobileControlsVisibility() {
+    const controls = document.getElementById('mobile-controls');
+    if (!controls) return;
+
+    // Verificar si algún modal u overlay está actualmente abierto
+    const isModalOpen = (document.querySelectorAll('.modal-backdrop:not(.hidden)').length > 0) ||
+      !document.getElementById('battle-screen').classList.contains('hidden') ||
+      !document.getElementById('main-menu-overlay').classList.contains('hidden');
+
+    if (this.gameState === 'playing' && this.isTouchDevice && !isModalOpen) {
+      controls.classList.remove('hidden');
+    } else {
+      controls.classList.add('hidden');
+    }
   }
 
   showNamePrompt() {
@@ -228,8 +326,8 @@ class CodeQuestGame {
         html: `
           <p class="story-p">¡Atención, noble paladín <span class="story-highlight">${pName}</span>! Antes de adentrarte en los confines de Bytevalia, debes adiestrar tus reflejos:</p>
           <ul class="story-list">
-            <li><strong>🚶 Movimiento:</strong> Usa las teclas <strong>[W, A, S, D]</strong> o las <strong>Flechas del teclado</strong> para desplazarte libremente por los senderos y praderas.</li>
-            <li><strong>✨ Interacción:</strong> Presiona <strong>[E]</strong>, <strong>[Espacio]</strong> o <strong>[Enter]</strong> frente a cofres del tesoro, letreros de sabiduría y jefes guardianes.</li>
+            <li><strong>🚶 Movimiento:</strong> Usa las teclas <strong>[W, A, S, D]</strong>, las <strong>Flechas del teclado</strong> (o la <strong>cruceta táctil en pantalla</strong> en celulares) para desplazarte libremente por los senderos y praderas.</li>
+            <li><strong>✨ Interacción:</strong> Presiona <strong>[E]</strong>, <strong>[Espacio]</strong> o el <strong>botón de Acción</strong> táctil frente a cofres del tesoro, letreros de sabiduría y jefes guardianes.</li>
             <li><strong>🛡️ Senderos Seguros:</strong> Los caminos empedrados están delimitados por murallas de roca natural que te guían hacia cada uno de los 20 Jefes.</li>
           </ul>
         `
@@ -241,7 +339,7 @@ class CodeQuestGame {
         html: `
           <p class="story-p">Tu supervivencia en este reino exige una gestión impecable de tus recursos, <span class="story-highlight">${pName}</span>:</p>
           <ul class="story-list">
-            <li><strong>🎒 Inventario en Todo Momento [G]:</strong> Puedes consultar tu inventario cuando quieras presionando la tecla <strong>[G]</strong> o desde el menú de pausa <strong>[Esc]</strong>.</li>
+            <li><strong>🎒 Inventario en Todo Momento [G]:</strong> Puedes consultar tu inventario cuando quieras presionando la tecla <strong>[G]</strong>, el <strong>botón de Mochila</strong> en pantalla, o desde la pausa <strong>[Esc]</strong>.</li>
             <li><strong>🧪 Pociones Curativas:</strong> Si pierdes corazones, abre tu inventario y consume una Poción de Vida para restaurar tu salud. ¡Encontrarás pociones ocultas en cofres dispersos por todo el mapa!</li>
             <li><strong>🔑 Llaves de Jefes:</strong> Cada uno de los 20 Jefes requiere <strong>1 Llave</strong> para abrir las puertas de su arena sagrada. Saquea cofres antes de retarlos.</li>
           </ul>
@@ -356,10 +454,12 @@ class CodeQuestGame {
     document.getElementById('inv-potions-count').textContent = this.player.potions;
 
     modal.classList.remove('hidden');
+    this.updateMobileControlsVisibility();
   }
 
   hideInventoryModal() {
     document.getElementById('inventory-modal').classList.add('hidden');
+    this.updateMobileControlsVisibility();
   }
 
   usePotionFromInventory() {
@@ -413,12 +513,14 @@ class CodeQuestGame {
     document.getElementById('game-hud').classList.remove('hidden');
 
     this.gameState = 'playing';
+    this.updateMobileControlsVisibility();
     audioManager.startMusic('explore');
     this.showToast(`¡Bienvenido a Code Quest, ${this.player.name}! Explora el reino y domina Java.`);
   }
 
   pauseGame() {
     this.gameState = 'paused';
+    this.updateMobileControlsVisibility();
     audioManager.playSfx('pause'); // assets/audio/pause.mp3
     document.getElementById('pause-modal').classList.remove('hidden');
   }
@@ -427,6 +529,7 @@ class CodeQuestGame {
     audioManager.stopSfx('pause'); // Detener sonido de pausa inmediatamente al cerrar menú
     document.getElementById('pause-modal').classList.add('hidden');
     this.gameState = 'playing';
+    this.updateMobileControlsVisibility();
   }
 
   returnToMainMenu() {
@@ -434,6 +537,7 @@ class CodeQuestGame {
     audioManager.stopSfx('gameover'); // Asegurar detención de audio de game over
     audioManager.stopMusic();
     this.gameState = 'menu';
+    this.updateMobileControlsVisibility();
     document.getElementById('game-hud').classList.add('hidden');
     document.getElementById('battle-screen').classList.add('hidden');
     document.getElementById('game-over-modal').classList.add('hidden');
@@ -502,6 +606,7 @@ class CodeQuestGame {
     });
 
     document.getElementById('rewards-modal').classList.remove('hidden');
+    this.updateMobileControlsVisibility();
   }
 
   // Notificación flotante (Toast)
@@ -539,6 +644,7 @@ class CodeQuestGame {
     });
 
     modal.classList.remove('hidden');
+    this.updateMobileControlsVisibility();
   }
 
   // Interacción del jugador con objetos y personajes
@@ -554,6 +660,7 @@ class CodeQuestGame {
       document.getElementById('sign-category').textContent = `Categoría: ${data.category}`;
       document.getElementById('sign-body').textContent = data.text;
       document.getElementById('sign-modal').classList.remove('hidden');
+      this.updateMobileControlsVisibility();
 
     } else if (type === 'chest') {
       // Abrir Cofre y obtener 1 de 3 items: espada, poción o llaves (Requisito 4)
@@ -592,6 +699,7 @@ class CodeQuestGame {
       this.player.keys--;
       this.updateHud();
       this.gameState = 'battle';
+      this.updateMobileControlsVisibility();
       this.battle.startBattle(data);
     }
   }
@@ -635,29 +743,43 @@ class CodeQuestGame {
       this.player.direction = 'right';
     }
 
-    this.player.isMoving = dx !== 0 || dy !== 0;
+    // Normalizar vector diagonal para velocidad constante
+    if (dx !== 0 && dy !== 0) {
+      const length = Math.sqrt(dx * dx + dy * dy);
+      dx /= length;
+      dy /= length;
+    }
 
-    if (this.player.isMoving) {
-      // Normalizar vector diagonal
-      const len = Math.hypot(dx, dy);
-      const moveDist = this.player.speed * dt;
-      const vx = (dx / len) * moveDist;
-      const vy = (dy / len) * moveDist;
+    // Actualizar animación del sprite si hay desplazamiento
+    if (dx !== 0 || dy !== 0) {
+      this.player.isMoving = true;
+      this.player.animTimer += dt * 10;
+      if (this.player.animTimer >= 1) {
+        this.player.animFrame = (this.player.animFrame + 1) % 4;
+        this.player.animTimer = 0;
+      }
+    } else {
+      this.player.isMoving = false;
+      this.player.animFrame = 0;
+    }
 
-      // Colisión eje X
-      const newX = this.player.x + vx;
-      const tileX1 = Math.floor(newX / 32);
-      const tileX2 = Math.floor((newX + 24) / 32);
-      const tileY1 = Math.floor(this.player.y / 32);
-      const tileY2 = Math.floor((this.player.y + 24) / 32);
+    // Colisiones con sólidos y bordes del mapa (Eje X)
+    if (dx !== 0) {
+      const newX = this.player.x + dx * this.player.speed * dt;
+      const nTileX1 = Math.floor(newX / 32);
+      const nTileX2 = Math.floor((newX + 24) / 32);
+      const nTileY1 = Math.floor(this.player.y / 32);
+      const nTileY2 = Math.floor((this.player.y + 24) / 32);
 
-      if (!this.map.isSolid(tileX1, tileY1) && !this.map.isSolid(tileX2, tileY1) &&
-        !this.map.isSolid(tileX1, tileY2) && !this.map.isSolid(tileX2, tileY2)) {
+      if (!this.map.isSolid(nTileX1, nTileY1) && !this.map.isSolid(nTileX2, nTileY1) &&
+        !this.map.isSolid(nTileX1, nTileY2) && !this.map.isSolid(nTileX2, nTileY2)) {
         this.player.x = newX;
       }
+    }
 
-      // Colisión eje Y
-      const newY = this.player.y + vy;
+    // Colisiones con sólidos y bordes del mapa (Eje Y)
+    if (dy !== 0) {
+      const newY = this.player.y + dy * this.player.speed * dt;
       const nTileX1 = Math.floor(this.player.x / 32);
       const nTileX2 = Math.floor((this.player.x + 24) / 32);
       const nTileY1 = Math.floor(newY / 32);
@@ -674,6 +796,32 @@ class CodeQuestGame {
 
     // Detección de entidades cercanas para interactuar
     this.activeInteractEntity = this.map.getNearbyEntity(this.player.x, this.player.y);
+
+    // Actualizar apariencia y texto del botón táctil de acción
+    const touchActionBtn = document.getElementById('btn-touch-action');
+    if (touchActionBtn) {
+      if (this.activeInteractEntity) {
+        touchActionBtn.classList.add('entity-nearby');
+        const iconEl = touchActionBtn.querySelector('.touch-btn-icon');
+        const subEl = touchActionBtn.querySelector('.touch-btn-sub');
+        if (this.activeInteractEntity.type === 'boss') {
+          if (iconEl) iconEl.textContent = '⚔️';
+          if (subEl) subEl.textContent = '¡Batalla!';
+        } else if (this.activeInteractEntity.type === 'chest') {
+          if (iconEl) iconEl.textContent = '📦';
+          if (subEl) subEl.textContent = '¡Abrir!';
+        } else if (this.activeInteractEntity.type === 'sign') {
+          if (iconEl) iconEl.textContent = '📜';
+          if (subEl) subEl.textContent = '¡Leer!';
+        }
+      } else {
+        touchActionBtn.classList.remove('entity-nearby');
+        const iconEl = touchActionBtn.querySelector('.touch-btn-icon');
+        const subEl = touchActionBtn.querySelector('.touch-btn-sub');
+        if (iconEl && iconEl.textContent !== '⚔️') iconEl.textContent = '⚔️';
+        if (subEl && subEl.textContent !== '[E] Acción') subEl.textContent = '[E] Acción';
+      }
+    }
 
     // Tecla de interacción (E / Espacio / Enter)
     if (this.input.isInteract) {
