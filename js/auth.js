@@ -185,6 +185,60 @@ class AuthManager {
     return !!(hasValidKey && firebase.apps && firebase.apps.length > 0);
   }
 
+  // Procesa y guarda un usuario autenticado con Firebase
+  processFirebaseUser(fbUser) {
+    if (!fbUser) return { success: false, message: 'No se recibió usuario de Firebase.' };
+
+    const email = fbUser.email || 'jugador@gmail.com';
+    const heroName = fbUser.displayName || email.split('@')[0];
+
+    const accounts = this.getAccounts();
+    let user = accounts.find(a => a.email === email);
+
+    if (!user) {
+      user = {
+        id: 'fb_' + fbUser.uid,
+        email,
+        passwordHash: null,
+        heroName,
+        name: heroName,
+        provider: 'google',
+        firebaseUid: fbUser.uid,
+        photoURL: fbUser.photoURL || null,
+        registeredAt: new Date().toISOString()
+      };
+      accounts.push(user);
+      this.saveAccounts(accounts);
+    } else {
+      user.provider = 'google';
+      user.firebaseUid = fbUser.uid;
+      if (fbUser.displayName) {
+        user.heroName = fbUser.displayName;
+        user.name = fbUser.displayName;
+      }
+      if (fbUser.photoURL) user.photoURL = fbUser.photoURL;
+      this.saveAccounts(accounts);
+    }
+
+    this.setSession(user);
+    return { success: true, user: this.sanitizeUser(user) };
+  }
+
+  // Comprueba si el usuario acaba de volver de una redirección de Google
+  async checkRedirectResult() {
+    if (!this.isFirebaseConfigured() || typeof firebase === 'undefined' || !firebase.auth) return null;
+    try {
+      const result = await firebase.auth().getRedirectResult();
+      if (result && result.user) {
+        console.log("Sesión restaurada desde redirección de Google:", result.user.email);
+        return this.processFirebaseUser(result.user);
+      }
+    } catch (e) {
+      console.warn("Aviso en checkRedirectResult:", e);
+    }
+    return null;
+  }
+
   // Inicio de sesión oficial con Google a través de Firebase Authentication
   async signInWithFirebaseGoogle() {
     if (!this.isFirebaseConfigured()) {
@@ -195,59 +249,38 @@ class AuthManager {
       };
     }
 
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+
     try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      // Forzar siempre a Google a mostrar la selección de cuentas
-      provider.setCustomParameters({
-        prompt: 'select_account'
-      });
-
       const result = await firebase.auth().signInWithPopup(provider);
-      const fbUser = result.user;
-
-      const email = fbUser.email || 'jugador@gmail.com';
-      const heroName = fbUser.displayName || email.split('@')[0];
-
-      // Registrar o sincronizar en el sistema local de Code Quest
-      const accounts = this.getAccounts();
-      let user = accounts.find(a => a.email === email);
-
-      if (!user) {
-        user = {
-          id: 'fb_' + fbUser.uid,
-          email,
-          passwordHash: null,
-          heroName,
-          name: heroName,
-          provider: 'google',
-          firebaseUid: fbUser.uid,
-          photoURL: fbUser.photoURL || null,
-          registeredAt: new Date().toISOString()
-        };
-        accounts.push(user);
-        this.saveAccounts(accounts);
-      } else {
-        user.provider = 'google';
-        user.firebaseUid = fbUser.uid;
-        if (fbUser.displayName) {
-          user.heroName = fbUser.displayName;
-          user.name = fbUser.displayName;
-        }
-        if (fbUser.photoURL) user.photoURL = fbUser.photoURL;
-        this.saveAccounts(accounts);
-      }
-
-      this.setSession(user);
-      return { success: true, user: this.sanitizeUser(user) };
+      return this.processFirebaseUser(result.user);
     } catch (error) {
       console.error("Firebase Google Auth Error:", error);
+
+      // Si el navegador bloqueó la ventana emergente (popup-blocked), usar redirección automática
+      if (error.code === 'auth/popup-blocked') {
+        console.warn("Ventana emergente bloqueada por el navegador. Redirigiendo con signInWithRedirect...");
+        try {
+          await firebase.auth().signInWithRedirect(provider);
+          return { success: false, isRedirecting: true, message: 'Ventana emergente bloqueada. Redirigiendo a Google...' };
+        } catch (redirectErr) {
+          return {
+            success: false,
+            message: 'Tu navegador bloqueó las ventanas emergentes. Por favor permite popups para este sitio en la barra superior del navegador.'
+          };
+        }
+      }
+
       if (error.code === 'auth/popup-closed-by-user') {
         return { success: false, message: 'Se canceló la ventana de Google.' };
       }
       if (error.code === 'auth/unauthorized-domain') {
         return {
           success: false,
-          message: 'Dominio no autorizado en Firebase. Añade localhost en Firebase Console -> Authentication -> Settings -> Authorized domains.'
+          message: 'Dominio no autorizado en Firebase. Añade este dominio en Firebase Console -> Authentication -> Settings -> Dominios autorizados.'
         };
       }
       return { success: false, message: error.message || 'Error al autenticar con Google en Firebase.' };

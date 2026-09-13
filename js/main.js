@@ -868,6 +868,8 @@ class CodeQuestGame {
           const res = await authManager.signInWithFirebaseGoogle();
           if (res.success) {
             updateSessionUI(res.user);
+          } else if (res.isRedirecting) {
+            showMessage("Ventana emergente bloqueada por el navegador. Redirigiendo a Google...", true);
           } else if (res.message && !res.message.includes('canceló') && !res.message.includes('cerró')) {
             showMessage(res.message);
           }
@@ -960,8 +962,13 @@ class CodeQuestGame {
       });
     }
 
-    // Comprobar sesión actual existente al iniciar
+    // Comprobar sesión actual existente o resultado de redirección de Google
     if (typeof authManager !== 'undefined') {
+      authManager.checkRedirectResult().then(res => {
+        if (res && res.success) {
+          updateSessionUI(res.user);
+        }
+      });
       const existingUser = authManager.getCurrentUser();
       updateSessionUI(existingUser);
     }
