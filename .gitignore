@@ -1,0 +1,12 @@
+# Entornos y secretos
+.env
+.env.local
+.env.*.local
+
+# Dependencias y compilados
+node_modules/
+.vercel
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

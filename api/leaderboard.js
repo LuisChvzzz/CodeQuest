@@ -13,9 +13,17 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Variables de entorno de Vercel KV / Upstash Redis
-  const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  // Variables de entorno inyectadas por Vercel KV / Upstash
+  const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || process.env.REDIS_URL;
+  const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || process.env.REDIS_TOKEN;
+
+  const defaultRanking = [
+    { name: "James_Gosling", score: 25400, medals: 20, title: "Creador de Java", date: "07/09/2026", completed: true },
+    { name: "Ada_Lovelace", score: 24850, medals: 20, title: "Pionera del Algoritmo", date: "07/09/2026", completed: true },
+    { name: "Duke_Master", score: 23900, medals: 20, title: "Mascota de la JVM", date: "06/09/2026", completed: true },
+    { name: "Bytecode_Warrior", score: 22150, medals: 20, title: "Archimago del Bytecode", date: "05/09/2026", completed: true },
+    { name: "Alan_Turing", score: 21800, medals: 20, title: "Descifrador del Código", date: "05/09/2026", completed: true }
+  ];
 
   // 1. GET: Consultar los mejores puntajes mundiales
   if (req.method === 'GET') {
@@ -25,22 +33,21 @@ export default async function handler(req, res) {
           headers: { Authorization: `Bearer ${kvToken}` }
         });
         const data = await response.json();
-        const ranking = data.result ? (typeof data.result === 'string' ? JSON.parse(data.result) : data.result) : [];
+        let ranking = [];
+        if (data && data.result) {
+          ranking = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+        }
+        if (!Array.isArray(ranking) || ranking.length === 0) {
+          ranking = defaultRanking;
+        }
         return res.status(200).json(ranking);
       } catch (err) {
-        console.error("Error al consultar Vercel KV:", err);
-        return res.status(500).json({ error: "Error al consultar la base de datos en la nube" });
+        console.error("Error al consultar Upstash:", err);
+        return res.status(200).json(defaultRanking);
       }
     }
 
-    // Lista por defecto si aún no se ha conectado Vercel KV en el dashboard
-    return res.status(200).json([
-      { name: "James_Gosling", score: 25400, medals: 20, title: "Creador de Java", date: "07/09/2026", completed: true },
-      { name: "Ada_Lovelace", score: 24850, medals: 20, title: "Pionera del Algoritmo", date: "07/09/2026", completed: true },
-      { name: "Duke_Master", score: 23900, medals: 20, title: "Mascota de la JVM", date: "06/09/2026", completed: true },
-      { name: "Bytecode_Warrior", score: 22150, medals: 20, title: "Archimago del Bytecode", date: "05/09/2026", completed: true },
-      { name: "Alan_Turing", score: 21800, medals: 20, title: "Descifrador del Código", date: "05/09/2026", completed: true }
-    ]);
+    return res.status(200).json(defaultRanking);
   }
 
   // 2. POST: Registrar nuevo récord al ganar el juego
@@ -74,22 +81,31 @@ export default async function handler(req, res) {
           headers: { Authorization: `Bearer ${kvToken}` }
         });
         const data = await response.json();
-        let scores = data.result ? (typeof data.result === 'string' ? JSON.parse(data.result) : data.result) : [];
+        let scores = [];
+        if (data && data.result) {
+          scores = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+        }
+        if (!Array.isArray(scores) || scores.length === 0) {
+          scores = [...defaultRanking];
+        }
 
         scores.push(newRecord);
         scores.sort((a, b) => b.score - a.score);
         scores = scores.slice(0, 100); // Conservar top 100 global
 
-        // Guardar de vuelta en Vercel KV
-        await fetch(`${kvUrl}/set/code_quest_global_ranking`, {
+        // Guardar en Upstash Redis usando el comando universal POST
+        await fetch(`${kvUrl}`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${kvToken}` },
-          body: JSON.stringify(scores)
+          headers: {
+            Authorization: `Bearer ${kvToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(["SET", "code_quest_global_ranking", JSON.stringify(scores)])
         });
 
         return res.status(200).json({ success: true, record: newRecord, ranking: scores });
       } catch (err) {
-        console.error("Error al guardar en Vercel KV:", err);
+        console.error("Error al guardar en Upstash:", err);
         return res.status(500).json({ error: "Error al registrar puntaje en la nube" });
       }
     }
