@@ -1,0 +1,366 @@
+// Generador y Gestor del Mundo Abierto de Code Quest
+class WorldMap {
+  constructor() {
+    this.width = 64; // 64 columnas
+    this.height = 64; // 64 filas
+    this.tileSize = 32;
+    this.tiles = [];
+    this.chests = [];
+    this.signs = [...SIGNS_DATA];
+    this.bosses = [...BOSSES_DATA];
+    this.plateaus = [];
+    this.decorations = [];
+    this.vegetation = this.decorations;
+
+    this.initTerrain();
+    this.initVegetation();
+    this.initChests();
+  }
+
+  // Generar terreno con biomas medievales
+  initTerrain() {
+    this.tiles = Array.from({ length: this.height }, () => Array(this.width).fill(0));
+
+    // 1. Bordes exteriores del mapa: 2 capas de árbol grande impenetrable (Requisito 4)
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        if (x <= 1 || x >= this.width - 2 || y <= 1 || y >= this.height - 2) {
+          this.tiles[y][x] = 4; // arbol_grande.png
+        }
+      }
+    }
+
+    const fillRect = (x1, y1, w, h, val) => {
+      for (let y = y1; y < y1 + h; y++) {
+        for (let x = x1; x < x1 + w; x++) {
+          if (x >= 2 && x < this.width - 2 && y >= 2 && y < this.height - 2) {
+            this.tiles[y][x] = val;
+          }
+        }
+      }
+    };
+
+    // 2. Plaza Central (Pueblo del Compilador)
+    fillRect(28, 28, 8, 8, 1);
+
+    // 3. Avenidas Principales desde la plaza hacia los 4 cuadrantes
+    fillRect(31, 15, 2, 13, 1); // Avenida Norte
+    fillRect(31, 36, 2, 13, 1); // Avenida Sur
+    fillRect(15, 31, 13, 2, 1); // Avenida Oeste
+    fillRect(36, 31, 13, 2, 1); // Avenida Este
+
+    // 4. Arenas de los 20 Jefes (Requisito 3)
+    const arenas = [
+      // Cuadrante 1: Noroeste (Jefes 1-5)
+      { id: 1, x: 8, y: 8, w: 5, h: 5 },
+      { id: 2, x: 22, y: 8, w: 5, h: 5 },
+      { id: 3, x: 8, y: 22, w: 5, h: 5 },
+      { id: 4, x: 22, y: 22, w: 5, h: 5 },
+      { id: 5, x: 15, y: 15, w: 5, h: 5 },
+
+      // Cuadrante 2: Noreste (Jefes 6-10)
+      { id: 6, x: 41, y: 8, w: 5, h: 5 },
+      { id: 7, x: 55, y: 8, w: 5, h: 5 },
+      { id: 8, x: 41, y: 22, w: 5, h: 5 },
+      { id: 9, x: 55, y: 22, w: 5, h: 5 },
+      { id: 10, x: 48, y: 15, w: 5, h: 5 },
+
+      // Cuadrante 3: Suroeste (Jefes 11-15)
+      { id: 11, x: 8, y: 41, w: 5, h: 5 },
+      { id: 12, x: 22, y: 41, w: 5, h: 5 },
+      { id: 13, x: 8, y: 55, w: 5, h: 5 },
+      { id: 14, x: 22, y: 55, w: 5, h: 5 },
+      { id: 15, x: 15, y: 48, w: 5, h: 5 },
+
+      // Cuadrante 4: Sureste (Jefes 16-20)
+      { id: 16, x: 41, y: 41, w: 5, h: 5 },
+      { id: 17, x: 55, y: 41, w: 5, h: 5 },
+      { id: 18, x: 41, y: 55, w: 5, h: 5 },
+      { id: 19, x: 55, y: 55, w: 5, h: 5 },
+      { id: 20, x: 48, y: 48, w: 7, h: 7, tile: 5 } // Gran Santuario de la JVM (obsidiana y runas)
+    ];
+
+    arenas.forEach(a => {
+      const t = a.tile || 1;
+      const startX = a.x - Math.floor(a.w / 2);
+      const startY = a.y - Math.floor(a.h / 2);
+      fillRect(startX, startY, a.w, a.h, t);
+    });
+
+    // 5. Caminos empedrados con tierra_relleno.png conectando a cada jefe (Requisitos 1 y 3)
+    // Red Noroeste (Jefes 1-5):
+    fillRect(14, 8, 2, 24, 1);
+    fillRect(8, 7, 15, 2, 1);
+    fillRect(8, 21, 15, 2, 1);
+
+    // Red Noreste (Jefes 6-10):
+    fillRect(47, 8, 2, 24, 1);
+    fillRect(41, 7, 15, 2, 1);
+    fillRect(41, 21, 15, 2, 1);
+
+    // Red Suroeste (Jefes 11-15):
+    fillRect(14, 31, 2, 25, 1);
+    fillRect(8, 40, 15, 2, 1);
+    fillRect(8, 54, 15, 2, 1);
+
+    // Red Sureste (Jefes 16-20):
+    fillRect(47, 31, 2, 14, 1); // Camino hasta la puerta norte del Santuario JVM (y: 31..44)
+    fillRect(41, 40, 15, 2, 1);
+    fillRect(41, 54, 15, 2, 1);
+
+    // Reafirmar el Gran Santuario de la JVM como suelo puro de obsidiana y runas (y: 45..51, x: 45..51)
+    fillRect(45, 45, 7, 7, 5);
+
+    // 6. Cuerpos de Agua: Lagos y ríos escénicos (Requisito 6)
+    // Lagos en áreas de pasto alejados de caminos
+    fillRect(3, 13, 3, 5, 3);
+    this.tiles[14][4] = 7; // agua_decorada.png con ondas
+    fillRect(58, 13, 3, 5, 3);
+    this.tiles[14][59] = 7;
+    fillRect(3, 46, 3, 5, 3);
+    this.tiles[47][4] = 7;
+    fillRect(58, 46, 3, 5, 3);
+    this.tiles[47][59] = 7;
+
+    // Ríos decorativos en los límites de cuadrantes
+    fillRect(3, 26, 8, 2, 3);
+    fillRect(18, 26, 8, 2, 3);
+    fillRect(37, 26, 8, 2, 3);
+    fillRect(52, 26, 8, 2, 3);
+
+    // 7. Delimitar caminos y salas con roca.png (tile 2) con colisión sólida (Requisito 2)
+    // Cualquier casilla de pasto (0) adyacente a un camino o sala (1 o 5) se convierte en roca
+    const toRock = [];
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        if (this.tiles[y][x] === 0) {
+          let adjPath = false;
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              const nx = x + dx;
+              const ny = y + dy;
+              if (nx >= 0 && nx < this.width && ny >= 0 && ny < this.height) {
+                if (this.tiles[ny][nx] === 1 || this.tiles[ny][nx] === 5) {
+                  adjPath = true;
+                  break;
+                }
+              }
+            }
+            if (adjPath) break;
+          }
+          if (adjPath) {
+            toRock.push({ x, y });
+          }
+        }
+      }
+    }
+    toRock.forEach(p => { this.tiles[p.y][p.x] = 2; });
+
+    // 8. Mesetas elevadas de pasto con bordes encajados (Requisito 7)
+    this.plateaus = [
+      { x: 24, y: 14, w: 4, h: 3 },
+      { x: 36, y: 14, w: 4, h: 3 },
+      { x: 24, y: 47, w: 4, h: 3 },
+      { x: 36, y: 47, w: 4, h: 3 }
+    ];
+  }
+
+  // Elementos de vegetación estáticos y no superpuestos (Requisito 5)
+  initVegetation() {
+    this.decorations = [];
+    const used = new Set();
+    const add = (type, x, y) => {
+      const key = `${x},${y}`;
+      if (!used.has(key) && this.tiles[y] && this.tiles[y][x] === 0) {
+        used.add(key);
+        this.decorations.push({ type, x, y });
+      }
+    };
+
+    // 1. Árboles pequeños (arbol_pequeno.png) en praderas
+    [
+      { x: 4, y: 4 }, { x: 18, y: 4 }, { x: 26, y: 4 }, { x: 37, y: 4 }, { x: 45, y: 4 }, { x: 59, y: 4 },
+      { x: 4, y: 11 }, { x: 26, y: 11 }, { x: 37, y: 11 }, { x: 59, y: 11 },
+      { x: 4, y: 19 }, { x: 26, y: 19 }, { x: 37, y: 19 }, { x: 59, y: 19 },
+      { x: 4, y: 38 }, { x: 26, y: 38 }, { x: 37, y: 38 }, { x: 59, y: 38 },
+      { x: 4, y: 44 }, { x: 26, y: 44 }, { x: 37, y: 44 }, { x: 59, y: 44 },
+      { x: 4, y: 59 }, { x: 18, y: 59 }, { x: 26, y: 59 }, { x: 37, y: 59 }, { x: 45, y: 59 }, { x: 59, y: 59 }
+    ].forEach(p => add('arbol_pequeno', p.x, p.y));
+
+    // 2. Hongos (hongos.png)
+    [
+      { x: 5, y: 5 }, { x: 17, y: 5 }, { x: 25, y: 5 }, { x: 38, y: 5 }, { x: 46, y: 5 }, { x: 58, y: 5 },
+      { x: 5, y: 25 }, { x: 25, y: 25 }, { x: 38, y: 25 }, { x: 58, y: 25 },
+      { x: 5, y: 39 }, { x: 25, y: 39 }, { x: 38, y: 39 }, { x: 58, y: 39 },
+      { x: 5, y: 58 }, { x: 17, y: 58 }, { x: 25, y: 58 }, { x: 38, y: 58 }, { x: 46, y: 58 }, { x: 58, y: 58 }
+    ].forEach(p => add('hongos', p.x, p.y));
+
+    // 3. Hierba salvaje alta (llerva.png)
+    [
+      { x: 6, y: 4 }, { x: 16, y: 4 }, { x: 24, y: 4 }, { x: 39, y: 4 }, { x: 47, y: 4 }, { x: 57, y: 4 },
+      { x: 6, y: 12 }, { x: 25, y: 12 }, { x: 38, y: 12 }, { x: 57, y: 12 },
+      { x: 6, y: 20 }, { x: 25, y: 20 }, { x: 38, y: 20 }, { x: 57, y: 20 },
+      { x: 6, y: 37 }, { x: 25, y: 37 }, { x: 38, y: 37 }, { x: 57, y: 37 },
+      { x: 6, y: 45 }, { x: 25, y: 45 }, { x: 38, y: 45 }, { x: 57, y: 45 },
+      { x: 6, y: 58 }, { x: 16, y: 58 }, { x: 24, y: 58 }, { x: 39, y: 58 }, { x: 47, y: 58 }, { x: 57, y: 58 }
+    ].forEach(p => add('llerva', p.x, p.y));
+
+    // 4. Parches de flores mixtas (flores.png)
+    [
+      { x: 12, y: 4 }, { x: 20, y: 4 }, { x: 43, y: 4 }, { x: 51, y: 4 },
+      { x: 12, y: 12 }, { x: 51, y: 12 }, { x: 12, y: 20 }, { x: 51, y: 20 },
+      { x: 12, y: 37 }, { x: 51, y: 37 }, { x: 12, y: 45 }, { x: 51, y: 45 },
+      { x: 12, y: 58 }, { x: 20, y: 58 }, { x: 43, y: 58 }, { x: 51, y: 58 }
+    ].forEach(p => add('flores', p.x, p.y));
+
+    // 5. Flores azules místicas (flor_azul.png)
+    [
+      { x: 5, y: 15 }, { x: 27, y: 15 }, { x: 36, y: 15 }, { x: 58, y: 15 },
+      { x: 5, y: 48 }, { x: 27, y: 48 }, { x: 36, y: 48 }, { x: 58, y: 48 },
+      { x: 15, y: 4 }, { x: 48, y: 4 }, { x: 15, y: 58 }, { x: 48, y: 58 }
+    ].forEach(p => add('flor_azul', p.x, p.y));
+
+    // 6. Rosas rojas de pradera (flor_roja.png)
+    [
+      { x: 5, y: 16 }, { x: 27, y: 16 }, { x: 36, y: 16 }, { x: 58, y: 16 },
+      { x: 5, y: 49 }, { x: 27, y: 49 }, { x: 36, y: 49 }, { x: 58, y: 49 },
+      { x: 13, y: 5 }, { x: 50, y: 5 }, { x: 13, y: 57 }, { x: 50, y: 57 }
+    ].forEach(p => add('flor_roja', p.x, p.y));
+
+    this.vegetation = this.decorations;
+  }
+
+  // Cofres repartidos a lo largo de caminos, plazas y salas de jefes
+  initChests() {
+    const chestCoords = [
+      // Plaza Central (Pueblo del Compilador)
+      { x: 29, y: 29, item: 'key' },
+      { x: 34, y: 29, item: 'sword' },
+      { x: 29, y: 34, item: 'potion' },
+      { x: 34, y: 34, item: 'key' },
+      { x: 30, y: 32, item: 'key' },
+      { x: 33, y: 32, item: 'key' },
+
+      // Cuadrante 1: Noroeste (Jefes 1-5)
+      { x: 7, y: 7, item: 'key' },
+      { x: 9, y: 7, item: 'sword' },
+      { x: 21, y: 7, item: 'key' },
+      { x: 23, y: 7, item: 'potion' },
+      { x: 7, y: 21, item: 'key' },
+      { x: 9, y: 21, item: 'sword' },
+      { x: 21, y: 21, item: 'key' },
+      { x: 23, y: 21, item: 'potion' },
+      { x: 14, y: 14, item: 'key' },
+      { x: 16, y: 14, item: 'sword' },
+
+      // Cuadrante 2: Noreste (Jefes 6-10)
+      { x: 40, y: 7, item: 'key' },
+      { x: 42, y: 7, item: 'potion' },
+      { x: 54, y: 7, item: 'key' },
+      { x: 56, y: 7, item: 'sword' },
+      { x: 40, y: 21, item: 'key' },
+      { x: 42, y: 21, item: 'potion' },
+      { x: 54, y: 21, item: 'key' },
+      { x: 56, y: 21, item: 'sword' },
+      { x: 47, y: 14, item: 'key' },
+      { x: 49, y: 14, item: 'potion' },
+
+      // Cuadrante 3: Suroeste (Jefes 11-15)
+      { x: 7, y: 40, item: 'key' },
+      { x: 9, y: 40, item: 'sword' },
+      { x: 21, y: 40, item: 'key' },
+      { x: 23, y: 40, item: 'potion' },
+      { x: 7, y: 54, item: 'key' },
+      { x: 9, y: 54, item: 'sword' },
+      { x: 21, y: 54, item: 'key' },
+      { x: 23, y: 54, item: 'potion' },
+      { x: 14, y: 47, item: 'key' },
+      { x: 16, y: 47, item: 'sword' },
+
+      // Cuadrante 4: Sureste (Jefes 16-20)
+      { x: 40, y: 40, item: 'key' },
+      { x: 42, y: 40, item: 'sword' },
+      { x: 54, y: 40, item: 'key' },
+      { x: 56, y: 40, item: 'potion' },
+      { x: 40, y: 54, item: 'key' },
+      { x: 42, y: 54, item: 'sword' },
+      { x: 54, y: 54, item: 'key' },
+      { x: 56, y: 54, item: 'potion' },
+      { x: 46, y: 46, item: 'sword' },
+      { x: 50, y: 46, item: 'potion' },
+      { x: 46, y: 50, item: 'key' },
+      { x: 50, y: 50, item: 'key' }
+    ];
+
+    this.chests = chestCoords.map((c, index) => ({
+      id: index + 1,
+      x: c.x,
+      y: c.y,
+      item: c.item,
+      opened: false
+    }));
+  }
+
+  // Obtener tiles vecinos para transiciones
+  getTileNeighbors(col, row) {
+    const getT = (x, y) => (x >= 0 && x < this.width && y >= 0 && y < this.height) ? this.tiles[y][x] : -1;
+    return {
+      up: getT(col, row - 1),
+      down: getT(col, row + 1),
+      left: getT(col - 1, row),
+      right: getT(col + 1, row),
+      upLeft: getT(col - 1, row - 1),
+      upRight: getT(col + 1, row - 1),
+      downLeft: getT(col - 1, row + 1),
+      downRight: getT(col + 1, row + 1)
+    };
+  }
+
+  // Comprobar colisión para movimiento (x, y en coordenadas de tile)
+  // Requisito 2: Las rocas (2) delimitan los caminos e impiden salir del camino
+  // Requisito 4: Los árboles grandes (4) delimitan el borde exterior e impiden salir
+  // Requisito 6: Los cuerpos de agua (3 y 7) son impenetrables
+  isSolid(tileX, tileY) {
+    if (tileX < 0 || tileX >= this.width || tileY < 0 || tileY >= this.height) {
+      return true;
+    }
+    const tile = this.tiles[tileY][tileX];
+    // Sólidos: 2 = Muro de roca, 3 = Agua, 4 = Árbol perimetral, 7 = Agua decorada
+    return tile === 2 || tile === 3 || tile === 4 || tile === 7;
+  }
+
+  // Buscar objeto cercano con el que interactuar
+  getNearbyEntity(playerX, playerY) {
+    const pTileX = playerX / this.tileSize;
+    const pTileY = playerY / this.tileSize;
+    const interactRange = 1.35;
+
+    // 1. Revisar letreros
+    for (const sign of this.signs) {
+      const dist = Math.hypot(sign.position.x - pTileX, sign.position.y - pTileY);
+      if (dist <= interactRange) {
+        return { type: 'sign', data: sign };
+      }
+    }
+
+    // 2. Revisar cofres no abiertos
+    for (const chest of this.chests) {
+      if (!chest.opened) {
+        const dist = Math.hypot(chest.x - pTileX, chest.y - pTileY);
+        if (dist <= interactRange) {
+          return { type: 'chest', data: chest };
+        }
+      }
+    }
+
+    // 3. Revisar jefes
+    for (const boss of this.bosses) {
+      const dist = Math.hypot(boss.position.x - pTileX, boss.position.y - pTileY);
+      if (dist <= interactRange) {
+        return { type: 'boss', data: boss };
+      }
+    }
+
+    return null;
+  }
+}

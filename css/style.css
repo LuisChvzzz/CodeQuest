@@ -1,0 +1,1586 @@
+/* ==========================================================================
+   CODE QUEST: HOJA DE ESTILOS PIXEL ART MEDIEVAL & RPG RETRO
+   ========================================================================== */
+
+:root {
+  --font-retro: 'Press Start 2P', monospace;
+  --font-title: 'Cinzel', serif;
+  --font-body: 'Outfit', sans-serif;
+
+  /* Paleta Medieval & Java */
+  --bg-dark: #090d16;
+  --bg-parchment: #fdf6e2;
+  --text-parchment: #451a03;
+  --gold-primary: #f59e0b;
+  --gold-light: #fbbf24;
+  --gold-dark: #b45309;
+  --java-blue: #38bdf8;
+  --java-red: #ef4444;
+  --java-green: #22c55e;
+  --stone-border: #475569;
+  --modal-bg: rgba(15, 23, 42, 0.94);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  font-family: var(--font-body);
+  color: #f8fafc;
+}
+
+/* Canvas de renderizado pixel art */
+#game-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   UTILIDADES Y BOTONES RETRO
+   ========================================================================== */
+
+.hidden {
+  display: none !important;
+}
+
+.btn-retro {
+  font-family: var(--font-retro);
+  font-size: 11px;
+  padding: 12px 18px;
+  border: 3px solid #78350f;
+  background: linear-gradient(180deg, #b45309 0%, #78350f 100%);
+  color: #fef3c7;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 0 #451a03, 0 0 10px rgba(0, 0, 0, 0.5);
+  position: relative;
+  transition: all 0.1s ease;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-retro:hover {
+  background: linear-gradient(180deg, #d97706 0%, #92400e 100%);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #451a03, 0 0 15px rgba(251, 191, 36, 0.4);
+}
+
+.btn-retro:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #451a03;
+}
+
+.btn-retro:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.btn-primary {
+  border-color: #f59e0b;
+  background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+  color: #1e1b4b;
+  box-shadow: 0 4px 0 #78350f, 0 0 15px rgba(245, 158, 11, 0.5);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+  color: #0f172a;
+}
+
+.btn-secondary {
+  border-color: #38bdf8;
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 0 #0c4a6e;
+}
+
+.btn-warning {
+  border-color: #f97316;
+  background: linear-gradient(180deg, #ea580c 0%, #c2410c 100%);
+  color: #ffffff;
+}
+
+.btn-danger {
+  border-color: #ef4444;
+  background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
+  color: #ffffff;
+}
+
+.btn-small {
+  padding: 6px 10px;
+  font-size: 9px;
+}
+
+.btn-pill {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid #475569;
+  color: #cbd5e1;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+.btn-pill:hover {
+  border-color: var(--gold-light);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   HUD SUPERIOR (EXPLORACIÓN)
+   ========================================================================== */
+
+.hud-container {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.hud-left, .hud-stats, .hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.hud-badge {
+  background: rgba(15, 23, 42, 0.88);
+  border: 2px solid #78350f;
+  border-radius: 6px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 0 8px rgba(0, 0, 0, 0.4);
+  font-size: 13px;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+}
+
+.player-badge {
+  border-color: var(--gold-primary);
+  color: var(--gold-light);
+  font-family: var(--font-retro);
+  font-size: 10px;
+}
+
+.hud-hearts {
+  display: flex;
+  gap: 4px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 2px solid #78350f;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.heart-icon {
+  font-size: 16px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  animation: heartBeat 2s infinite ease-in-out;
+}
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.score-badge {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.btn-hud {
+  font-family: var(--font-retro);
+  font-size: 10px;
+  padding: 8px 14px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 2px solid var(--gold-primary);
+  color: var(--gold-light);
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  transition: all 0.15s;
+}
+
+.btn-hud:hover {
+  background: var(--gold-primary);
+  color: #1e1b4b;
+}
+
+/* ==========================================================================
+   TOAST / NOTIFICACIONES
+   ========================================================================== */
+
+.toast {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  border: 2px solid var(--gold-primary);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fef08a;
+  z-index: 50;
+  text-align: center;
+  max-width: 90%;
+  pointer-events: none;
+  animation: slideUp 0.25s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translate(-50%, 15px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ==========================================================================
+   1. MENÚ PRINCIPAL (REQUISITO 1)
+   ========================================================================== */
+
+.menu-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(2px);
+}
+
+.menu-content {
+  text-align: center;
+  max-width: 540px;
+  width: 90%;
+  padding: 30px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 4px solid #78350f;
+  outline: 2px solid var(--gold-primary);
+  border-radius: 12px;
+  box-shadow: 0 0 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.logo-shield {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.game-title {
+  font-family: var(--font-retro);
+  font-size: 32px;
+  letter-spacing: 2px;
+  color: #fbbf24;
+  text-shadow: 0 4px 0 #78350f, 0 0 20px rgba(251, 191, 36, 0.6);
+  margin-bottom: 8px;
+}
+
+.game-subtitle {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.menu-buttons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 25px;
+}
+
+.menu-buttons-list .btn-retro {
+  width: 100%;
+  padding: 16px;
+  font-size: 13px;
+}
+
+.pulse-hover {
+  animation: gentlePulse 2.5s infinite;
+}
+
+@keyframes gentlePulse {
+  0%, 100% { box-shadow: 0 4px 0 #78350f, 0 0 15px rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 4px 0 #78350f, 0 0 25px rgba(245, 158, 11, 0.7); }
+}
+
+.menu-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  border-top: 1px solid #334155;
+  padding-top: 15px;
+}
+
+.version-tag {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* ==========================================================================
+   MODALES (COMÚN Y ESPECÍFICOS)
+   ========================================================================== */
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.modal-box {
+  background: var(--modal-bg);
+  border: 3px solid #78350f;
+  outline: 2px solid var(--gold-primary);
+  border-radius: 10px;
+  padding: 24px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.modal-large {
+  max-width: 780px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #334155;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.box-header h2 {
+  font-family: var(--font-retro);
+  font-size: 14px;
+  color: var(--gold-light);
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.btn-close:hover {
+  color: var(--java-red);
+}
+
+.box-scrollable {
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.box-scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+
+.box-scrollable::-webkit-scrollbar-thumb {
+  background: #78350f;
+  border-radius: 4px;
+}
+
+/* Modal Pergamino / Letrero de Datos Curiosos */
+.parchment-box {
+  background: #fef3c7;
+  color: #451a03;
+  border: 4px solid #92400e;
+  outline: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 40px rgba(180, 83, 9, 0.2);
+}
+
+.parchment-box h2 {
+  font-family: var(--font-title);
+  font-size: 22px;
+  color: #78350f;
+  border-bottom: 2px dashed #b45309;
+  padding-bottom: 8px;
+}
+
+.box-desc {
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-weight: 700;
+  font-size: 14px;
+  color: #78350f;
+}
+
+.input-group input {
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 700;
+  border: 2px solid #b45309;
+  border-radius: 6px;
+  background: #fffbeb;
+  color: #1e1b4b;
+  font-family: var(--font-body);
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+}
+
+.sign-parchment {
+  max-width: 580px;
+}
+
+.parchment-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sign-icon {
+  font-size: 28px;
+}
+
+.sign-badge {
+  background: #d97706;
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.parchment-content p {
+  font-size: 16px;
+  line-height: 1.6;
+  font-family: var(--font-body);
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Guía de Cómo Jugar */
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.guide-card {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid #475569;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.guide-card h3 {
+  font-size: 15px;
+  color: var(--gold-light);
+  margin-bottom: 10px;
+}
+
+.guide-card p, .guide-card li {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.guide-card ul {
+  padding-left: 18px;
+  margin-top: 8px;
+}
+
+/* Tabla de Ranking en Tiempo Real */
+.ranking-info-note {
+  font-size: 13px;
+  color: #38bdf8;
+  margin-bottom: 14px;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ranking-table th {
+  background: #1e293b;
+  color: var(--gold-light);
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 2px solid #78350f;
+  font-family: var(--font-retro);
+  font-size: 9px;
+}
+
+.ranking-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #334155;
+}
+
+.ranking-table tr:hover {
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.td-rank {
+  font-family: var(--font-retro);
+  font-size: 11px;
+}
+
+.td-player {
+  display: flex;
+  flex-direction: column;
+}
+
+.player-sub {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.td-score {
+  font-weight: 700;
+  color: #fef08a;
+  font-family: var(--font-retro);
+  font-size: 11px;
+}
+
+.rank-gold {
+  background: rgba(245, 158, 11, 0.12);
+}
+.rank-gold .td-rank { color: #fbbf24; font-weight: bold; }
+
+.rank-silver {
+  background: rgba(203, 213, 225, 0.08);
+}
+.rank-silver .td-rank { color: #e2e8f0; }
+
+.rank-bronze {
+  background: rgba(217, 119, 6, 0.08);
+}
+.rank-bronze .td-rank { color: #f97316; }
+
+/* Menú de Pausa (Requisito 7) */
+.pause-box {
+  text-align: center;
+  max-width: 380px;
+}
+
+.pause-box h2 {
+  font-family: var(--font-retro);
+  font-size: 16px;
+  color: var(--gold-light);
+  margin-bottom: 24px;
+}
+
+.pause-buttons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pause-buttons-list .btn-retro {
+  width: 100%;
+}
+
+/* Vitrina de Recompensas (20 Medallas) */
+.rewards-desc {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 16px;
+}
+
+.rewards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.reward-card {
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.reward-card.unlocked {
+  background: rgba(16, 185, 129, 0.12);
+  border: 2px solid #10b981;
+}
+
+.reward-card.locked {
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px dashed #475569;
+  opacity: 0.6;
+}
+
+.reward-icon {
+  font-size: 26px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reward-medal-img {
+  width: 44px;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+  margin: 0 auto;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.reward-card:hover .reward-medal-img {
+  transform: scale(1.1);
+}
+
+.reward-medal-img.locked-medal {
+  filter: grayscale(100%) brightness(35%) contrast(120%);
+  opacity: 0.55;
+}
+
+.reward-medal-img.unlocked-medal {
+  filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.7));
+}
+
+.victory-medal-popup {
+  width: 76px;
+  height: auto;
+  image-rendering: pixelated;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 0 18px rgba(245, 158, 11, 0.8));
+}
+
+.final-medal-img {
+  width: 24px;
+  height: auto;
+  image-rendering: pixelated;
+  vertical-align: middle;
+}
+
+.reward-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.reward-card.unlocked .reward-name {
+  color: var(--gold-light);
+}
+
+.reward-boss {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.reward-score {
+  font-size: 11px;
+  color: #38bdf8;
+}
+
+.reward-theme {
+  font-size: 10px;
+  color: #cbd5e1;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   5. PANTALLA DE COMBATE POR TURNOS (ESTILO POKÉMON / RPG)
+   ========================================================================== */
+
+.battle-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  z-index: 30;
+  background: linear-gradient(180deg, #090d16 0%, #1e1b4b 60%, #0f172a 100%);
+}
+
+.battle-arena {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 40px 60px;
+  position: relative;
+  background-image: 
+    radial-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px),
+    radial-gradient(rgba(245, 158, 11, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.combatant-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Jefe arriba a la derecha */
+.boss-combatant {
+  align-self: flex-start;
+  margin-left: auto;
+  margin-right: 40px;
+}
+
+.combatant-hud {
+  background: rgba(15, 23, 42, 0.9);
+  border: 3px solid #78350f;
+  outline: 2px solid var(--gold-primary);
+  border-radius: 8px;
+  padding: 12px 18px;
+  min-width: 260px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+}
+
+/* Estilos de HUD del Jugador en Batalla (Requisito 9) */
+.player-combatant {
+  align-self: flex-end;
+  margin-left: 40px;
+  margin-bottom: 16px;
+}
+
+.player-hud {
+  border-color: #1e3a8a;
+  outline-color: #38bdf8;
+  min-width: 280px;
+}
+
+.player-stat-pill {
+  background: #1e293b;
+  color: #38bdf8;
+  border: 1px solid #0284c7;
+  font-family: var(--font-retro);
+  font-size: 8px;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.player-hp-fill {
+  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+}
+
+.player-battle-stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  gap: 6px;
+}
+
+.battle-mini-stat {
+  font-size: 10px;
+  color: #f1f5f9;
+  background: rgba(30, 41, 59, 0.85);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #475569;
+  font-weight: 600;
+}
+
+.name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.name-row h3 {
+  font-size: 14px;
+  font-family: var(--font-retro);
+  color: var(--gold-light);
+}
+
+.boss-level-pill {
+  background: #b91c1c;
+  color: #ffffff;
+  font-family: var(--font-retro);
+  font-size: 8px;
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+.hp-bar-container {
+  width: 100%;
+  height: 14px;
+  background: #334155;
+  border: 2px solid #0f172a;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.hp-bar-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #ef4444 0%, #22c55e 100%);
+  transition: width 0.4s ease;
+}
+
+.hp-text {
+  font-size: 11px;
+  font-weight: 700;
+  text-align: right;
+  color: #cbd5e1;
+}
+
+.combatant-sprite-wrapper {
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+  padding: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 180px;
+  height: 180px;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.6));
+}
+
+.combatant-sprite-wrapper canvas {
+  width: 160px;
+  height: 160px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Jugador abajo a la izquierda */
+.player-combatant {
+  align-self: flex-end;
+  margin-left: 70px;
+  margin-bottom: 20px;
+}
+
+/* Animaciones de Sprites en Combate */
+.sprite-shake {
+  animation: shakeSprite 0.4s ease;
+}
+
+@keyframes shakeSprite {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+.sprite-hurt {
+  animation: flashRed 0.4s ease;
+}
+
+@keyframes flashRed {
+  0%, 100% { filter: none; }
+  50% { filter: sepia(1) saturate(5) hue-rotate(-50deg); }
+}
+
+/* Interfaz Inferior de Combate */
+.battle-interface {
+  height: 220px;
+  background: rgba(15, 23, 42, 0.98);
+  border-top: 4px solid #78350f;
+  outline: 2px solid var(--gold-primary);
+  display: flex;
+  padding: 16px 24px;
+  gap: 20px;
+  box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.8);
+}
+
+.battle-dialog-box {
+  flex: 1.1;
+  background: #020617;
+  border: 2px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.battle-dialog-box p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #f8fafc;
+  white-space: pre-line;
+}
+
+.battle-options-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-combat-action {
+  font-size: 13px;
+  padding: 16px;
+}
+
+.attack-action {
+  border-color: #ef4444;
+  background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
+}
+
+.attack-action:hover {
+  background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+}
+
+.inv-action {
+  border-color: #38bdf8;
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+}
+
+/* Panel de Preguntas de Java */
+.battle-question-box {
+  flex: 2.2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.question-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.q-badge {
+  font-size: 10px;
+  font-family: var(--font-retro);
+  color: var(--gold-light);
+}
+
+.question-header h3 {
+  font-size: 14px;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.battle-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.btn-option {
+  font-size: 11px;
+  text-align: left;
+  padding: 10px 14px;
+  text-transform: none;
+  font-family: var(--font-body);
+  font-weight: 600;
+  justify-content: flex-start;
+  border-radius: 6px;
+}
+
+.option-letter {
+  font-family: var(--font-retro);
+  color: var(--gold-light);
+  font-size: 10px;
+}
+
+.btn-option.correct {
+  background: linear-gradient(180deg, #16a34a 0%, #15803d 100%) !important;
+  border-color: #4ade80 !important;
+  color: #ffffff !important;
+}
+
+.btn-option.wrong {
+  background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%) !important;
+  border-color: #f87171 !important;
+  color: #ffffff !important;
+}
+
+/* Panel de Inventario en Combate */
+.battle-inv-box {
+  flex: 2.2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inv-header h3 {
+  font-family: var(--font-retro);
+  font-size: 12px;
+  color: var(--gold-light);
+}
+
+.battle-inv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.inv-card {
+  background: #1e293b;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.inv-card .inv-icon {
+  font-size: 22px;
+}
+
+.inv-card h4 {
+  font-size: 12px;
+  color: #ffffff;
+}
+
+.inv-card p {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   MODAL DE VICTORIA SOBRE EL JEFE & GRAN VICTORIA
+   ========================================================================== */
+
+.victory-box, .defeat-box, .grand-victory-box {
+  text-align: center;
+}
+
+.victory-header h2 {
+  font-family: var(--font-retro);
+  font-size: 18px;
+  color: var(--gold-light);
+  margin-bottom: 6px;
+}
+
+.big-medal-icon {
+  font-size: 64px;
+  margin: 16px 0 8px 0;
+  filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.6));
+  animation: floatMedal 2.5s infinite ease-in-out;
+}
+
+@keyframes floatMedal {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.victory-medal-display h3 {
+  font-size: 16px;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.mistakes-report {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.score-granted {
+  font-family: var(--font-retro);
+  font-size: 20px;
+  color: #4ade80;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+}
+
+/* Pantalla de Gran Victoria Final (Requisito 8) */
+.grand-victory-box {
+  max-width: 680px;
+}
+
+.grand-header .crown-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.grand-header h1 {
+  font-family: var(--font-retro);
+  font-size: 18px;
+  color: #fbbf24;
+  margin-bottom: 6px;
+}
+
+.grand-header h2 {
+  font-size: 16px;
+  color: #38bdf8;
+  margin-bottom: 16px;
+}
+
+.complete-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #cbd5e1;
+  margin-bottom: 20px;
+}
+
+.complete-stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.stat-pill {
+  background: #1e293b;
+  border: 2px solid var(--gold-primary);
+  border-radius: 8px;
+  padding: 10px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-pill span {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.stat-pill strong {
+  font-family: var(--font-retro);
+  font-size: 16px;
+  color: #fef08a;
+}
+
+.all-medals-showcase {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.all-medals-showcase h3 {
+  font-size: 13px;
+  color: var(--gold-light);
+  margin-bottom: 12px;
+}
+
+.final-medals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.final-medal-badge {
+  background: #1e293b;
+  border: 1px solid #10b981;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ranking-registered-note {
+  font-size: 13px;
+  color: #4ade80;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   RESPONSIVIDAD Y AJUSTES MÓVILES
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .game-title {
+    font-size: 24px;
+  }
+
+  .hud-container {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .hud-stats {
+    flex-wrap: wrap;
+  }
+
+  .battle-arena {
+    padding: 20px;
+  }
+
+  .boss-combatant {
+    margin-right: 0;
+  }
+
+  .player-combatant {
+    margin-left: 0;
+  }
+
+  .battle-interface {
+    height: auto;
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .battle-options-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .battle-inv-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   ESTILOS DE HISTORIA / LORE INICIAL Y MOCHILA DE INVENTARIO
+   ========================================================================== */
+
+/* 1. Modal de Historia / Prólogo (Requisito 5) */
+.story-parchment {
+  max-width: 620px;
+  background: linear-gradient(145deg, #1e1b4b 0%, #0f172a 100%);
+  border: 3px solid var(--gold-primary);
+  box-shadow: 0 0 35px rgba(251, 191, 36, 0.25), inset 0 0 15px rgba(0, 0, 0, 0.6);
+  padding: 24px;
+}
+
+.story-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid rgba(251, 191, 36, 0.3);
+  padding-bottom: 14px;
+}
+
+.story-avatar {
+  font-size: 38px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid var(--gold-primary);
+  border-radius: 50%;
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.story-header h2 {
+  font-family: var(--font-retro);
+  font-size: 16px;
+  color: var(--gold-light);
+  margin-bottom: 4px;
+}
+
+.story-chapter-pill {
+  font-size: 11px;
+  background: rgba(251, 191, 36, 0.18);
+  color: #fef08a;
+  padding: 2px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--gold-primary);
+  font-weight: 700;
+}
+
+.story-body {
+  min-height: 140px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.story-text-container {
+  font-size: 15px;
+  line-height: 1.65;
+  color: #f1f5f9;
+}
+
+.story-p {
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #f1f5f9;
+}
+
+.story-p:last-child {
+  margin-bottom: 0;
+}
+
+.story-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.story-list li {
+  background: rgba(30, 41, 59, 0.65);
+  padding: 10px 14px;
+  border-radius: 6px;
+  border-left: 3px solid var(--gold-primary);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #cbd5e1;
+}
+
+.story-list li strong {
+  color: #fef08a;
+}
+
+.story-highlight {
+  color: #fbbf24;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+}
+
+.story-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 2. Modal de Inventario Fuera de Combate (Requisito 2) */
+.inventory-box {
+  max-width: 480px;
+  background: #0f172a;
+  border: 3px solid var(--gold-primary);
+  border-radius: 12px;
+}
+
+.inventory-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.inventory-status-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.inv-player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.inv-player-header h3 {
+  font-family: var(--font-retro);
+  font-size: 14px;
+  color: var(--gold-light);
+}
+
+.inv-badge {
+  font-size: 10px;
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid #10b981;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.inv-hearts-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.inv-label {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.inv-hearts-icons {
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+.inv-hp-num {
+  font-size: 12px;
+  color: #fca5a5;
+  font-weight: 700;
+}
+
+.inv-stats-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.inv-stat-item {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inv-stat-icon {
+  font-size: 20px;
+}
+
+.inv-stat-texts {
+  display: flex;
+  flex-direction: column;
+}
+
+.inv-stat-label {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.inv-stat-texts strong {
+  font-size: 13px;
+  color: #fef08a;
+}
+
+.inventory-items-section h3 {
+  font-size: 13px;
+  color: var(--gold-light);
+  margin-bottom: 10px;
+}
+
+.potion-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.potion-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.potion-icon {
+  font-size: 28px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid #10b981;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.potion-meta h4 {
+  font-size: 13px;
+  color: #f8fafc;
+  margin-bottom: 2px;
+}
+
+.potion-meta p {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.potion-count-badge {
+  font-size: 11px;
+  color: #34d399;
+}
+
+.potion-count-badge strong {
+  color: #fef08a;
+}
+
+/* 3. Nota de Advertencia en Game Over (Requisito 4) */
+.defeat-warning-note {
+  font-size: 12px;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 6px;
+  padding: 10px;
+  margin: 14px 0 20px 0;
+  line-height: 1.4;
+}
+

@@ -1,0 +1,852 @@
+// Controlador Principal de Code Quest: Aventura RPG Medieval de Java
+class CodeQuestGame {
+  constructor() {
+    this.canvas = document.getElementById('game-canvas');
+    this.renderer = new PixelRenderer(this.canvas);
+    this.input = new InputHandler();
+    this.camera = null;
+    this.map = null;
+    this.battle = null;
+
+    this.gameState = 'menu'; // 'menu', 'playing', 'battle', 'paused', 'complete'
+    this.lastTime = 0;
+
+    // Estado del Jugador (Requisitos: 5 corazones, 25 ataque, espadas +5, pociones curan 1 corazón)
+    this.player = {
+      name: "Héroe Java",
+      x: 9 * 32,
+      y: 10 * 32,
+      width: 24,
+      height: 28,
+      speed: 135,
+      direction: 'down',
+      isMoving: false,
+      hearts: 5,
+      maxHearts: 5,
+      attack: 25,
+      potions: 2,
+      keys: 2,
+      medals: [],
+      defeatedBosses: new Set(),
+      totalScore: 0
+    };
+
+    this.activeInteractEntity = null;
+    this.toastTimer = null;
+
+    this.initDOM();
+    this.initCanvasSize();
+    window.addEventListener('resize', () => this.initCanvasSize());
+
+    // Iniciar loop
+    requestAnimationFrame((t) => this.gameLoop(t));
+  }
+
+  initCanvasSize() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+    if (this.camera) {
+      this.camera.resize(this.canvas.width, this.canvas.height);
+    }
+  }
+
+  initDOM() {
+    // Inicializar subsistemas
+    this.map = new WorldMap();
+    this.camera = new Camera(this.canvas.width, this.canvas.height, this.map.width * 32, this.map.height * 32);
+    this.battle = new BattleManager(this);
+
+    // Botones del Menú Principal
+    document.getElementById('btn-new-game').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      this.showNamePrompt();
+    });
+
+    document.getElementById('btn-how-to-play').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      document.getElementById('how-to-play-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('btn-close-how-to-play').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      document.getElementById('how-to-play-modal').classList.add('hidden');
+    });
+
+    document.getElementById('btn-ranking').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      cloudRanking.renderLeaderboard('ranking-table-body');
+      document.getElementById('ranking-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('btn-close-ranking').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      document.getElementById('ranking-modal').classList.add('hidden');
+    });
+
+    // Modal de Nombre de Personaje (Requisito 2 y 5)
+    document.getElementById('btn-start-adventure').addEventListener('click', () => {
+      const nameInput = document.getElementById('player-name-input');
+      const val = nameInput.value.trim();
+      this.player.name = val || "Caballero Java";
+      audioManager.playSfx('click');
+      document.getElementById('name-prompt-modal').classList.add('hidden');
+      this.startStoryIntro(); // Desplegar historia narrativa (Requisito 5)
+    });
+
+    // Eventos de la Historia Inicial / Lore
+    document.getElementById('btn-story-next').addEventListener('click', () => {
+      this.nextStoryChapter();
+    });
+
+    document.getElementById('btn-story-skip').addEventListener('click', () => {
+      this.finishStoryIntro();
+    });
+
+    // Control de Audio (Mute / Unmute)
+    const btnMute = document.getElementById('btn-sound-toggle');
+    if (btnMute) {
+      btnMute.addEventListener('click', () => {
+        const muted = audioManager.toggleMute();
+        btnMute.textContent = muted ? '🔇 Silenciado' : '🔊 Sonido: ON';
+      });
+    }
+
+    // Botón de Pausa en pantalla
+    const btnPauseHud = document.getElementById('btn-pause-hud');
+    if (btnPauseHud) {
+      btnPauseHud.addEventListener('click', () => {
+        if (this.gameState === 'playing') this.pauseGame();
+      });
+    }
+
+    // Menú de Pausa (Reanudar, Inventario, Recompensas, Reiniciar, Salir)
+    document.getElementById('btn-pause-resume').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      this.resumeGame();
+    });
+
+    document.getElementById('btn-pause-inventory').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      document.getElementById('pause-modal').classList.add('hidden');
+      this.showInventoryModal();
+    });
+
+    document.getElementById('btn-pause-restart').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      if (confirm("¿Seguro que deseas reiniciar tu aventura actual? Perderás el progreso de esta partida.")) {
+        this.resumeGame();
+        this.startNewGame();
+      }
+    });
+
+    document.getElementById('btn-pause-rewards').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      this.showRewardsModal();
+    });
+
+    document.getElementById('btn-pause-exit').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      document.getElementById('pause-modal').classList.add('hidden');
+      this.returnToMainMenu();
+    });
+
+    // Inventario Fuera de Batalla (Requisito 2)
+    document.getElementById('btn-close-inventory').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      this.hideInventoryModal();
+    });
+
+    document.getElementById('btn-use-potion-inventory').addEventListener('click', () => {
+      this.usePotionFromInventory();
+    });
+
+    // Atajo de teclado 'G' para abrir/cerrar inventario y 'Espacio/Enter' para historia
+    window.addEventListener('keydown', (e) => {
+      // Avanzar prólogo con Enter o Espacio si el modal de historia está abierto
+      const storyModal = document.getElementById('story-lore-modal');
+      if (storyModal && !storyModal.classList.contains('hidden')) {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          this.nextStoryChapter();
+          return;
+        }
+      }
+
+      if (e.key === 'g' || e.key === 'G') {
+        if (this.gameState === 'playing') {
+          const invModal = document.getElementById('inventory-modal');
+          if (invModal.classList.contains('hidden')) {
+            this.showInventoryModal();
+          } else {
+            this.hideInventoryModal();
+          }
+        } else if (this.gameState === 'paused') {
+          const invModal = document.getElementById('inventory-modal');
+          if (!invModal.classList.contains('hidden')) {
+            this.hideInventoryModal();
+          }
+        }
+      }
+    });
+
+    // Cerrar Recompensas
+    document.getElementById('btn-close-rewards').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      document.getElementById('rewards-modal').classList.add('hidden');
+    });
+
+    // Cerrar Letrero de Dato Curioso
+    document.getElementById('btn-close-sign').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      document.getElementById('sign-modal').classList.add('hidden');
+    });
+
+    // Pantalla de Gran Victoria (Fin del juego tras derrotar al jefe 20)
+    document.getElementById('btn-finish-game').addEventListener('click', () => {
+      audioManager.playSfx('click');
+      document.getElementById('game-complete-modal').classList.add('hidden');
+      this.returnToMainMenu();
+    });
+
+    // Iniciar música del menú
+    audioManager.startMusic('menu');
+  }
+
+  showNamePrompt() {
+    document.getElementById('name-prompt-modal').classList.remove('hidden');
+    document.getElementById('player-name-input').focus();
+  }
+
+  // Instrucciones iniciales y Prólogo Narrativo de Bytevalia con personalización
+  startStoryIntro() {
+    const pName = this.player.name || "Caballero";
+    this.storyChapters = [
+      {
+        badge: "Guía de Inicio: 1/3",
+        avatar: "🎮",
+        title: "Manual del Paladín: Movimiento y Acción",
+        html: `
+          <p class="story-p">¡Atención, noble paladín <span class="story-highlight">${pName}</span>! Antes de adentrarte en los confines de Bytevalia, debes adiestrar tus reflejos:</p>
+          <ul class="story-list">
+            <li><strong>🚶 Movimiento:</strong> Usa las teclas <strong>[W, A, S, D]</strong> o las <strong>Flechas del teclado</strong> para desplazarte libremente por los senderos y praderas.</li>
+            <li><strong>✨ Interacción:</strong> Presiona <strong>[E]</strong>, <strong>[Espacio]</strong> o <strong>[Enter]</strong> frente a cofres del tesoro, letreros de sabiduría y jefes guardianes.</li>
+            <li><strong>🛡️ Senderos Seguros:</strong> Los caminos empedrados están delimitados por murallas de roca natural que te guían hacia cada uno de los 20 Jefes.</li>
+          </ul>
+        `
+      },
+      {
+        badge: "Guía de Inicio: 2/3",
+        avatar: "🎒",
+        title: "Manual del Paladín: Inventario, Pociones y Llaves",
+        html: `
+          <p class="story-p">Tu supervivencia en este reino exige una gestión impecable de tus recursos, <span class="story-highlight">${pName}</span>:</p>
+          <ul class="story-list">
+            <li><strong>🎒 Inventario en Todo Momento [G]:</strong> Puedes consultar tu inventario cuando quieras presionando la tecla <strong>[G]</strong> o desde el menú de pausa <strong>[Esc]</strong>.</li>
+            <li><strong>🧪 Pociones Curativas:</strong> Si pierdes corazones, abre tu inventario y consume una Poción de Vida para restaurar tu salud. ¡Encontrarás pociones ocultas en cofres dispersos por todo el mapa!</li>
+            <li><strong>🔑 Llaves de Jefes:</strong> Cada uno de los 20 Jefes requiere <strong>1 Llave</strong> para abrir las puertas de su arena sagrada. Saquea cofres antes de retarlos.</li>
+          </ul>
+        `
+      },
+      {
+        badge: "Guía de Inicio: 3/3",
+        avatar: "⚔️",
+        title: "Manual del Paladín: Duelos de Java y Resurrección",
+        html: `
+          <p class="story-p">El acero físico no daña a los espectros del código, <span class="story-highlight">${pName}</span>. Tu espada es tu mente lógica:</p>
+          <ul class="story-list">
+            <li><strong>🧠 Combate de Programación:</strong> Responde acertadamente a las preguntas de Java para asestar tajos críticos. Respuestas consecutivas activan combos con multiplicadores de daño y puntos.</li>
+            <li><strong>⚠️ Castigo de Sintaxis:</strong> Si eliges una opción incorrecta, el jefe contraatacará y perderás 1 corazón de vida.</li>
+            <li><strong>⏳ Voto de Resurrección:</strong> Si tus 5 corazones caen a cero, serás derrotado. Podrás revivir tu espíritu, pero a cambio todo tu progreso y el mapa se reiniciarán desde cero. ¡Protege tu vida con devoción, <span class="story-highlight">${pName}</span>!</li>
+          </ul>
+        `
+      },
+      {
+        badge: "Crónicas de Bytevalia: I",
+        avatar: "🏰",
+        title: "La Era del Código Sagrado y la Gran JVM",
+        html: `
+          <p class="story-p">Mucho antes de que tus pasos se escucharan en estas tierras, <span class="story-highlight">${pName}</span>, el Reino de Bytevalia era un cosmos de perfección inquebrantable forjado sobre los cimientos de la <strong>Sagrada Java Virtual Machine</strong>.</p>
+          <p class="story-p">En aquellos tiempos legendarios, cada entidad, río y bosque existía como un objeto inmutable en memoria. El Gran Algoritmo del Garbage Collector purificaba el flujo cósmico y <strong>20 Medallas de Java</strong> custodiaban el equilibrio universal: desde las Leyes Primitivas de Tipos y Variables, hasta las altas torres de la Herencia, la Encapsulación y el Polimorfismo.</p>
+        `
+      },
+      {
+        badge: "Crónicas de Bytevalia: II",
+        avatar: "👹",
+        title: "El Cataclismo del Archimago Corrupto",
+        html: `
+          <p class="story-p">Pero la codicia oscureció el alma del Archimago Supremo de la JVM. Deseando quebrar las leyes sagradas de la compilación y gobernar sobre el caos, invocó a 19 Señores Oscuros y fracturó el Código Primordial.</p>
+          <p class="story-p">Las 20 Medallas de Java fueron robadas y recluidas tras los muros de 20 fortalezas malditas. Una niebla de <em>NullPointerExceptions</em>, desbordamientos de pila y bucles infinitos arrasó las aldeas. Los sabios enmudecieron, las variables perdieron su tipado y el reino quedó sumido en un invierno de errores irrecuperables.</p>
+        `
+      },
+      {
+        badge: "Crónicas de Bytevalia: III",
+        avatar: "👑",
+        title: `La Profecía del Paladín ${pName}`,
+        html: `
+          <p class="story-p">Inscrito en el Gran Altar de Obsidiana, un antiguo manuscrito profetizaba este momento exacto: <em>'Cuando el reino colapse en la penumbra del error fatal, emergerá de entre los mortales un paladín con el don supremo de la Compilación Limpia. Su nombre es <span class="story-highlight">${pName}</span>'</em>.</p>
+          <p class="story-p">Ese héroe eres tú, <span class="story-highlight">${pName}</span>. Tu misión es recorrer los cuatro cuadrantes, saquear los cofres antiguos, desafiar a los 20 Señores Oscuros con tu dominio de Java y purificar el Gran Santuario Central de la JVM.</p>
+          <p class="story-p">¡El futuro entero de Bytevalia depende de tu valentía, <span class="story-highlight">${pName}</span>! ¡Empuña tu espada, alza tu mente y que tu código compile siempre con gloria!</p>
+        `
+      }
+    ];
+
+    this.currentStoryIndex = 0;
+    this.showCurrentStoryChapter();
+    document.getElementById('story-lore-modal').classList.remove('hidden');
+  }
+
+  showCurrentStoryChapter() {
+    const chap = this.storyChapters[this.currentStoryIndex];
+    if (!chap) return;
+
+    const badgeEl = document.getElementById('story-chapter-badge');
+    if (badgeEl) badgeEl.textContent = chap.badge;
+
+    const avatarEl = document.getElementById('story-avatar-icon');
+    if (avatarEl && chap.avatar) avatarEl.textContent = chap.avatar;
+
+    const titleEl = document.getElementById('story-title-text');
+    if (titleEl && chap.title) titleEl.textContent = chap.title;
+
+    const textEl = document.getElementById('story-text-content');
+    if (textEl) textEl.innerHTML = chap.html;
+
+    const btnNext = document.getElementById('btn-story-next');
+    if (this.currentStoryIndex === this.storyChapters.length - 1) {
+      btnNext.textContent = "¡Comenzar Aventura! ✨";
+    } else {
+      btnNext.textContent = "Siguiente ➡️";
+    }
+  }
+
+  nextStoryChapter() {
+    audioManager.playSfx('click');
+    if (this.currentStoryIndex < this.storyChapters.length - 1) {
+      this.currentStoryIndex++;
+      this.showCurrentStoryChapter();
+    } else {
+      this.finishStoryIntro();
+    }
+  }
+
+  finishStoryIntro() {
+    audioManager.playSfx('click');
+    document.getElementById('story-lore-modal').classList.add('hidden');
+    this.startNewGame();
+  }
+
+  // Inventario accesible en cualquier momento (Requisito 2)
+  showInventoryModal() {
+    audioManager.playSfx('click');
+    const modal = document.getElementById('inventory-modal');
+    document.getElementById('inv-player-name').textContent = this.player.name || "Héroe";
+
+    // Corazones visuales
+    let heartsIcons = '';
+    for (let i = 0; i < this.player.maxHearts; i++) {
+      heartsIcons += i < this.player.hearts ? '❤️' : '🖤';
+    }
+    document.getElementById('inv-hearts-display').textContent = heartsIcons;
+    document.getElementById('inv-hp-text').textContent = `(${this.player.hearts}/${this.player.maxHearts})`;
+
+    // Estadísticas
+    document.getElementById('inv-attack-val').textContent = this.player.attack;
+    document.getElementById('inv-keys-val').textContent = this.player.keys;
+    document.getElementById('inv-medals-val').textContent = `${this.player.medals ? this.player.medals.length : 0} / 20`;
+    document.getElementById('inv-potions-count').textContent = this.player.potions;
+
+    modal.classList.remove('hidden');
+  }
+
+  hideInventoryModal() {
+    document.getElementById('inventory-modal').classList.add('hidden');
+  }
+
+  usePotionFromInventory() {
+    if (this.player.hearts >= this.player.maxHearts) {
+      audioManager.playSfx('wrong');
+      this.showToast("¡Tu salud ya está al máximo! (5/5 corazones)");
+      return;
+    }
+    if (this.player.potions <= 0) {
+      audioManager.playSfx('wrong');
+      this.showToast("¡No te quedan pociones curativas! Busca cofres en el reino.");
+      return;
+    }
+
+    this.player.potions--;
+    this.player.hearts = Math.min(this.player.maxHearts, this.player.hearts + 1);
+    audioManager.playSfx('potion');
+    this.updateHud();
+    this.showInventoryModal(); // Refrescar modal
+    this.showToast(`¡Bebiste una poción! Salud restaurada a (${this.player.hearts}/${this.player.maxHearts} corazones).`);
+  }
+
+  startNewGame() {
+    audioManager.stopSfx('gameover'); // Quitar música de game over al revivir (Requisito 3)
+    audioManager.stopSfx('pause');
+    audioManager.stopMusic();
+
+    // Reset de estadísticas según especificación (Requisitos 3 y 4)
+    this.player.hearts = 5;
+    this.player.maxHearts = 5;
+    this.player.attack = 25;
+    this.player.potions = 2;
+    this.player.keys = 20;
+    this.player.medals = [];
+    this.player.defeatedBosses = new Set();
+    this.player.totalScore = 0;
+
+    // Colocar jugador en la plaza central de inicio (Pueblo del Compilador)
+    this.player.x = 31 * 32;
+    this.player.y = 32 * 32;
+    this.player.direction = 'down';
+
+    // Reinicializar cofres del mapa
+    this.map.initChests();
+
+    // Actualizar HUD
+    this.updateHud();
+
+    // Ocultar menú y mostrar HUD
+    document.getElementById('main-menu-overlay').classList.add('hidden');
+    document.getElementById('game-hud').classList.remove('hidden');
+
+    this.gameState = 'playing';
+    audioManager.startMusic('explore');
+    this.showToast(`¡Bienvenido a Code Quest, ${this.player.name}! Explora el reino y domina Java.`);
+  }
+
+  pauseGame() {
+    this.gameState = 'paused';
+    audioManager.playSfx('pause'); // assets/audio/pause.mp3
+    document.getElementById('pause-modal').classList.remove('hidden');
+  }
+
+  resumeGame() {
+    audioManager.stopSfx('pause'); // Detener sonido de pausa inmediatamente al cerrar menú
+    document.getElementById('pause-modal').classList.add('hidden');
+    this.gameState = 'playing';
+  }
+
+  returnToMainMenu() {
+    audioManager.stopSfx('pause');
+    audioManager.stopSfx('gameover'); // Asegurar detención de audio de game over
+    audioManager.stopMusic();
+    this.gameState = 'menu';
+    document.getElementById('game-hud').classList.add('hidden');
+    document.getElementById('battle-screen').classList.add('hidden');
+    document.getElementById('game-over-modal').classList.add('hidden');
+    document.getElementById('inventory-modal').classList.add('hidden');
+    document.getElementById('story-lore-modal').classList.add('hidden');
+    document.getElementById('main-menu-overlay').classList.remove('hidden');
+    audioManager.startMusic('menu');
+  }
+
+  // Actualizar HUD superior (Corazones, Ataque, Pociones, Llaves, Puntos)
+  updateHud() {
+    // Corazones visuales
+    const heartsContainer = document.getElementById('hud-hearts-container');
+    heartsContainer.innerHTML = '';
+    for (let i = 0; i < this.player.maxHearts; i++) {
+      const heartSpan = document.createElement('span');
+      heartSpan.className = 'heart-icon';
+      heartSpan.textContent = i < this.player.hearts ? '❤️' : '🖤';
+      heartsContainer.appendChild(heartSpan);
+    }
+
+    document.getElementById('hud-player-name').textContent = this.player.name;
+    document.getElementById('hud-attack-val').textContent = this.player.attack;
+    document.getElementById('hud-potions-val').textContent = this.player.potions;
+    document.getElementById('hud-keys-val').textContent = this.player.keys;
+    document.getElementById('hud-score-val').textContent = this.player.totalScore.toLocaleString();
+  }
+
+  // Mostrar vitrina de recompensas (Requisito 7)
+  showRewardsModal() {
+    const grid = document.getElementById('rewards-grid');
+    grid.innerHTML = '';
+
+    BOSSES_DATA.forEach((boss) => {
+      const card = document.createElement('div');
+      card.className = 'reward-card';
+
+      const isEarned = this.player.defeatedBosses.has(boss.id);
+      const medalData = this.player.medals.find(m => m.bossId === boss.id);
+
+      if (isEarned && medalData) {
+        card.classList.add('unlocked');
+        card.innerHTML = `
+          <div class="reward-icon">
+            <img class="reward-medal-img unlocked-medal" src="assets/images/medalla${boss.id}.png" alt="${boss.medal}">
+          </div>
+          <div class="reward-name">${boss.medal}</div>
+          <div class="reward-boss">Jefe: ${boss.name} (Nivel ${boss.level})</div>
+          <div class="reward-score">Puntaje: <strong>${medalData.score} PTS</strong></div>
+          <div class="reward-theme">Dominado: ${boss.theme}</div>
+        `;
+      } else {
+        card.classList.add('locked');
+        card.innerHTML = `
+          <div class="reward-icon">
+            <img class="reward-medal-img locked-medal" src="assets/images/medalla${boss.id}.png" alt="${boss.medal}">
+          </div>
+          <div class="reward-name">Medalla Bloqueada</div>
+          <div class="reward-boss">Jefe: ${boss.name} (Nivel ${boss.level})</div>
+          <div class="reward-score">Derrota al jefe para ganar</div>
+          <div class="reward-theme">Tema: ${boss.theme}</div>
+        `;
+      }
+
+      grid.appendChild(card);
+    });
+
+    document.getElementById('rewards-modal').classList.remove('hidden');
+  }
+
+  // Notificación flotante (Toast)
+  showToast(message) {
+    const toast = document.getElementById('game-toast');
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 3500);
+  }
+
+  // Finalización del juego (Requisito 8: Victoria tras derrotar a todos o al jefe 20)
+  handleGameComplete() {
+    this.gameState = 'complete';
+    audioManager.playSfx('victory');
+
+    // Registrar en el Ranking de la Nube (Requisito 7: Solo se registra si termina el juego)
+    const record = cloudRanking.registerCompletedGame(this.player.name, this.player.totalScore, this.player.medals.length);
+
+    const modal = document.getElementById('game-complete-modal');
+    document.getElementById('comp-player-name').textContent = this.player.name;
+    document.getElementById('comp-score-final').textContent = `${this.player.totalScore.toLocaleString()} PTS`;
+    document.getElementById('comp-medals-count').textContent = `${this.player.medals.length} / 20`;
+
+    // Lista de medallas en la pantalla final con sprites reales
+    const medalsList = document.getElementById('comp-medals-list');
+    medalsList.innerHTML = '';
+    this.player.medals.forEach(m => {
+      const mBadge = document.createElement('div');
+      mBadge.className = 'final-medal-badge';
+      mBadge.innerHTML = `<img class="final-medal-img" src="assets/images/medalla${m.bossId}.png" alt="${m.medalName}"> <strong>${m.medalName}</strong> (+${m.score} pts)`;
+      medalsList.appendChild(mBadge);
+    });
+
+    modal.classList.remove('hidden');
+  }
+
+  // Interacción del jugador con objetos y personajes
+  handleInteraction() {
+    if (!this.activeInteractEntity) return;
+
+    const { type, data } = this.activeInteractEntity;
+
+    if (type === 'sign') {
+      // Leer Letrero con Dato Curioso de Java (Requisito 4)
+      audioManager.playSfx('read');
+      document.getElementById('sign-title').textContent = data.title;
+      document.getElementById('sign-category').textContent = `Categoría: ${data.category}`;
+      document.getElementById('sign-body').textContent = data.text;
+      document.getElementById('sign-modal').classList.remove('hidden');
+
+    } else if (type === 'chest') {
+      // Abrir Cofre y obtener 1 de 3 items: espada, poción o llaves (Requisito 4)
+      data.opened = true;
+
+      if (data.item === 'sword') {
+        audioManager.playSfx('sword');
+        this.player.attack += 5; // Aumenta 5 de ataque
+        this.showToast("¡Encontraste una Espada de Acero Templado! Ataque +5 (Total: " + this.player.attack + ")");
+      } else if (data.item === 'potion') {
+        audioManager.playSfx('potion');
+        this.player.potions += 1; // Suma poción
+        this.showToast("¡Encontraste una Poción Curativa! Añadida a tu inventario.");
+      } else if (data.item === 'key') {
+        audioManager.playSfx('key');
+        this.player.keys += 1; // Suma llave para jefe
+        this.showToast("¡Encontraste una Llave de Mazmorra! Necesaria para retar a los jefes.");
+      }
+
+      this.updateHud();
+
+    } else if (type === 'boss') {
+      // Desafiar Jefe (Requiere 1 llave por jefe según Requisito 4)
+      if (this.player.defeatedBosses.has(data.id)) {
+        this.showToast(`Ya has derrotado a ${data.name}. ¡Su medalla brilla en tus recompensas!`);
+        return;
+      }
+
+      if (this.player.keys <= 0) {
+        audioManager.playSfx('wrong');
+        this.showToast(`¡Necesitas 1 Llave de Mazmorra para desafiar a ${data.name}! Busca cofres en el reino.`);
+        return;
+      }
+
+      // Consumir 1 llave y entrar a batalla
+      this.player.keys--;
+      this.updateHud();
+      this.gameState = 'battle';
+      this.battle.startBattle(data);
+    }
+  }
+
+  // Actualización de física y movimiento
+  update(dt) {
+    if (this.gameState === 'paused') {
+      if (this.input.isPause) {
+        audioManager.playSfx('click');
+        this.resumeGame();
+      }
+      return;
+    }
+
+    if (this.gameState !== 'playing') return;
+
+    // Verificar tecla de Pausa (ESC o P)
+    if (this.input.isPause) {
+      this.pauseGame();
+      return;
+    }
+
+    // Movimiento del héroe
+    let dx = 0;
+    let dy = 0;
+
+    if (this.input.isUp) {
+      dy -= 1;
+      this.player.direction = 'up';
+    }
+    if (this.input.isDownDir) {
+      dy += 1;
+      this.player.direction = 'down';
+    }
+    if (this.input.isLeft) {
+      dx -= 1;
+      this.player.direction = 'left';
+    }
+    if (this.input.isRight) {
+      dx += 1;
+      this.player.direction = 'right';
+    }
+
+    this.player.isMoving = dx !== 0 || dy !== 0;
+
+    if (this.player.isMoving) {
+      // Normalizar vector diagonal
+      const len = Math.hypot(dx, dy);
+      const moveDist = this.player.speed * dt;
+      const vx = (dx / len) * moveDist;
+      const vy = (dy / len) * moveDist;
+
+      // Colisión eje X
+      const newX = this.player.x + vx;
+      const tileX1 = Math.floor(newX / 32);
+      const tileX2 = Math.floor((newX + 24) / 32);
+      const tileY1 = Math.floor(this.player.y / 32);
+      const tileY2 = Math.floor((this.player.y + 24) / 32);
+
+      if (!this.map.isSolid(tileX1, tileY1) && !this.map.isSolid(tileX2, tileY1) &&
+        !this.map.isSolid(tileX1, tileY2) && !this.map.isSolid(tileX2, tileY2)) {
+        this.player.x = newX;
+      }
+
+      // Colisión eje Y
+      const newY = this.player.y + vy;
+      const nTileX1 = Math.floor(this.player.x / 32);
+      const nTileX2 = Math.floor((this.player.x + 24) / 32);
+      const nTileY1 = Math.floor(newY / 32);
+      const nTileY2 = Math.floor((newY + 24) / 32);
+
+      if (!this.map.isSolid(nTileX1, nTileY1) && !this.map.isSolid(nTileX2, nTileY1) &&
+        !this.map.isSolid(nTileX1, nTileY2) && !this.map.isSolid(nTileX2, nTileY2)) {
+        this.player.y = newY;
+      }
+    }
+
+    // Centrar cámara suavemente
+    this.camera.follow(this.player.x + 12, this.player.y + 14);
+
+    // Detección de entidades cercanas para interactuar
+    this.activeInteractEntity = this.map.getNearbyEntity(this.player.x, this.player.y);
+
+    // Tecla de interacción (E / Espacio / Enter)
+    if (this.input.isInteract) {
+      this.handleInteraction();
+    }
+  }
+
+  // Renderizado del juego
+  render() {
+    const ctx = this.renderer.ctx;
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    if (this.gameState === 'menu') {
+      // Fondo animado del Menú Principal: Lluvia de código medieval y antorchas
+      this.renderMenuBackground();
+      return;
+    }
+
+    // 1. Dibujar tiles visibles del mapa
+    const startCol = Math.max(0, Math.floor(this.camera.x / 32));
+    const endCol = Math.min(this.map.width - 1, Math.ceil((this.camera.x + this.canvas.width) / 32));
+    const startRow = Math.max(0, Math.floor(this.camera.y / 32));
+    const endRow = Math.min(this.map.height - 1, Math.ceil((this.camera.y + this.canvas.height) / 32));
+
+    for (let r = startRow; r <= endRow; r++) {
+      for (let c = startCol; c <= endCol; c++) {
+        const screenPos = this.camera.toScreen(c * 32, r * 32);
+        const neighbors = this.map.getTileNeighbors ? this.map.getTileNeighbors(c, r) : null;
+        this.renderer.drawTile(this.map.tiles[r][c], screenPos.x, screenPos.y, 32, neighbors);
+      }
+    }
+
+    // 1.5 Dibujar Mesetas decorativas de pasto elevadas (Requisito 7)
+    if (this.map.plateaus) {
+      this.renderer.drawPlateaus(this.map.plateaus, this.camera);
+    }
+
+    // 2. Dibujar Letreros
+    this.map.signs.forEach(sign => {
+      const pos = this.camera.toScreen(sign.position.x * 32, sign.position.y * 32);
+      this.renderer.drawSign(sign, pos.x, pos.y);
+    });
+
+    // 2.5 Dibujar Decoraciones de Naturaleza (árboles, hongos, flores, rocas, hierba)
+    const decors = this.map.decorations || this.map.vegetation;
+    if (decors) {
+      decors.forEach(decor => {
+        const pos = this.camera.toScreen(decor.x * 32, decor.y * 32);
+        this.renderer.drawDecoration(decor, pos.x, pos.y);
+      });
+    }
+
+    // 3. Dibujar Cofres
+    this.map.chests.forEach(chest => {
+      const pos = this.camera.toScreen(chest.x * 32, chest.y * 32);
+      this.renderer.drawChest(chest, pos.x, pos.y);
+    });
+
+    // 4. Dibujar los 20 Jefes
+    this.map.bosses.forEach(boss => {
+      const pos = this.camera.toScreen(boss.position.x * 32, boss.position.y * 32);
+      const isDefeated = this.player.defeatedBosses.has(boss.id);
+      this.renderer.drawBoss(boss, pos.x, pos.y, isDefeated);
+    });
+
+    // 5. Dibujar al Jugador
+    const playerScreenPos = this.camera.toScreen(this.player.x, this.player.y);
+    this.renderer.drawPlayer(playerScreenPos.x, playerScreenPos.y, this.player.direction, this.player.isMoving, 0);
+
+    // 6. Indicador de Interacción si hay un objeto cercano
+    if (this.activeInteractEntity) {
+      let entPos;
+      let promptText = "[E] Interactuar";
+
+      if (this.activeInteractEntity.type === 'sign') {
+        entPos = this.camera.toScreen(this.activeInteractEntity.data.position.x * 32, this.activeInteractEntity.data.position.y * 32);
+        promptText = "[E] Leer Dato";
+      } else if (this.activeInteractEntity.type === 'chest') {
+        entPos = this.camera.toScreen(this.activeInteractEntity.data.x * 32, this.activeInteractEntity.data.y * 32);
+        promptText = "[E] Abrir Cofre";
+      } else if (this.activeInteractEntity.type === 'boss') {
+        entPos = this.camera.toScreen(this.activeInteractEntity.data.position.x * 32, this.activeInteractEntity.data.position.y * 32);
+        promptText = `[E] Batalla (1 Llave)`;
+      }
+
+      if (entPos) {
+        this.renderer.drawInteractPrompt(entPos.x, entPos.y, promptText);
+      }
+    }
+  }
+
+  // Fondo animado temático para el Menú de Inicio (Requisito 1)
+  renderMenuBackground() {
+    const ctx = this.renderer.ctx;
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+
+    // Fondo degradado cósmico medieval
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, '#020617');
+    grad.addColorStop(0.5, '#0f172a');
+    grad.addColorStop(1, '#1e1b4b');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Lluvia de código binario y palabras reservadas de Java cayendo
+    const t = this.renderer.animTime;
+    const javaKeywords = ['public', 'class', 'void', 'int', 'String', 'new', 'return', 'extends', 'implements', 'JVM', '1010', '0101'];
+
+    ctx.font = '12px monospace';
+    ctx.textAlign = 'center';
+
+    for (let i = 0; i < 35; i++) {
+      const colX = (i * (w / 35)) + 15;
+      const speed = 45 + (i % 7) * 15;
+      const y = (t * speed + i * 90) % (h + 60) - 30;
+      const word = javaKeywords[i % javaKeywords.length];
+
+      ctx.fillStyle = `rgba(56, 189, 248, ${(0.15 + (i % 5) * 0.08)})`;
+      ctx.fillText(word, colX, y);
+    }
+
+    // Partículas de chispas mágicas doradas flotando
+    for (let p = 0; p < 25; p++) {
+      const px = (p * 77 + Math.sin(t + p) * 40) % w;
+      const py = (h - ((t * 30 + p * 45) % h));
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.45)';
+      ctx.fillRect(px, py, 3, 3);
+    }
+  }
+
+  // Bucle principal del juego (Game Loop a 60 FPS)
+  gameLoop(currentTime) {
+    if (!this.lastTime) this.lastTime = currentTime;
+    const dt = Math.min(0.1, (currentTime - this.lastTime) / 1000);
+    this.lastTime = currentTime;
+
+    this.renderer.update(dt);
+    this.update(dt);
+    this.render();
+
+    this.input.resetFrame();
+    requestAnimationFrame((t) => this.gameLoop(t));
+  }
+}
+
+// Iniciar al cargar el DOM con soporte para carga inmediata o diferida
+function startCodeQuest() {
+  if (!window.gameInstance) {
+    window.gameInstance = new CodeQuestGame();
+    console.log("🎮 Code Quest iniciado con éxito.");
+  }
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', startCodeQuest);
+} else {
+  startCodeQuest();
+}
+
+// Desbloqueo universal de audio con el primer clic o toque en cualquier parte de la pantalla
+const unlockAudioOnGesture = () => {
+  if (typeof audioManager !== 'undefined') {
+    if (!audioManager.currentMusic) {
+      audioManager.startMusic('menu');
+    } else if (audioManager.currentMusic.paused && !audioManager.isMuted) {
+      audioManager.currentMusic.play().catch(() => { });
+    }
+  }
+  window.removeEventListener('click', unlockAudioOnGesture);
+  window.removeEventListener('keydown', unlockAudioOnGesture);
+  window.removeEventListener('touchstart', unlockAudioOnGesture);
+};
+window.addEventListener('click', unlockAudioOnGesture);
+window.addEventListener('keydown', unlockAudioOnGesture);
+window.addEventListener('touchstart', unlockAudioOnGesture);
