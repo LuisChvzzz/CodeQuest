@@ -172,6 +172,89 @@ class AuthManager {
     return { success: true, user: this.sanitizeUser(user) };
   }
 
+  // Verifica si Firebase está configurado con credenciales válidas
+  isFirebaseConfigured() {
+    return (
+      typeof firebase !== 'undefined' &&
+      typeof window !== 'undefined' &&
+      window.FIREBASE_CONFIG &&
+      window.FIREBASE_CONFIG.apiKey &&
+      window.FIREBASE_CONFIG.apiKey !== "TU_API_KEY_AQUI" &&
+      !window.FIREBASE_CONFIG.apiKey.includes("TU_API_KEY") &&
+      firebase.apps &&
+      firebase.apps.length > 0
+    );
+  }
+
+  // Inicio de sesión oficial con Google a través de Firebase Authentication
+  async signInWithFirebaseGoogle() {
+    if (!this.isFirebaseConfigured()) {
+      return {
+        success: false,
+        needsConfig: true,
+        message: 'Firebase no está configurado aún en js/firebase_config.js.'
+      };
+    }
+
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      // Forzar siempre a Google a mostrar la selección de cuentas
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+
+      const result = await firebase.auth().signInWithPopup(provider);
+      const fbUser = result.user;
+
+      const email = fbUser.email || 'jugador@gmail.com';
+      const heroName = fbUser.displayName || email.split('@')[0];
+
+      // Registrar o sincronizar en el sistema local de Code Quest
+      const accounts = this.getAccounts();
+      let user = accounts.find(a => a.email === email);
+
+      if (!user) {
+        user = {
+          id: 'fb_' + fbUser.uid,
+          email,
+          passwordHash: null,
+          heroName,
+          name: heroName,
+          provider: 'google',
+          firebaseUid: fbUser.uid,
+          photoURL: fbUser.photoURL || null,
+          registeredAt: new Date().toISOString()
+        };
+        accounts.push(user);
+        this.saveAccounts(accounts);
+      } else {
+        user.provider = 'google';
+        user.firebaseUid = fbUser.uid;
+        if (fbUser.displayName) {
+          user.heroName = fbUser.displayName;
+          user.name = fbUser.displayName;
+        }
+        if (fbUser.photoURL) user.photoURL = fbUser.photoURL;
+        this.saveAccounts(accounts);
+      }
+
+      this.setSession(user);
+      return { success: true, user: this.sanitizeUser(user) };
+    } catch (error) {
+      console.error("Firebase Google Auth Error:", error);
+      if (error.code === 'auth/popup-closed-by-user') {
+        return { success: false, message: 'Se canceló la ventana de Google.' };
+      }
+      if (error.code === 'auth/unauthorized-domain') {
+        return {
+          success: false,
+          message: 'Dominio no autorizado en Firebase. Añade localhost en Firebase Console -> Authentication -> Settings -> Authorized domains.'
+        };
+      }
+      return { success: false, message: error.message || 'Error al autenticar con Google en Firebase.' };
+    }
+  }
+
   // Modo Invitado (Guest)
   loginAsGuest() {
     const guestUser = {

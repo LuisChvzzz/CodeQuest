@@ -857,11 +857,24 @@ class CodeQuestGame {
       });
     };
 
-    // Abrir Modal de Google
+    // Abrir Modal de Google o Iniciar con Firebase si está configurado
     if (btnGoogle) {
-      btnGoogle.addEventListener('click', () => {
+      btnGoogle.addEventListener('click', async () => {
         audioManager.playSfx('click');
         clearMessages();
+
+        // 1. Si Firebase ya tiene credenciales válidas en js/firebase_config.js, abrir popup oficial de Google
+        if (typeof authManager !== 'undefined' && authManager.isFirebaseConfigured()) {
+          const res = await authManager.signInWithFirebaseGoogle();
+          if (res.success) {
+            updateSessionUI(res.user);
+          } else if (res.message && !res.message.includes('canceló') && !res.message.includes('cerró')) {
+            showMessage(res.message);
+          }
+          return;
+        }
+
+        // 2. Si no hay llaves de Firebase, abrir el Selector Interactivo de Cuentas Google
         if (googleFeedbackMsg) {
           googleFeedbackMsg.classList.add('hidden');
           googleFeedbackMsg.textContent = '';
