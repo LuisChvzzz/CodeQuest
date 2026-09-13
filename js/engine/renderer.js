@@ -183,6 +183,26 @@ class PixelRenderer {
             ctx.fillRect(px + size - 3, py + 6, 3, 5);
             ctx.fillRect(px + size - 2, py + 18, 2, 6);
           }
+
+          // Barandales de piedra cuando el camino cruza un río (Puente de Piedra medieval)
+          if (neighbors.left === 3 || neighbors.left === 7) {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(px, py, 3, size);
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(px + 1, py + 1, 2, size - 2);
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillRect(px, py + 4, 3, 4);
+            ctx.fillRect(px, py + size - 8, 3, 4);
+          }
+          if (neighbors.right === 3 || neighbors.right === 7) {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(px + size - 3, py, 3, size);
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(px + size - 3, py + 1, 2, size - 2);
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillRect(px + size - 3, py + 4, 3, 4);
+            ctx.fillRect(px + size - 3, py + size - 8, 3, 4);
+          }
         }
         break;
       }
@@ -213,11 +233,18 @@ class PixelRenderer {
           ctx.fillStyle = '#0284c7';
           ctx.fillRect(px, py, size, size);
         }
-        // Leve oleaje dinámico
+        // Oleaje dinámico
         const waveShift = Math.sin(this.animTime * 2.5 + (px + py) * 0.08) * 2;
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
         ctx.fillRect(px + 4 + waveShift, py + 8, size - 10, 2);
         ctx.fillRect(px + 2 - waveShift, py + 20, size - 8, 2);
+
+        // Destellos de sol ocasionales
+        const glint = (Math.sin(this.animTime * 3.5 + px * 0.12) + 1) * 0.5;
+        if (glint > 0.75) {
+          ctx.fillStyle = `rgba(255, 255, 255, ${(glint - 0.75) * 2})`;
+          ctx.fillRect(px + 14, py + 12, 2, 2);
+        }
         break;
       }
 
@@ -249,7 +276,6 @@ class PixelRenderer {
         break;
       }
 
-
       case 7: { // Agua con ondas decoradas con agua_decorada.png (Requisito 6)
         const waterImg = this.terrainSprites.water;
         const waterDecorImg = this.terrainSprites.waterDecor;
@@ -263,9 +289,17 @@ class PixelRenderer {
 
         if (waterDecorImg.complete && waterDecorImg.naturalWidth > 0) {
           const waveShift = Math.sin(this.animTime * 2.5 + (px + py) * 0.08) * 2;
-          ctx.globalAlpha = 0.85;
+          ctx.globalAlpha = 0.88;
           ctx.drawImage(waterDecorImg, px + waveShift, py, size, size);
           ctx.globalAlpha = 1.0;
+        }
+
+        // Destellos relucientes sobre el agua decorada
+        const shimmer = (Math.sin(this.animTime * 4.5 + py * 0.15) + 1) * 0.5;
+        if (shimmer > 0.7) {
+          ctx.fillStyle = `rgba(255, 255, 255, ${(shimmer - 0.7) * 2.5})`;
+          ctx.fillRect(px + 8, py + 6, 2, 2);
+          ctx.fillRect(px + 20, py + 18, 2, 2);
         }
         break;
       }

@@ -108,22 +108,88 @@ class WorldMap {
     fillRect(41, 40, 15, 2, 1);
     fillRect(41, 54, 15, 2, 1);
 
-    // 6. Cuerpos de Agua: Lagos y ríos escénicos (Requisito 6)
-    // Lagos en áreas de pasto alejados de caminos
-    fillRect(3, 13, 3, 5, 3);
-    this.tiles[14][4] = 7; // agua_decorada.png con ondas
-    fillRect(58, 13, 3, 5, 3);
-    this.tiles[14][59] = 7;
-    fillRect(3, 46, 3, 5, 3);
-    this.tiles[47][4] = 7;
-    fillRect(58, 46, 3, 5, 3);
-    this.tiles[47][59] = 7;
+    // 6. Cuerpos de Agua Orgánicos: Lagos con formas naturales y Ríos que cruzan el reino
+    // Helper: Lago orgánico con variación sinusoidal para orillas naturales y curvas
+    const addOrganicLake = (cx, cy, rx, ry, seed = 0) => {
+      for (let y = Math.max(2, Math.floor(cy - ry - 2)); y <= Math.min(this.height - 3, Math.ceil(cy + ry + 2)); y++) {
+        for (let x = Math.max(2, Math.floor(cx - rx - 2)); x <= Math.min(this.width - 3, Math.ceil(cx + rx + 2)); x++) {
+          const dx = (x - cx) / rx;
+          const dy = (y - cy) / ry;
+          const angle = Math.atan2(dy, dx);
+          const noise = Math.sin(angle * 3 + seed) * 0.22 + Math.cos(angle * 2 - seed) * 0.16;
+          const dist = Math.hypot(dx, dy);
+          if (dist <= 1.0 + noise) {
+            // Mantener al menos 2 casillas de distancia de caminos y arenas
+            let nearRoad = false;
+            for (let checkY = Math.max(0, y - 2); checkY <= Math.min(this.height - 1, y + 2); checkY++) {
+              for (let checkX = Math.max(0, x - 2); checkX <= Math.min(this.width - 1, x + 2); checkX++) {
+                if (this.tiles[checkY][checkX] === 1) {
+                  nearRoad = true;
+                  break;
+                }
+              }
+              if (nearRoad) break;
+            }
+            if (!nearRoad && this.tiles[y][x] === 0) {
+              // Núcleo central con ondas de agua_decorada (7), orillas con agua profunda (3)
+              this.tiles[y][x] = (dist < 0.58) ? 7 : 3;
+            }
+          }
+        }
+      }
+    };
 
-    // Ríos decorativos en los límites de cuadrantes
-    fillRect(3, 26, 8, 2, 3);
-    fillRect(18, 26, 8, 2, 3);
-    fillRect(37, 26, 8, 2, 3);
-    fillRect(52, 26, 8, 2, 3);
+    // Helper: Río sinuoso continuo que fluye a través del reino
+    const addMeanderingRiver = (points, width = 2) => {
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const steps = Math.ceil(Math.hypot(p1.x - p0.x, p1.y - p0.y) * 2.5);
+        for (let s = 0; s <= steps; s++) {
+          const t = s / steps;
+          const cx = p0.x + (p1.x - p0.x) * t;
+          const cy = p0.y + (p1.y - p0.y) * t;
+          for (let dy = -Math.floor(width / 2); dy <= Math.ceil(width / 2); dy++) {
+            for (let dx = -Math.floor(width / 2); dx <= Math.ceil(width / 2); dx++) {
+              const tx = Math.floor(cx + dx);
+              const ty = Math.floor(cy + dy);
+              if (tx >= 2 && tx < this.width - 2 && ty >= 2 && ty < this.height - 2) {
+                // Solo transforma pasto en agua; los caminos (1) se conservan intactos como PUENTES
+                if (this.tiles[ty][tx] === 0) {
+                  this.tiles[ty][tx] = ((tx + ty) % 3 === 0) ? 7 : 3;
+                }
+              }
+            }
+          }
+        }
+      }
+    };
+
+    // A. Grandes Lagos Orgánicos en los cuatro extremos del mapa
+    addOrganicLake(5, 14, 3.8, 5.2, 1.2);   // Gran Laguna de las Ninfas (Extremo Noroeste)
+    addOrganicLake(59, 14, 3.8, 5.2, 2.5);  // Gran Lago Esmeralda (Extremo Noreste)
+    addOrganicLake(5, 48, 3.8, 5.2, 0.8);   // Laguna Sagrada del Bosque (Extremo Suroeste)
+    addOrganicLake(59, 48, 3.8, 5.2, 3.1);  // Bahía del Océano Oriental (Extremo Sureste)
+
+    // B. Estanques naturales en los valles norte y sur
+    addOrganicLake(23, 4, 3.5, 2.6, 1.7);   // Estanque del Bosque Norte
+    addOrganicLake(39, 4, 3.5, 2.6, 2.3);   // Estanque del Bosque Noreste
+    addOrganicLake(23, 60, 3.5, 2.6, 0.9);  // Laguna Escondida del Sur
+    addOrganicLake(39, 60, 3.5, 2.6, 2.8);  // Laguna Escondida del Sureste
+
+    // C. Río del Norte: Nace en el oeste, serpentea por el bosque, cruza bajo el Puente Norte y desemboca en el este
+    addMeanderingRiver([
+      { x: 3, y: 26 }, { x: 8, y: 26 }, { x: 13, y: 25 }, { x: 19, y: 26 },
+      { x: 25, y: 26 }, { x: 31, y: 26 }, { x: 37, y: 26 }, { x: 43, y: 25 },
+      { x: 49, y: 26 }, { x: 55, y: 26 }, { x: 61, y: 26 }
+    ], 2);
+
+    // D. Río del Sur: Serpentea entre los valles del sur, pasa bajo el Puente Sur y cruza todo el continente
+    addMeanderingRiver([
+      { x: 3, y: 37 }, { x: 8, y: 37 }, { x: 13, y: 38 }, { x: 19, y: 37 },
+      { x: 25, y: 37 }, { x: 31, y: 37 }, { x: 37, y: 37 }, { x: 43, y: 38 },
+      { x: 49, y: 37 }, { x: 55, y: 37 }, { x: 61, y: 37 }
+    ], 2);
 
     // 7. Delimitar caminos y salas con roca.png (tile 2) con colisión sólida (Requisito 2)
     // Cualquier casilla de pasto (0) adyacente a un camino o sala (1 o 5) se convierte en roca
