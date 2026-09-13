@@ -174,16 +174,15 @@ class AuthManager {
 
   // Verifica si Firebase está configurado con credenciales válidas
   isFirebaseConfigured() {
-    return (
-      typeof firebase !== 'undefined' &&
-      typeof window !== 'undefined' &&
-      window.FIREBASE_CONFIG &&
-      window.FIREBASE_CONFIG.apiKey &&
-      window.FIREBASE_CONFIG.apiKey !== "TU_API_KEY_AQUI" &&
-      !window.FIREBASE_CONFIG.apiKey.includes("TU_API_KEY") &&
-      firebase.apps &&
-      firebase.apps.length > 0
-    );
+    if (typeof firebase === 'undefined' || typeof window === 'undefined' || !window.FIREBASE_CONFIG) return false;
+    const key = window.FIREBASE_CONFIG.apiKey;
+    const hasValidKey = key && key !== "TU_API_KEY_AQUI" && !key.includes("TU_API_KEY");
+    if (hasValidKey && firebase.apps && !firebase.apps.length) {
+      try {
+        firebase.initializeApp(window.FIREBASE_CONFIG);
+      } catch (e) {}
+    }
+    return !!(hasValidKey && firebase.apps && firebase.apps.length > 0);
   }
 
   // Inicio de sesión oficial con Google a través de Firebase Authentication

@@ -16,12 +16,12 @@
 // ============================================================================
 
 window.FIREBASE_CONFIG = {
-  apiKey: "TU_API_KEY_AQUI",
-  authDomain: "tu-proyecto.firebaseapp.com",
-  projectId: "tu-proyecto",
-  storageBucket: "tu-proyecto.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef"
+  apiKey: "AIzaSyDa2tY67Fit3mdgm1I7fQXrUb91EN1qbmo",
+  authDomain: "codequest-7f7a9.firebaseapp.com",
+  projectId: "codequest-7f7a9",
+  storageBucket: "codequest-7f7a9.firebasestorage.app",
+  messagingSenderId: "1066028077036",
+  appId: "1:1066028077036:web:924c95bef043beef687ac9"
 };
 
 // Inicialización segura del SDK de Firebase si se han proporcionado las credenciales
