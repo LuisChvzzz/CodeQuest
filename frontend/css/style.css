@@ -893,11 +893,11 @@ html, body {
   gap: 12px;
 }
 
-/* Jefe arriba a la derecha */
+/* Jefe arriba a la izquierda (Parte superior izquierda) */
 .boss-combatant {
   align-self: flex-start;
-  margin-left: auto;
-  margin-right: 40px;
+  margin-left: 20px;
+  margin-right: auto;
 }
 
 .combatant-hud {
@@ -910,10 +910,11 @@ html, body {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
 }
 
-/* Estilos de HUD del Jugador en Batalla (Requisito 9) */
+/* Estilos de HUD del Jugador en Batalla (Abajo a la derecha) */
 .player-combatant {
   align-self: flex-end;
-  margin-left: 40px;
+  margin-left: auto;
+  margin-right: 20px;
   margin-bottom: 16px;
 }
 
@@ -1021,12 +1022,6 @@ html, body {
   image-rendering: crisp-edges;
 }
 
-/* Jugador abajo a la izquierda */
-.player-combatant {
-  align-self: flex-end;
-  margin-left: 70px;
-  margin-bottom: 20px;
-}
 
 /* Animaciones de Sprites en Combate */
 .sprite-shake {
@@ -1223,6 +1218,200 @@ html, body {
 .inv-card p {
   font-size: 10px;
   color: #94a3b8;
+}
+
+/* ==========================================================================
+   CUADRO DE EXPLICACIÓN PEDAGÓGICA EN COMBATE (TRAS ERROR)
+   ========================================================================== */
+
+.battle-explanation-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(680px, 94%);
+  max-height: 88%;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(2, 6, 23, 0.98) 100%);
+  border: 3px solid #b45309;
+  outline: 2px solid var(--gold-primary);
+  border-radius: 12px;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.92), 0 0 30px rgba(245, 158, 11, 0.35);
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 22px;
+  gap: 12px;
+  animation: popInExplanation 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popInExplanation {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -46%) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.battle-explanation-card.hidden {
+  display: none !important;
+}
+
+.expl-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #334155;
+  padding-bottom: 10px;
+}
+
+.expl-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-retro);
+  font-size: 13px;
+  color: var(--gold-light);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.expl-q-badge {
+  font-size: 9px;
+  font-family: var(--font-retro);
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid var(--gold-primary);
+  color: #fef08a;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.expl-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  max-height: 290px;
+  padding-right: 4px;
+}
+
+.expl-q-box {
+  background: rgba(2, 6, 23, 0.8);
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.expl-q-label {
+  font-size: 10px;
+  font-family: var(--font-retro);
+  color: var(--gold-primary);
+  display: block;
+  margin-bottom: 3px;
+}
+
+.expl-q-body {
+  font-size: 12px;
+  color: #ffffff;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.expl-answers-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.expl-answer-col {
+  border-radius: 6px;
+  padding: 8px 12px;
+  border: 1.5px solid transparent;
+}
+
+.expl-answer-col.user-wrong {
+  background: rgba(153, 27, 27, 0.28);
+  border-color: #ef4444;
+}
+
+.expl-answer-col.correct-right {
+  background: rgba(22, 101, 52, 0.28);
+  border-color: #22c55e;
+}
+
+.expl-answer-tag {
+  font-size: 10px;
+  font-family: var(--font-retro);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+
+.expl-answer-col.user-wrong .expl-answer-tag {
+  color: #fca5a5;
+}
+
+.expl-answer-col.correct-right .expl-answer-tag {
+  color: #86efac;
+}
+
+.expl-answer-text {
+  font-size: 11px;
+  color: #ffffff;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.expl-reason-box {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1.5px solid #475569;
+  border-left: 4px solid var(--gold-primary);
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+
+.expl-reason-title {
+  font-size: 11px;
+  font-family: var(--font-retro);
+  color: var(--gold-light);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.expl-detail-text {
+  font-size: 12px;
+  line-height: 1.55;
+  color: #f1f5f9;
+  white-space: pre-line;
+}
+
+.expl-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 2px solid #334155;
+  padding-top: 10px;
+  gap: 12px;
+}
+
+.expl-damage-notice {
+  font-size: 11px;
+  color: #f87171;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.btn-close-expl {
+  font-size: 11px;
+  padding: 9px 18px;
+  margin-left: auto;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
 }
 
 /* ==========================================================================

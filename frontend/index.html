@@ -513,9 +513,9 @@
       </button>
     </div>
 
-    <!-- Arena Superior: Jefe y Jugador -->
+    <!-- Arena Superior: Jefe (Arriba a la Izquierda) y Jugador (Abajo a la Derecha) -->
     <div class="battle-arena">
-      <!-- Jefe (Arriba a la derecha) -->
+      <!-- Jefe (Arriba a la izquierda) -->
       <div class="combatant-box boss-combatant">
         <div class="combatant-hud">
           <div class="name-row">
@@ -532,7 +532,47 @@
         </div>
       </div>
 
-      <!-- Jugador (Abajo a la izquierda con Stats Visibles - Requisito 9) -->
+      <!-- Cuadro de Explicación cuando el Jugador se Equivoca (Ubicado en la Arena) -->
+      <div id="battle-explanation-card" class="battle-explanation-card hidden">
+        <div class="expl-card-header">
+          <div class="expl-card-title">
+            <img src="assets/icons/foco.png" class="pixel-icon pixel-icon-lg" alt="Sabiduría">
+            <span>Explicación del Sabio de Java</span>
+          </div>
+          <span class="expl-q-badge" id="expl-q-badge">Desafío de Código</span>
+        </div>
+        <div class="expl-card-body">
+          <div class="expl-q-box">
+            <span class="expl-q-label">Pregunta:</span>
+            <p id="expl-question-text" class="expl-q-body"></p>
+          </div>
+          <div class="expl-answers-row">
+            <div class="expl-answer-col user-wrong">
+              <span class="expl-answer-tag"><img src="assets/icons/error_rojo.png" class="pixel-icon" alt="Error"> Tu Selección:</span>
+              <p id="expl-user-answer" class="expl-answer-text"></p>
+            </div>
+            <div class="expl-answer-col correct-right">
+              <span class="expl-answer-tag"><img src="assets/icons/check_verde.png" class="pixel-icon" alt="Correcto"> Respuesta Correcta:</span>
+              <p id="expl-correct-answer" class="expl-answer-text"></p>
+            </div>
+          </div>
+          <div class="expl-reason-box">
+            <span class="expl-reason-title"><img src="assets/icons/pergamino.png" class="pixel-icon" alt="Pergamino"> ¿Por qué es incorrecta?</span>
+            <p id="expl-detail-text" class="expl-detail-text"></p>
+          </div>
+        </div>
+        <div class="expl-card-footer">
+          <div class="expl-damage-notice" id="expl-damage-notice">
+            <img src="assets/icons/impacto.png" class="pixel-icon" alt="Daño">
+            <span id="expl-damage-text">El jefe te ha infligido daño.</span>
+          </div>
+          <button id="btn-close-explanation" class="btn-retro btn-primary btn-close-expl" type="button">
+            Cerrar Explicación <img src="assets/icons/flecha_derecha.png" class="pixel-icon" alt="Cerrar">
+          </button>
+        </div>
+      </div>
+
+      <!-- Jugador (Abajo a la derecha con Stats Visibles - Requisito 9) -->
       <div id="battle-player-combatant-box" class="combatant-box player-combatant">
         <div class="combatant-hud player-hud">
           <div class="name-row">

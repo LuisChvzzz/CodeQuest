@@ -49,6 +49,18 @@ class BattleManager {
     this.btnRetreat = document.getElementById('btn-battle-retreat');
     this.playerCombatantBox = document.getElementById('battle-player-combatant-box');
 
+    // Cuadro de Explicación en la Arena (cuando el jugador se equivoca)
+    this.explanationCard = document.getElementById('battle-explanation-card');
+    this.explQuestionBadge = document.getElementById('expl-q-badge');
+    this.explQuestionText = document.getElementById('expl-question-text');
+    this.explUserAnswer = document.getElementById('expl-user-answer');
+    this.explCorrectAnswer = document.getElementById('expl-correct-answer');
+    this.explDetailText = document.getElementById('expl-detail-text');
+    this.explDamageNotice = document.getElementById('expl-damage-notice');
+    this.explDamageText = document.getElementById('expl-damage-text');
+    this.btnCloseExplanation = document.getElementById('btn-close-explanation');
+    this.boundExplanationKeyHandler = null;
+
     this.isPaused = false;
     this.isEscaping = false;
 
@@ -94,9 +106,18 @@ class BattleManager {
         this.handleRetreat();
       });
     }
+
+    // Botón de cerrar la explicación pedagógica en la arena
+    if (this.btnCloseExplanation) {
+      this.btnCloseExplanation.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        this.hideExplanationCard();
+      });
+    }
   }
 
   startBattle(boss) {
+    this.hideExplanationCardDirect();
     this.activeBoss = boss;
     this.bossMaxHp = boss.hp;
     this.bossCurrentHp = boss.hp;
@@ -183,6 +204,7 @@ class BattleManager {
   // Retirada del Combate con Animación de Escape
   handleRetreat() {
     if (this.isEscaping) return;
+    this.hideExplanationCardDirect();
     this.resumeBattle(); // Cerrar modal de pausa
     this.isEscaping = true;
     this.isAnswering = true; // Bloquear selección de preguntas o botones
@@ -409,7 +431,7 @@ class BattleManager {
         this.updateBossHpBar();
         this.animateSprite(this.bossSpriteCanvas, 'shake');
 
-        this.setDialog(`¡Correcto! ${this.currentQuestion.explanation}\n¡Atacas a ${this.activeBoss.name} infligiendo ${damage} puntos de daño!`);
+        this.setDialog(`⚔️ ¡Ataque certero!\n💥 ¡Atacas a ${this.activeBoss.name} infligiendo ${damage} puntos de daño!`);
 
         setTimeout(() => {
           if (this.bossCurrentHp <= 0) {
@@ -434,52 +456,89 @@ class BattleManager {
         this.updatePlayerBattleStats();
         this.animateSprite(this.playerSpriteCanvas, 'flash-red');
 
-        const expl = this.currentQuestion.explanation ? `\n\n📖 Explicación: ${this.currentQuestion.explanation}` : '';
-        this.setDialog(`❌ ¡Incorrecto!${expl}\n\n💥 ${this.activeBoss.name} contraataca y te quita ${bossDmg} corazón(es).\n\n💡 (Toca este recuadro o presiona Espacio para continuar ➡️)`);
+        // Cuadro inferior de combate: solo se muestra lo que va pasando en la batalla (sin la explicación)
+        this.setDialog(`❌ ¡Respuesta incorrecta!\n💥 ${this.activeBoss.name} contraataca y te quita ${bossDmg} corazón(es).`);
 
-        // Tiempo suficiente para leer la explicación con calma (mínimo 6.5s, dinámico según longitud)
-        const explLength = (this.currentQuestion.explanation || '').length;
-        const readDelay = Math.max(6500, Math.min(9500, 4500 + explLength * 35));
-
-        if (this.advanceTimeout) clearTimeout(this.advanceTimeout);
-
-        const cleanupAdvance = () => {
-          if (this.advanceTimeout) {
-            clearTimeout(this.advanceTimeout);
-            this.advanceTimeout = null;
-          }
-          if (this.battleDialogEl) {
-            this.battleDialogEl.removeEventListener('click', onAdvance);
-            this.battleDialogEl.style.cursor = 'default';
-          }
-          window.removeEventListener('keydown', onAdvanceKey);
-        };
-
-        const onAdvance = () => {
-          cleanupAdvance();
-          if (this.game.player.hearts <= 0) {
-            this.handleDefeat();
-          } else {
-            this.isAnswering = false;
-            this.showMainMenu();
-          }
-        };
-
-        const onAdvanceKey = (e) => {
-          if (e.code === 'Space' || e.code === 'Enter') {
-            e.preventDefault();
-            onAdvance();
-          }
-        };
-
-        if (this.battleDialogEl) {
-          this.battleDialogEl.style.cursor = 'pointer';
-          this.battleDialogEl.addEventListener('click', onAdvance);
-        }
-        window.addEventListener('keydown', onAdvanceKey);
-
-        this.advanceTimeout = setTimeout(onAdvance, readDelay);
+        // Desplegar el cuadro grande de explicación en la arena con su botón de cerrar
+        this.showExplanationCard(selectedIndex, bossDmg);
       }, 700);
+    }
+  }
+
+  // Muestra el cuadro de explicación pedagógica en la arena
+  showExplanationCard(selectedIndex, bossDmg) {
+    if (!this.explanationCard || !this.currentQuestion) return;
+
+    if (this.explQuestionBadge) {
+      const bossLvl = this.activeBoss ? this.activeBoss.level : 1;
+      this.explQuestionBadge.textContent = `Nivel ${bossLvl} • Desafío de Java`;
+    }
+
+    if (this.explQuestionText) {
+      this.explQuestionText.textContent = this.currentQuestion.question || '';
+    }
+
+    if (this.explUserAnswer) {
+      const userLetter = String.fromCharCode(65 + selectedIndex);
+      const userText = (this.currentQuestion.options && this.currentQuestion.options[selectedIndex]) || 'Opción no válida';
+      this.explUserAnswer.textContent = `${userLetter}) ${userText}`;
+    }
+
+    if (this.explCorrectAnswer) {
+      const correctIdx = this.currentQuestion.correct;
+      const correctLetter = String.fromCharCode(65 + correctIdx);
+      const correctText = (this.currentQuestion.options && this.currentQuestion.options[correctIdx]) || '';
+      this.explCorrectAnswer.textContent = `${correctLetter}) ${correctText}`;
+    }
+
+    if (this.explDetailText) {
+      this.explDetailText.textContent = this.currentQuestion.explanation || 'Revisa con atención los conceptos clave de Java para este tema.';
+    }
+
+    if (this.explDamageText) {
+      const bossName = this.activeBoss ? this.activeBoss.name : 'El jefe';
+      this.explDamageText.textContent = `${bossName} te ha quitado ${bossDmg} corazón(es).`;
+    }
+
+    // Mostrar el cuadro en la arena
+    this.explanationCard.classList.remove('hidden');
+
+    if (this.boundExplanationKeyHandler) {
+      window.removeEventListener('keydown', this.boundExplanationKeyHandler);
+      this.boundExplanationKeyHandler = null;
+    }
+
+    this.boundExplanationKeyHandler = (e) => {
+      if (e.code === 'Space' || e.code === 'Enter' || e.code === 'Escape') {
+        e.preventDefault();
+        audioManager.playSfx('click');
+        this.hideExplanationCard();
+      }
+    };
+    window.addEventListener('keydown', this.boundExplanationKeyHandler);
+  }
+
+  // Cierra el cuadro de explicación y continúa el flujo de combate
+  hideExplanationCard() {
+    this.hideExplanationCardDirect();
+
+    // Si el jugador se quedó sin vida tras el contraataque, pantalla de derrota
+    if (this.game && this.game.player && this.game.player.hearts <= 0) {
+      this.handleDefeat();
+    } else {
+      this.isAnswering = false;
+      this.showMainMenu();
+    }
+  }
+
+  // Oculta el cuadro directamente sin avanzar turnos ni evaluar derrotas
+  hideExplanationCardDirect() {
+    if (this.boundExplanationKeyHandler) {
+      window.removeEventListener('keydown', this.boundExplanationKeyHandler);
+      this.boundExplanationKeyHandler = null;
+    }
+    if (this.explanationCard) {
+      this.explanationCard.classList.add('hidden');
     }
   }
 
@@ -510,6 +569,7 @@ class BattleManager {
   }
 
   handleVictory() {
+    this.hideExplanationCardDirect();
     audioManager.playSfx('victory');
 
     // Calcular puntaje de la medalla según fallos
@@ -589,6 +649,7 @@ class BattleManager {
   }
 
   handleDefeat() {
+    this.hideExplanationCardDirect();
     audioManager.stopMusic();
     audioManager.playSfx('gameover'); // assets/audio/gameover.mp3
 
@@ -621,6 +682,7 @@ class BattleManager {
   }
 
   closeBattleQuietly() {
+    this.hideExplanationCardDirect();
     if (this.advanceTimeout) {
       clearTimeout(this.advanceTimeout);
       this.advanceTimeout = null;
