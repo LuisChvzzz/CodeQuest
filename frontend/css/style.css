@@ -2889,5 +2889,74 @@ html, body {
   color: #ffffff !important;
 }
 
+/* ==========================================================================
+   ICONOS PIXEL ART (Colección 16x16 Oficial de Code Quest)
+   ========================================================================== */
+.pixel-icon {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  vertical-align: middle;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 
+.pixel-icon-sm {
+  width: 14px;
+  height: 14px;
+}
 
+.pixel-icon-md {
+  width: 18px;
+  height: 18px;
+}
+
+.pixel-icon-lg {
+  width: 22px;
+  height: 22px;
+}
+
+.pixel-icon-xl {
+  width: 32px;
+  height: 32px;
+}
+
+.pixel-icon-crown {
+  width: 48px;
+  height: 48px;
+  animation: crownFloat 3s infinite ease-in-out;
+  filter: drop-shadow(0 4px 10px rgba(251, 191, 36, 0.6));
+}
+
+@keyframes crownFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.06); }
+}
+
+.heart-icon.pixel-icon {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  animation: heartBeat 2s infinite ease-in-out;
+}
+
+.hud-badge .pixel-icon {
+  margin-right: 2px;
+}
+
+.btn-retro .pixel-icon,
+.btn-hud .pixel-icon,
+.btn-pill .pixel-icon,
+.touch-action-btn .pixel-icon {
+  vertical-align: -2px;
+  margin-right: 4px;
+}
+
+.td-rank .pixel-icon,
+.td-medals .pixel-icon {
+  vertical-align: -2px;
+  margin-right: 4px;
+}

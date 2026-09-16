@@ -254,15 +254,15 @@ class BattleManager {
   // Actualizar estadísticas visibles del jugador en batalla (Requisito 9)
   updatePlayerBattleStats() {
     if (this.playerNameEl) this.playerNameEl.textContent = this.game.player.name;
-    if (this.playerAttackEl) this.playerAttackEl.textContent = `🗡️ ATQ: ${this.game.player.attack}`;
+    if (this.playerAttackEl) this.playerAttackEl.innerHTML = `<img src="assets/icons/espada.png" class="pixel-icon" alt="Ataque"> ATQ: ${this.game.player.attack}`;
     if (this.playerHpFillEl) {
       const pct = Math.max(0, Math.min(100, (this.game.player.hearts / this.game.player.maxHearts) * 100));
       this.playerHpFillEl.style.width = `${pct}%`;
     }
-    if (this.playerHpTextEl) this.playerHpTextEl.textContent = `${this.game.player.hearts} / ${this.game.player.maxHearts} ❤️`;
-    if (this.playerPotionsEl) this.playerPotionsEl.textContent = `🧪 ${this.game.player.potions}`;
-    if (this.playerKeysEl) this.playerKeysEl.textContent = `🗝️ ${this.game.player.keys}`;
-    if (this.playerScoreEl) this.playerScoreEl.textContent = `⭐ ${this.game.player.totalScore.toLocaleString()} PTS`;
+    if (this.playerHpTextEl) this.playerHpTextEl.innerHTML = `${this.game.player.hearts} / ${this.game.player.maxHearts} <img src="assets/icons/corazon_lleno.png" class="pixel-icon" alt="Vida">`;
+    if (this.playerPotionsEl) this.playerPotionsEl.innerHTML = `<img src="assets/icons/pocion.png" class="pixel-icon" alt="Pociones"> ${this.game.player.potions}`;
+    if (this.playerKeysEl) this.playerKeysEl.innerHTML = `<img src="assets/icons/llave.png" class="pixel-icon" alt="Llaves"> ${this.game.player.keys}`;
+    if (this.playerScoreEl) this.playerScoreEl.innerHTML = `<img src="assets/icons/estrella.png" class="pixel-icon" alt="Puntos"> ${this.game.player.totalScore.toLocaleString()} PTS`;
   }
 
   setDialog(text) {
@@ -283,14 +283,14 @@ class BattleManager {
     const invList = document.getElementById('battle-inventory-items');
     invList.innerHTML = `
       <div class="inv-card">
-        <div class="inv-icon">🗡️</div>
+        <div class="inv-icon"><img src="assets/icons/espada.png" class="pixel-icon pixel-icon-lg" alt="Espada"></div>
         <div class="inv-details">
           <h4>Espada Heroica</h4>
           <p>Poder de Ataque: <strong>${this.game.player.attack}</strong></p>
         </div>
       </div>
       <div class="inv-card">
-        <div class="inv-icon">🧪</div>
+        <div class="inv-icon"><img src="assets/icons/pocion.png" class="pixel-icon pixel-icon-lg" alt="Poción"></div>
         <div class="inv-details">
           <h4>Poción de Vida (${this.game.player.potions})</h4>
           <p>Restaura 1 Corazón de vida</p>
@@ -300,7 +300,7 @@ class BattleManager {
         </button>
       </div>
       <div class="inv-card">
-        <div class="inv-icon">🗝️</div>
+        <div class="inv-icon"><img src="assets/icons/llave.png" class="pixel-icon pixel-icon-lg" alt="Llaves"></div>
         <div class="inv-details">
           <h4>Llaves de Mazmorra</h4>
           <p>Disponibles: <strong>${this.game.player.keys}</strong></p>

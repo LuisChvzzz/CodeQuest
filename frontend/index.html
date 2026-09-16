@@ -28,7 +28,7 @@
   <header id="game-hud" class="hud-container hidden">
     <div class="hud-left">
       <div class="hud-badge player-badge">
-        <span class="hud-icon">🛡️</span>
+        <span class="hud-icon"><img src="assets/icons/escudo.png" class="pixel-icon" alt="Escudo"></span>
         <span id="hud-player-name">Héroe</span>
       </div>
       <div class="hud-hearts" id="hud-hearts-container">
@@ -38,27 +38,27 @@
 
     <div class="hud-stats">
       <div class="hud-badge" title="Poder de Ataque con Espada">
-        <span class="hud-icon">🗡️</span>
+        <span class="hud-icon"><img src="assets/icons/espada.png" class="pixel-icon" alt="Espada"></span>
         <span class="hud-label">ATQ:</span>
         <strong id="hud-attack-val">25</strong>
       </div>
       <div class="hud-badge" title="Pociones Curativas">
-        <span class="hud-icon">🧪</span>
+        <span class="hud-icon"><img src="assets/icons/pocion.png" class="pixel-icon" alt="Poción"></span>
         <span class="hud-label">POCIONES:</span>
         <strong id="hud-potions-val">2</strong>
       </div>
       <div class="hud-badge" title="Llaves de Mazmorra para Jefes">
-        <span class="hud-icon">🗝️</span>
+        <span class="hud-icon"><img src="assets/icons/llave.png" class="pixel-icon" alt="Llave"></span>
         <span class="hud-label">LLAVES:</span>
         <strong id="hud-keys-val">2</strong>
       </div>
       <div class="hud-badge score-badge" title="Puntos Acumulados">
-        <span class="hud-icon">⭐</span>
+        <span class="hud-icon"><img src="assets/icons/estrella.png" class="pixel-icon" alt="Estrella"></span>
         <span class="hud-label">PUNTOS:</span>
         <strong id="hud-score-val">0</strong>
       </div>
       <div id="hud-target-badge" class="hud-badge target-badge" title="Próximo Jefe a Derrotar">
-        <span class="hud-icon">🎯</span>
+        <span class="hud-icon"><img src="assets/icons/objetivo.png" class="pixel-icon" alt="Objetivo"></span>
         <span class="hud-label">OBJETIVO:</span>
         <strong id="hud-target-val">Jefe 1</strong>
       </div>
@@ -66,10 +66,10 @@
 
     <div class="hud-actions">
       <button id="btn-sound-hud" class="btn-hud btn-sound-hud" title="Silenciar / Activar Sonido">
-        🔊
+        <img src="assets/icons/sonido_on.png" class="pixel-icon" alt="Sonido">
       </button>
       <button id="btn-pause-hud" class="btn-hud" title="Pausar Partida (ESC)">
-        ⏸️ PAUSA
+        <img src="assets/icons/pausa.png" class="pixel-icon" alt="Pausa"> PAUSA
       </button>
     </div>
   </header>
@@ -77,7 +77,7 @@
   <!-- Sugerencia de Rotación Horizontal para Móviles -->
   <aside id="orientation-suggestion-banner" class="orientation-banner hidden">
     <div class="orientation-banner-body">
-      <span class="orientation-banner-icon">🔄</span>
+      <span class="orientation-banner-icon"><img src="assets/icons/reiniciar.png" class="pixel-icon" alt="Rotar"></span>
       <span class="orientation-banner-msg">Sugerencia: <strong>Gira tu móvil en horizontal</strong> para la mejor vista de combate.</span>
       <button id="btn-close-orientation" class="btn-orientation-close" aria-label="Cerrar aviso">✕</button>
     </div>
@@ -99,11 +99,11 @@
     <!-- Botones de Acción Táctiles -->
     <div class="virtual-actions">
       <button id="btn-touch-inventory" class="touch-action-btn touch-inv-btn" aria-label="Mochila / Inventario">
-        <span class="touch-btn-icon">🎒</span>
+        <span class="touch-btn-icon"><img src="assets/icons/mochila.png" class="pixel-icon pixel-icon-lg" alt="Mochila"></span>
         <span class="touch-btn-sub">Mochila</span>
       </button>
       <button id="btn-touch-action" class="touch-action-btn touch-interact-btn" aria-label="Interactuar / Acción [E]">
-        <span class="touch-btn-icon">⚔️</span>
+        <span class="touch-btn-icon"><img src="assets/icons/espadas_cruzadas.png" class="pixel-icon pixel-icon-lg" alt="Acción"></span>
         <span class="touch-btn-sub">[E] Acción</span>
       </button>
     </div>
@@ -113,7 +113,7 @@
   <section id="auth-screen-overlay" class="menu-overlay auth-overlay">
     <div class="menu-content auth-content">
       <div class="game-logo-container">
-        <div class="logo-shield">☕ ⚔️ 🛡️</div>
+        <div class="logo-shield">☕ <img src="assets/icons/espadas_cruzadas.png" class="pixel-icon pixel-icon-lg" alt="Espadas"> <img src="assets/icons/escudo.png" class="pixel-icon pixel-icon-lg" alt="Escudo"></div>
         <h1 class="game-title">CODE QUEST</h1>
         <p class="game-subtitle">Acceso al Reino Sagrado de Java</p>
       </div>
@@ -163,13 +163,13 @@
           <div id="auth-feedback-msg" class="auth-msg hidden"></div>
 
           <button id="btn-auth-submit" class="btn-retro btn-primary" type="submit" style="width: 100%; margin-top: 10px;">
-            ⚔️ Entrar al Reino
+            <img src="assets/icons/espada.png" class="pixel-icon" alt="Entrar"> Entrar al Reino
           </button>
         </form>
 
         <div class="auth-footer-actions">
           <button id="btn-auth-guest" class="btn-link-subtle" type="button">
-            👤 Continuar como Invitado (Sin guardar en la nube)
+            <img src="assets/icons/usuario.png" class="pixel-icon" alt="Invitado"> Continuar como Invitado (Sin guardar en la nube)
           </button>
         </div>
       </div>
@@ -225,7 +225,7 @@
 
       <div class="google-modal-footer">
         <button id="btn-close-google-modal" class="btn-link-subtle" type="button">
-          ✖️ Cancelar
+          <img src="assets/icons/cerrar.png" class="pixel-icon" alt="Cerrar"> Cancelar
         </button>
       </div>
     </div>
@@ -236,13 +236,13 @@
     <div class="menu-content">
       <!-- Barra de Usuario Conectado -->
       <div id="menu-user-badge" class="menu-user-pill">
-        <span class="user-pill-icon">🛡️</span>
+        <span class="user-pill-icon"><img src="assets/icons/escudo.png" class="pixel-icon" alt="Usuario"></span>
         <span id="menu-user-text">Conectado: Héroe</span>
-        <button id="btn-logout-session" class="btn-pill-logout" title="Cerrar Sesión / Cambiar Cuenta" type="button">🚪 Salir</button>
+        <button id="btn-logout-session" class="btn-pill-logout" title="Cerrar Sesión / Cambiar Cuenta" type="button"><img src="assets/icons/puerta.png" class="pixel-icon" alt="Salir"> Salir</button>
       </div>
 
       <div class="game-logo-container">
-        <div class="logo-shield">☕ ⚔️ 🛡️</div>
+        <div class="logo-shield">☕ <img src="assets/icons/espadas_cruzadas.png" class="pixel-icon pixel-icon-lg" alt="Espadas"> <img src="assets/icons/escudo.png" class="pixel-icon pixel-icon-lg" alt="Escudo"></div>
         <h1 class="game-title">CODE QUEST</h1>
         <p class="game-subtitle">El Reino Sagrado de los Fundamentos de Java</p>
       </div>
@@ -250,21 +250,21 @@
       <div class="menu-buttons-list">
         <!-- Botón de Continuar Partida (Se muestra automáticamente si existe partida guardada) -->
         <button id="btn-continue-game" class="btn-retro btn-warning pulse-hover hidden" type="button">
-          <span class="btn-icon">▶️</span> CONTINUAR AVENTURA
+          <span class="btn-icon"><img src="assets/icons/play.png" class="pixel-icon" alt="Play"></span> CONTINUAR AVENTURA
         </button>
         <button id="btn-new-game" class="btn-retro btn-primary pulse-hover" type="button">
-          <span class="btn-icon">⚔️</span> NUEVA PARTIDA
+          <span class="btn-icon"><img src="assets/icons/espadas_cruzadas.png" class="pixel-icon" alt="Nueva Partida"></span> NUEVA PARTIDA
         </button>
         <button id="btn-how-to-play" class="btn-retro btn-secondary" type="button">
-          <span class="btn-icon">📜</span> CÓMO JUGAR
+          <span class="btn-icon"><img src="assets/icons/pergamino.png" class="pixel-icon" alt="Cómo Jugar"></span> CÓMO JUGAR
         </button>
         <button id="btn-ranking" class="btn-retro btn-secondary" type="button">
-          <span class="btn-icon">🏆</span> RANKING GLOBAL
+          <span class="btn-icon"><img src="assets/icons/trofeo.png" class="pixel-icon" alt="Ranking"></span> RANKING GLOBAL
         </button>
       </div>
 
       <div class="menu-footer">
-        <button id="btn-sound-toggle" class="btn-pill" type="button">🔊 Sonido: ON</button>
+        <button id="btn-sound-toggle" class="btn-pill" type="button"><img src="assets/icons/sonido_on.png" class="pixel-icon" alt="Sonido"> Sonido: ON</button>
         <span class="version-tag">v1.1 Auth & Cloud Edition • Mundo RPG 2D</span>
       </div>
     </div>
@@ -286,14 +286,14 @@
 
       <!-- Aviso si ya existe una partida previa para este nombre -->
       <div id="saved-game-prompt-info" class="saved-game-notice hidden">
-        <div class="saved-notice-badge">💾 Partida Guardada Encontrada</div>
+        <div class="saved-notice-badge"><img src="assets/icons/libro.png" class="pixel-icon" alt="Guardado"> Partida Guardada Encontrada</div>
         <p id="saved-game-notice-details">Hemos encontrado una partida guardada con este nombre.</p>
         <div class="modal-actions" style="gap: 10px; margin-top: 10px;">
           <button id="btn-load-existing-game" class="btn-retro btn-warning" type="button">
-            ▶️ Continuar Partida Guardada
+            <img src="assets/icons/play.png" class="pixel-icon" alt="Continuar"> Continuar Partida Guardada
           </button>
           <button id="btn-overwrite-existing-game" class="btn-retro btn-danger" type="button">
-            🔄 Empezar de Nuevo (Sobrescribir)
+            <img src="assets/icons/reiniciar.png" class="pixel-icon" alt="Reiniciar"> Empezar de Nuevo (Sobrescribir)
           </button>
         </div>
       </div>
@@ -310,7 +310,7 @@
   <div id="story-lore-modal" class="modal-backdrop hidden">
     <div class="modal-box parchment-box story-parchment">
       <div class="story-header">
-        <div id="story-avatar-icon" class="story-avatar">📜</div>
+        <div id="story-avatar-icon" class="story-avatar"><img src="assets/icons/pergamino.png" class="pixel-icon pixel-icon-xl" alt="Pergamino"></div>
         <div>
           <h2 id="story-title-text">Instrucciones de Aventura</h2>
           <span id="story-chapter-badge" class="story-chapter-pill">Instrucciones 1 de 3</span>
@@ -320,8 +320,8 @@
         <div id="story-text-content" class="story-text-container"></div>
       </div>
       <div class="story-actions">
-        <button id="btn-story-skip" class="btn-retro btn-secondary btn-small">Saltar a la Aventura ⏩</button>
-        <button id="btn-story-next" class="btn-retro btn-primary">Siguiente ➡️</button>
+        <button id="btn-story-skip" class="btn-retro btn-secondary btn-small">Saltar a la Aventura <img src="assets/icons/play.png" class="pixel-icon" alt="Saltar"></button>
+        <button id="btn-story-next" class="btn-retro btn-primary">Siguiente <img src="assets/icons/play.png" class="pixel-icon" alt="Siguiente"></button>
       </div>
     </div>
   </div>
@@ -330,31 +330,31 @@
   <div id="how-to-play-modal" class="modal-backdrop hidden">
     <div class="modal-box modal-large">
       <div class="box-header">
-        <h2>📜 Guía de Aventura en Code Quest</h2>
+        <h2><img src="assets/icons/pergamino.png" class="pixel-icon pixel-icon-lg" alt="Guía"> Guía de Aventura en Code Quest</h2>
         <button id="btn-close-how-to-play" class="btn-close">✖</button>
       </div>
       <div class="box-scrollable">
         <div class="guide-grid">
           <div class="guide-card">
-            <h3>🎮 Movimiento y Controles</h3>
+            <h3><img src="assets/icons/play.png" class="pixel-icon" alt="Controles"> Movimiento y Controles</h3>
             <p>Usa <strong>W, A, S, D</strong> o las <strong>Flechas del teclado</strong> para caminar libremente por el mundo abierto. Presiona <strong>[E]</strong>, <strong>Espacio</strong> o <strong>Enter</strong> para interactuar con cofres, letreros y jefes.</p>
-            <p>Presiona <strong>[G]</strong> o pulsa Pausa para abrir tu <strong>🎒 Inventario</strong> en cualquier momento del viaje y beber pociones curativas.</p>
+            <p>Presiona <strong>[G]</strong> o pulsa Pausa para abrir tu <strong><img src="assets/icons/mochila.png" class="pixel-icon" alt="Mochila"> Mochila</strong> en cualquier momento del viaje y beber pociones curativas.</p>
           </div>
           <div class="guide-card">
-            <h3>📦 Cofres y Objetos</h3>
+            <h3><img src="assets/icons/candado.png" class="pixel-icon" alt="Cofres"> Cofres y Objetos</h3>
             <p>Explora el mapa para abrir cofres. Contienen 1 de 3 items:</p>
             <ul>
-              <li><strong>🗡️ Espada:</strong> Aumenta tu ataque permanentemente en +5.</li>
-              <li><strong>🧪 Poción:</strong> Restaura 1 corazón de vida (puedes usarlas desde el inventario con tecla [G]).</li>
-              <li><strong>🗝️ Llaves:</strong> Se requiere 1 llave para entrar a combatir a cada jefe.</li>
+              <li><strong><img src="assets/icons/espada.png" class="pixel-icon" alt="Espada"> Espada:</strong> Aumenta tu ataque permanentemente en +5.</li>
+              <li><strong><img src="assets/icons/pocion.png" class="pixel-icon" alt="Poción"> Poción:</strong> Restaura 1 corazón de vida (puedes usarlas desde el inventario con tecla [G]).</li>
+              <li><strong><img src="assets/icons/llave.png" class="pixel-icon" alt="Llaves"> Llaves:</strong> Se requiere 1 llave para entrar a combatir a cada jefe.</li>
             </ul>
           </div>
           <div class="guide-card">
-            <h3>⚔️ 20 Jefes de Java</h3>
+            <h3><img src="assets/icons/espadas_cruzadas.png" class="pixel-icon" alt="Jefes"> 20 Jefes de Java</h3>
             <p>Hay 20 jefes del nivel 1 al 20. En cada batalla por turnos responderás preguntas sobre sintaxis, variables, bucles, arreglos, POO, herencia, interfaces y la JVM. Si aciertas, golpeas al jefe; si fallas, él te hiere.</p>
           </div>
           <div class="guide-card">
-            <h3>🏅 Medallas y Ranking</h3>
+            <h3><img src="assets/icons/medalla.png" class="pixel-icon" alt="Medallas"> Medallas y Ranking</h3>
             <p>Al vencer a un jefe recibes una medalla y puntaje. Entre menos te equivoques, ¡mayor será tu puntaje! Tu récord oficial se sube al <strong>Ranking Global</strong> al derrotar a los 20 jefes.</p>
           </div>
         </div>
@@ -366,7 +366,7 @@
   <div id="ranking-modal" class="modal-backdrop hidden">
     <div class="modal-box modal-large">
       <div class="box-header">
-        <h2>🏆 Salón de la Fama - Ranking Global</h2>
+        <h2><img src="assets/icons/trofeo.png" class="pixel-icon pixel-icon-lg" alt="Ranking"> Salón de la Fama - Ranking Global</h2>
         <button id="btn-close-ranking" class="btn-close">✖</button>
       </div>
       <p class="ranking-info-note">
@@ -395,7 +395,7 @@
   <div id="sign-modal" class="modal-backdrop hidden">
     <div class="modal-box parchment-box sign-parchment">
       <div class="parchment-header">
-        <span class="sign-icon">📜</span>
+        <span class="sign-icon"><img src="assets/icons/pergamino.png" class="pixel-icon pixel-icon-lg" alt="Dato Curioso"></span>
         <h2 id="sign-title">Dato Curioso de Java</h2>
         <span id="sign-category" class="sign-badge">Historia</span>
       </div>
@@ -411,15 +411,15 @@
   <!-- Modal "Menú de Pausa" (Requisito 7) -->
   <div id="pause-modal" class="modal-backdrop hidden">
     <div class="modal-box pause-box">
-      <h2>⚔️ Juego en Pausa ⚔️</h2>
+      <h2><img src="assets/icons/espadas_cruzadas.png" class="pixel-icon" alt="Pausa"> Juego en Pausa <img src="assets/icons/espadas_cruzadas.png" class="pixel-icon" alt="Pausa"></h2>
       <div class="pause-buttons-list">
-        <button id="btn-pause-resume" class="btn-retro btn-primary">▶️ Reanudar</button>
-        <button id="btn-pause-sound" class="btn-retro btn-secondary">🔊 Sonido: ON</button>
-        <button id="btn-pause-inventory" class="btn-retro btn-secondary">🎒 Inventario (G)</button>
-        <button id="btn-pause-rewards" class="btn-retro btn-secondary">🏅 Recompensas</button>
-        <button id="btn-pause-admin-victory" class="btn-retro btn-admin hidden" style="background: linear-gradient(135deg, #b45309, #d97706); border-color: #fbbf24; color: #fff; font-weight: bold; box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);">👑 [Admin] Saltar a Victoria Final</button>
-        <button id="btn-pause-restart" class="btn-retro btn-warning">🔄 Reiniciar</button>
-        <button id="btn-pause-exit" class="btn-retro btn-danger">🚪 Salir al Menú</button>
+        <button id="btn-pause-resume" class="btn-retro btn-primary"><img src="assets/icons/play.png" class="pixel-icon" alt="Reanudar"> Reanudar</button>
+        <button id="btn-pause-sound" class="btn-retro btn-secondary"><img src="assets/icons/sonido_on.png" class="pixel-icon" alt="Sonido"> Sonido: ON</button>
+        <button id="btn-pause-inventory" class="btn-retro btn-secondary"><img src="assets/icons/mochila.png" class="pixel-icon" alt="Inventario"> Inventario (G)</button>
+        <button id="btn-pause-rewards" class="btn-retro btn-secondary"><img src="assets/icons/medalla.png" class="pixel-icon" alt="Recompensas"> Recompensas</button>
+        <button id="btn-pause-admin-victory" class="btn-retro btn-admin hidden" style="background: linear-gradient(135deg, #b45309, #d97706); border-color: #fbbf24; color: #fff; font-weight: bold; box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);"><img src="assets/icons/corona.png" class="pixel-icon" alt="Admin"> [Admin] Saltar a Victoria Final</button>
+        <button id="btn-pause-restart" class="btn-retro btn-warning"><img src="assets/icons/reiniciar.png" class="pixel-icon" alt="Reiniciar"> Reiniciar</button>
+        <button id="btn-pause-exit" class="btn-retro btn-danger"><img src="assets/icons/puerta.png" class="pixel-icon" alt="Salir"> Salir al Menú</button>
       </div>
     </div>
   </div>
@@ -428,7 +428,7 @@
   <div id="inventory-modal" class="modal-backdrop hidden">
     <div class="modal-box inventory-box">
       <div class="box-header">
-        <h2>🎒 Mochila de Aventura</h2>
+        <h2><img src="assets/icons/mochila.png" class="pixel-icon pixel-icon-lg" alt="Mochila"> Mochila de Aventura</h2>
         <button id="btn-close-inventory" class="btn-close">✖</button>
       </div>
       <div class="inventory-content">
@@ -439,26 +439,26 @@
           </div>
           <div class="inv-hearts-row">
             <span class="inv-label">Salud:</span>
-            <span id="inv-hearts-display" class="inv-hearts-icons">❤️❤️❤️❤️❤️</span>
+            <span id="inv-hearts-display" class="inv-hearts-icons"></span>
             <span id="inv-hp-text" class="inv-hp-num">(5/5)</span>
           </div>
           <div class="inv-stats-mini-grid">
             <div class="inv-stat-item">
-              <span class="inv-stat-icon">🗡️</span>
+              <span class="inv-stat-icon"><img src="assets/icons/espada.png" class="pixel-icon" alt="Ataque"></span>
               <div class="inv-stat-texts">
                 <span class="inv-stat-label">Ataque</span>
                 <strong id="inv-attack-val">25</strong>
               </div>
             </div>
             <div class="inv-stat-item">
-              <span class="inv-stat-icon">🗝️</span>
+              <span class="inv-stat-icon"><img src="assets/icons/llave.png" class="pixel-icon" alt="Llaves"></span>
               <div class="inv-stat-texts">
                 <span class="inv-stat-label">Llaves</span>
                 <strong id="inv-keys-val">20</strong>
               </div>
             </div>
             <div class="inv-stat-item">
-              <span class="inv-stat-icon">🏅</span>
+              <span class="inv-stat-icon"><img src="assets/icons/medalla.png" class="pixel-icon" alt="Medallas"></span>
               <div class="inv-stat-texts">
                 <span class="inv-stat-label">Medallas</span>
                 <strong id="inv-medals-val">0 / 20</strong>
@@ -471,7 +471,7 @@
           <h3>Pociones Curativas</h3>
           <div class="potion-card">
             <div class="potion-info">
-              <span class="potion-icon">🧪</span>
+              <span class="potion-icon"><img src="assets/icons/pocion.png" class="pixel-icon pixel-icon-lg" alt="Poción"></span>
               <div class="potion-meta">
                 <h4>Poción de Restauración</h4>
                 <p>Restaura 1 corazón de vida (máx. 5).</p>
@@ -482,7 +482,7 @@
           </div>
         </div>
         <div class="modal-actions" style="margin-top: 16px;">
-          <button id="btn-close-inventory-bottom" class="btn-retro btn-secondary" style="width: 100%;">⬅️ Volver al Juego (G / ESC)</button>
+          <button id="btn-close-inventory-bottom" class="btn-retro btn-secondary" style="width: 100%;"><img src="assets/icons/huida.png" class="pixel-icon" alt="Volver"> Volver al Juego (G / ESC)</button>
         </div>
       </div>
     </div>
@@ -492,7 +492,7 @@
   <div id="rewards-modal" class="modal-backdrop hidden">
     <div class="modal-box modal-large">
       <div class="box-header">
-        <h2>🏅 Vitrina de Recompensas (20 Medallas de Java)</h2>
+        <h2><img src="assets/icons/medalla.png" class="pixel-icon pixel-icon-lg" alt="Vitrina"> Vitrina de Recompensas (20 Medallas de Java)</h2>
         <button id="btn-close-rewards" class="btn-close">✖</button>
       </div>
       <p class="rewards-desc">Aquí se guardan las medallas obtenidas de los jefes derrotados junto a su puntaje.</p>
@@ -509,7 +509,7 @@
     <!-- Barra Superior de Combate (Pausa y Control) -->
     <div class="battle-top-bar">
       <button id="btn-battle-pause" class="btn-retro btn-battle-pause" title="Pausar Combate (ESC)">
-        ⏸️ PAUSA
+        <img src="assets/icons/pausa.png" class="pixel-icon" alt="Pausa"> PAUSA
       </button>
     </div>
 
@@ -537,16 +537,16 @@
         <div class="combatant-hud player-hud">
           <div class="name-row">
             <h3 id="battle-player-name">Héroe</h3>
-            <span id="battle-player-attack-stat" class="player-stat-pill">🗡️ ATQ: 25</span>
+            <span id="battle-player-attack-stat" class="player-stat-pill"><img src="assets/icons/espada.png" class="pixel-icon" alt="Ataque"> ATQ: 25</span>
           </div>
           <div class="hp-bar-container">
             <div id="battle-player-hp-fill" class="hp-bar-fill player-hp-fill"></div>
           </div>
           <div class="player-battle-stats-row">
-            <span class="hp-text" id="battle-player-hp-text">5 / 5 ❤️</span>
-            <span class="battle-mini-stat" id="battle-player-potions-text">🧪 2</span>
-            <span class="battle-mini-stat" id="battle-player-keys-text">🗝️ 2</span>
-            <span class="battle-mini-stat" id="battle-player-score-text">⭐ 0 PTS</span>
+            <span class="hp-text" id="battle-player-hp-text">5 / 5 <img src="assets/icons/corazon_lleno.png" class="pixel-icon" alt="Vida"></span>
+            <span class="battle-mini-stat" id="battle-player-potions-text"><img src="assets/icons/pocion.png" class="pixel-icon" alt="Pociones"> 2</span>
+            <span class="battle-mini-stat" id="battle-player-keys-text"><img src="assets/icons/llave.png" class="pixel-icon" alt="Llaves"> 2</span>
+            <span class="battle-mini-stat" id="battle-player-score-text"><img src="assets/icons/estrella.png" class="pixel-icon" alt="Puntos"> 0 PTS</span>
           </div>
         </div>
         <div class="combatant-sprite-wrapper">
@@ -565,10 +565,10 @@
       <!-- Panel de Opciones Principales (Atacar y Consultar Inventario) -->
       <div id="battle-actions-panel" class="battle-options-box">
         <button id="btn-battle-attack" class="btn-retro btn-combat-action attack-action">
-          ⚔️ ATACAR
+          <img src="assets/icons/espada.png" class="pixel-icon" alt="Atacar"> ATACAR
         </button>
         <button id="btn-battle-inventory" class="btn-retro btn-combat-action inv-action">
-          🎒 CONSULTAR INVENTARIO
+          <img src="assets/icons/mochila.png" class="pixel-icon" alt="Inventario"> CONSULTAR INVENTARIO
         </button>
       </div>
 
@@ -587,7 +587,7 @@
       <div id="battle-inventory-panel" class="battle-inv-box hidden">
         <div class="inv-header">
           <h3>Mochila del Héroe</h3>
-          <button id="btn-battle-back" class="btn-retro btn-small">⬅️ Volver</button>
+          <button id="btn-battle-back" class="btn-retro btn-small"><img src="assets/icons/huida.png" class="pixel-icon" alt="Volver"> Volver</button>
         </div>
         <div id="battle-inventory-items" class="battle-inv-grid">
           <!-- Espadas, Pociones, Llaves -->
@@ -600,20 +600,20 @@
   <div id="battle-pause-modal" class="modal-backdrop hidden battle-pause-backdrop">
     <div class="modal-box parchment-box battle-pause-box">
       <div class="box-header">
-        <h2>⚔️ Batalla en Pausa ⚔️</h2>
+        <h2><img src="assets/icons/espadas_cruzadas.png" class="pixel-icon" alt="Pausa"> Batalla en Pausa <img src="assets/icons/espadas_cruzadas.png" class="pixel-icon" alt="Pausa"></h2>
       </div>
       <p class="box-desc">
         ¿Deseas continuar la batalla contra el jefe o realizar una retirada táctica?
       </p>
       <div class="retreat-warning-note">
-        ⚠️ <strong>Atención:</strong> Si eliges <em>Retirada</em>, abandonarás la pelea con una huida táctica. Los ítems consumidos en esta batalla (llaves y pociones) <strong>se descontarán y no se podrán recuperar</strong>.
+        <img src="assets/icons/alerta.png" class="pixel-icon" alt="Alerta"> <strong>Atención:</strong> Si eliges <em>Retirada</em>, abandonarás la pelea con una huida táctica. Los ítems consumidos en esta batalla (llaves y pociones) <strong>se descontarán y no se podrán recuperar</strong>.
       </div>
       <div class="modal-actions battle-pause-actions">
         <button id="btn-battle-resume" class="btn-retro btn-primary pulse-hover">
-          ▶️ Continuar
+          <img src="assets/icons/play.png" class="pixel-icon" alt="Continuar"> Continuar
         </button>
         <button id="btn-battle-retreat" class="btn-retro btn-danger">
-          🏃 Retirada
+          <img src="assets/icons/huida.png" class="pixel-icon" alt="Retirada"> Retirada
         </button>
       </div>
     </div>
@@ -623,18 +623,18 @@
   <div id="boss-victory-modal" class="modal-backdrop hidden">
     <div class="modal-box victory-box">
       <div class="victory-header">
-        <div class="victory-confetti">🎉 ⚔️ 🏆</div>
+        <div class="victory-confetti"><img src="assets/icons/estrella.png" class="pixel-icon pixel-icon-lg" alt="Celebración"> <img src="assets/icons/espadas_cruzadas.png" class="pixel-icon pixel-icon-lg" alt="Victoria"> <img src="assets/icons/trofeo.png" class="pixel-icon pixel-icon-lg" alt="Trofeo"></div>
         <h2>¡VICTORIA TRIUNFAL!</h2>
         <p>Has derrotado a <strong id="vic-boss-name">Jefe</strong></p>
       </div>
       <div class="victory-medal-display">
-        <div id="vic-medal-icon" class="big-medal-icon">🏅</div>
+        <div id="vic-medal-icon" class="big-medal-icon"><img src="assets/icons/medalla_oro.png" class="pixel-icon pixel-icon-xl" alt="Medalla"></div>
         <h3 id="vic-medal-name">Medalla del Punto y Coma</h3>
         <p class="mistakes-report">Fallos en combate: <strong id="vic-mistakes">0</strong></p>
         <div id="vic-score" class="score-granted">+1000 PTS</div>
       </div>
       <div class="modal-actions">
-        <button id="btn-victory-accept" class="btn-retro btn-primary">¡Continuar Aventura!</button>
+        <button id="btn-victory-accept" class="btn-retro btn-primary"><img src="assets/icons/play.png" class="pixel-icon" alt="Continuar"> ¡Continuar Aventura!</button>
       </div>
     </div>
   </div>
@@ -642,13 +642,13 @@
   <!-- Modal "Derrota / Game Over" (Requisitos 3 y 4) -->
   <div id="game-over-modal" class="modal-backdrop hidden">
     <div class="modal-box defeat-box">
-      <h2>💀 Has Caído en Batalla 💀</h2>
+      <h2><img src="assets/icons/error_rojo.png" class="pixel-icon pixel-icon-lg" alt="Derrota"> Has Caído en Batalla <img src="assets/icons/error_rojo.png" class="pixel-icon pixel-icon-lg" alt="Derrota"></h2>
       <p>Tus conocimientos de Java necesitan reforzarse. ¡No te rindas!</p>
       
       <!-- Recomendación Pedagógica al Caer en Batalla -->
       <div class="defeat-tip-box">
         <div class="defeat-tip-header">
-          <span class="defeat-tip-icon">📜💡</span>
+          <span class="defeat-tip-icon"><img src="assets/icons/pergamino.png" class="pixel-icon pixel-icon-lg" alt="Pergamino"> <img src="assets/icons/sabio_foco.png" class="pixel-icon pixel-icon-lg" alt="Sabiduría"></span>
           <strong>Sabiduría del Reino de Java:</strong>
         </div>
         <p class="defeat-tip-text">
@@ -656,10 +656,10 @@
         </p>
       </div>
 
-      <p class="defeat-warning-note">🛡️ ¡El espíritu del código te protege! Reaparecerás en la Plaza Central con todas tus medallas, espadas y progreso a salvo.</p>
+      <p class="defeat-warning-note"><img src="assets/icons/escudo.png" class="pixel-icon" alt="Protección"> ¡El espíritu del código te protege! Reaparecerás en la Plaza Central con todas tus medallas, espadas y progreso a salvo.</p>
       <div class="modal-actions">
-        <button id="btn-revive" class="btn-retro btn-primary">✨ Reaparecer y Continuar</button>
-        <button id="btn-gameover-menu" class="btn-retro btn-danger">🚪 Menú Principal</button>
+        <button id="btn-revive" class="btn-retro btn-primary"><img src="assets/icons/estrella.png" class="pixel-icon" alt="Reaparecer"> Reaparecer y Continuar</button>
+        <button id="btn-gameover-menu" class="btn-retro btn-danger"><img src="assets/icons/puerta.png" class="pixel-icon" alt="Menú"> Menú Principal</button>
       </div>
     </div>
   </div>
@@ -672,13 +672,13 @@
     <div class="modal-box grand-victory-box">
       <!-- Leyenda de Felicitación al Jugador -->
       <div class="grand-congrats-banner">
-        <span class="banner-star">⭐</span>
+        <span class="banner-star"><img src="assets/icons/estrella.png" class="pixel-icon pixel-icon-lg" alt="Estrella"></span>
         <span class="banner-title">¡FELICITACIONES POR TERMINAR EL JUEGO!</span>
-        <span class="banner-star">⭐</span>
+        <span class="banner-star"><img src="assets/icons/estrella.png" class="pixel-icon pixel-icon-lg" alt="Estrella"></span>
       </div>
 
       <div class="grand-header">
-        <div class="crown-icon">👑</div>
+        <div class="crown-icon"><img src="assets/icons/corona.png" class="pixel-icon pixel-icon-crown" alt="Corona"></div>
         <h1>¡HAS SALVADO EL REINO DE JAVA!</h1>
         <h2>Título Obtenido: Gran Maestro Java</h2>
       </div>
@@ -704,13 +704,13 @@
       </div>
 
       <p class="ranking-registered-note">
-        ✅ ¡Tu récord ha sido registrado exitosamente en el <strong>Ranking Global</strong>!
+        <img src="assets/icons/check_verde.png" class="pixel-icon" alt="Confirmado"> ¡Tu récord ha sido registrado exitosamente en el <strong>Ranking Global</strong>!
       </p>
 
       <!-- Cuadro de Encuesta de Satisfacción y Retroalimentación -->
       <div class="feedback-survey-card">
         <div class="feedback-survey-header">
-          <span class="feedback-survey-icon">📋✨</span>
+          <span class="feedback-survey-icon"><img src="assets/icons/encuesta.png" class="pixel-icon pixel-icon-lg" alt="Encuesta"> <img src="assets/icons/estrella.png" class="pixel-icon pixel-icon-lg" alt="Estrella"></span>
           <h3>¡Tu opinión como Gran Maestro es fundamental!</h3>
         </div>
         <p class="feedback-survey-text">
@@ -720,17 +720,17 @@
            target="_blank" 
            rel="noopener noreferrer" 
            class="btn-feedback-survey">
-          📝 Responder Encuesta de Retroalimentación ↗
+          <img src="assets/icons/encuesta.png" class="pixel-icon" alt="Encuesta"> Responder Encuesta de Retroalimentación ↗
         </a>
       </div>
 
       <!-- 2 Opciones Solicitadas: Consultar Ranking y Volver al Menú Principal -->
       <div class="modal-actions grand-victory-actions">
         <button id="btn-complete-ranking" class="btn-retro btn-secondary pulse-hover">
-          🏆 Consultar Ranking
+          <img src="assets/icons/trofeo.png" class="pixel-icon" alt="Ranking"> Consultar Ranking
         </button>
         <button id="btn-finish-game" class="btn-retro btn-primary">
-          🚪 Volver al Menú Principal
+          <img src="assets/icons/puerta.png" class="pixel-icon" alt="Menú"> Volver al Menú Principal
         </button>
       </div>
     </div>

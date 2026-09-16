@@ -322,9 +322,9 @@ class LeaderboardSystem {
       else if (index === 2) tr.className = 'rank-bronze';
 
       let medalBadge = `#${index + 1}`;
-      if (index === 0) medalBadge = '🥇 #1';
-      else if (index === 1) medalBadge = '🥈 #2';
-      else if (index === 2) medalBadge = '🥉 #3';
+      if (index === 0) medalBadge = '<img src="assets/icons/medalla_oro.png" class="pixel-icon" alt="Oro"> #1';
+      else if (index === 1) medalBadge = '<img src="assets/icons/medalla_plata.png" class="pixel-icon" alt="Plata"> #2';
+      else if (index === 2) medalBadge = '<img src="assets/icons/medalla_bronce.png" class="pixel-icon" alt="Bronce"> #3';
 
       tr.innerHTML = `
         <td class="td-rank">${medalBadge}</td>
@@ -333,7 +333,7 @@ class LeaderboardSystem {
           <span class="player-sub">${entry.title || 'Guerrero Java'}</span>
         </td>
         <td class="td-score">${entry.score.toLocaleString()} PTS</td>
-        <td class="td-medals">🏅 ${entry.medals} / 20</td>
+        <td class="td-medals"><img src="assets/icons/medalla.png" class="pixel-icon" alt="Medallas"> ${entry.medals} / 20</td>
         <td class="td-date">${entry.date}</td>
       `;
 

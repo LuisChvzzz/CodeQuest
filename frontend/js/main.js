@@ -306,7 +306,7 @@ class CodeQuestGame {
           const medCount = saved.medals ? saved.medals.length : 0;
           const score = (saved.totalScore || 0).toLocaleString();
           const atq = saved.attack || 25;
-          detailsEl.innerHTML = `🛡️ Medallas: <strong>${medCount}/20</strong> | ⚔️ Ataque: <strong>${atq}</strong> | 🏆 Puntaje: <strong>${score} PTS</strong>`;
+          detailsEl.innerHTML = `<img src="assets/icons/medalla.png" class="pixel-icon" alt="Medallas"> Medallas: <strong>${medCount}/20</strong> | <img src="assets/icons/espada.png" class="pixel-icon" alt="Ataque"> Ataque: <strong>${atq}</strong> | <img src="assets/icons/trofeo.png" class="pixel-icon" alt="Puntaje"> Puntaje: <strong>${score} PTS</strong>`;
         }
       } else {
         if (promptInfo) promptInfo.classList.add('hidden');
@@ -666,17 +666,17 @@ class CodeQuestGame {
 
   // Sincronizar todos los botones de sonido de la interfaz
   updateAllSoundButtons(isMuted) {
-    const text = isMuted ? '🔇 Silenciado' : '🔊 Sonido: ON';
-    const iconOnly = isMuted ? '🔇' : '🔊';
+    const icon = isMuted ? '<img src="assets/icons/sonido_off.png" class="pixel-icon" alt="Mudo">' : '<img src="assets/icons/sonido_on.png" class="pixel-icon" alt="Sonido">';
+    const label = isMuted ? ' Silenciado' : ' Sonido: ON';
 
     const btnMenu = document.getElementById('btn-sound-toggle');
-    if (btnMenu) btnMenu.textContent = text;
+    if (btnMenu) btnMenu.innerHTML = `${icon}${label}`;
 
     const btnPause = document.getElementById('btn-pause-sound');
-    if (btnPause) btnPause.textContent = text;
+    if (btnPause) btnPause.innerHTML = `${icon}${label}`;
 
     const btnHud = document.getElementById('btn-sound-hud');
-    if (btnHud) btnHud.textContent = iconOnly;
+    if (btnHud) btnHud.innerHTML = icon;
   }
 
   // Inicializar Banner flotante de sugerencia de rotación horizontal
@@ -1257,9 +1257,11 @@ class CodeQuestGame {
     // Corazones visuales
     let heartsIcons = '';
     for (let i = 0; i < this.player.maxHearts; i++) {
-      heartsIcons += i < this.player.hearts ? '❤️' : '🖤';
+      const src = i < this.player.hearts ? 'assets/icons/corazon_lleno.png' : 'assets/icons/corazon_vacio.png';
+      heartsIcons += `<img src="${src}" class="pixel-icon" alt="Vida" style="margin: 0 2px;">`;
     }
-    document.getElementById('inv-hearts-display').textContent = heartsIcons;
+    const heartsDisplay = document.getElementById('inv-hearts-display');
+    if (heartsDisplay) heartsDisplay.innerHTML = heartsIcons;
     document.getElementById('inv-hp-text').textContent = `(${this.player.hearts}/${this.player.maxHearts})`;
 
     // Estadísticas
@@ -1466,10 +1468,11 @@ class CodeQuestGame {
     const heartsContainer = document.getElementById('hud-hearts-container');
     heartsContainer.innerHTML = '';
     for (let i = 0; i < this.player.maxHearts; i++) {
-      const heartSpan = document.createElement('span');
-      heartSpan.className = 'heart-icon';
-      heartSpan.textContent = i < this.player.hearts ? '❤️' : '🖤';
-      heartsContainer.appendChild(heartSpan);
+      const heartImg = document.createElement('img');
+      heartImg.className = 'pixel-icon heart-icon';
+      heartImg.src = i < this.player.hearts ? 'assets/icons/corazon_lleno.png' : 'assets/icons/corazon_vacio.png';
+      heartImg.alt = i < this.player.hearts ? 'Vida' : 'Vacío';
+      heartsContainer.appendChild(heartImg);
     }
 
     document.getElementById('hud-player-name').textContent = this.player.name;
@@ -1485,7 +1488,7 @@ class CodeQuestGame {
       if (nextBoss) {
         targetValEl.textContent = `Jefe ${nextBoss.id}: ${nextBoss.name}`;
       } else {
-        targetValEl.textContent = '¡Todos Vencidos! 👑';
+        targetValEl.innerHTML = '¡Todos Vencidos! <img src="assets/icons/corona.png" class="pixel-icon" alt="Corona">';
       }
     }
   }
