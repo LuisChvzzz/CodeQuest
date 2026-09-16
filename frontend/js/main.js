@@ -1130,46 +1130,46 @@ class CodeQuestGame {
     this.storyChapters = [
       {
         badge: "Guía de Inicio: 1/3",
-        avatar: "🎮",
+        avatar: '<img src="assets/icons/play.png" class="pixel-icon pixel-icon-xl" alt="Controles">',
         title: "Manual del Paladín: Movimiento y Acción",
         html: `
           <p class="story-p">¡Atención, noble paladín <span class="story-highlight">${pName}</span>! Antes de adentrarte en los confines de Bytevalia, debes adiestrar tus reflejos:</p>
           <ul class="story-list">
-            <li><strong>🚶 Movimiento:</strong> Usa las teclas <strong>[W, A, S, D]</strong>, las <strong>Flechas del teclado</strong> (o la <strong>cruceta táctil en pantalla</strong> en celulares) para desplazarte libremente por los senderos y praderas.</li>
-            <li><strong>✨ Interacción:</strong> Presiona <strong>[E]</strong>, <strong>[Espacio]</strong> o el <strong>botón de Acción</strong> táctil frente a cofres del tesoro, letreros de sabiduría y jefes guardianes.</li>
-            <li><strong>🛡️ Senderos Seguros:</strong> Los caminos empedrados están delimitados por murallas de roca natural que te guían hacia cada uno de los 20 Jefes.</li>
+            <li><strong><img src="assets/icons/play.png" class="pixel-icon" alt="Movimiento"> Movimiento:</strong> Usa las teclas <strong>[W, A, S, D]</strong>, las <strong>Flechas del teclado</strong> (o la <strong>cruceta táctil en pantalla</strong> en celulares) para desplazarte libremente por los senderos y praderas.</li>
+            <li><strong><img src="assets/icons/pergamino.png" class="pixel-icon" alt="Acción"> Interacción:</strong> Presiona <strong>[E]</strong>, <strong>[Espacio]</strong> o el <strong>botón de Acción</strong> táctil frente a cofres del tesoro, letreros de sabiduría y jefes guardianes.</li>
+            <li><strong><img src="assets/icons/escudo.png" class="pixel-icon" alt="Senderos"> Senderos Seguros:</strong> Los caminos empedrados están delimitados por murallas de roca natural que te guían hacia cada uno de los 20 Jefes.</li>
           </ul>
         `
       },
       {
         badge: "Guía de Inicio: 2/3",
-        avatar: "🎒",
+        avatar: '<img src="assets/icons/mochila.png" class="pixel-icon pixel-icon-xl" alt="Mochila">',
         title: "Manual del Paladín: Inventario, Pociones y Llaves",
         html: `
           <p class="story-p">Tu supervivencia en este reino exige una gestión impecable de tus recursos, <span class="story-highlight">${pName}</span>:</p>
           <ul class="story-list">
-            <li><strong>🎒 Inventario en Todo Momento [G]:</strong> Puedes consultar tu inventario cuando quieras presionando la tecla <strong>[G]</strong>, el <strong>botón de Mochila</strong> en pantalla, o desde la pausa <strong>[Esc]</strong>.</li>
-            <li><strong>🧪 Pociones Curativas:</strong> Si pierdes corazones, abre tu inventario y consume una Poción de Vida para restaurar tu salud. ¡Encontrarás pociones ocultas en cofres dispersos por todo el mapa!</li>
-            <li><strong>🔑 Llaves de Jefes:</strong> Cada uno de los 20 Jefes requiere <strong>1 Llave</strong> para abrir las puertas de su arena sagrada. Saquea cofres antes de retarlos.</li>
+            <li><strong><img src="assets/icons/mochila.png" class="pixel-icon" alt="Inventario"> Inventario en Todo Momento [G]:</strong> Puedes consultar tu inventario cuando quieras presionando la tecla <strong>[G]</strong>, el <strong>botón de Mochila</strong> en pantalla, o desde la pausa <strong>[Esc]</strong>.</li>
+            <li><strong><img src="assets/icons/pocion.png" class="pixel-icon" alt="Poción"> Pociones Curativas:</strong> Si pierdes corazones, abre tu inventario y consume una Poción de Vida para restaurar tu salud. ¡Encontrarás pociones ocultas en cofres dispersos por todo el mapa!</li>
+            <li><strong><img src="assets/icons/llave.png" class="pixel-icon" alt="Llaves"> Llaves de Jefes:</strong> Cada uno de los 20 Jefes requiere <strong>1 Llave</strong> para abrir las puertas de su arena sagrada. Saquea cofres antes de retarlos.</li>
           </ul>
         `
       },
       {
         badge: "Guía de Inicio: 3/3",
-        avatar: "⚔️",
+        avatar: '<img src="assets/icons/espadas_cruzadas.png" class="pixel-icon pixel-icon-xl" alt="Combate">',
         title: "Manual del Paladín: Duelos de Java y Resurrección",
         html: `
           <p class="story-p">El acero físico no daña a los espectros del código, <span class="story-highlight">${pName}</span>. Tu espada es tu mente lógica:</p>
           <ul class="story-list">
-            <li><strong>🧠 Combate de Programación:</strong> Responde acertadamente a las preguntas de Java para asestar tajos críticos. Respuestas consecutivas activan combos con multiplicadores de daño y puntos.</li>
-            <li><strong>⚠️ Castigo de Sintaxis:</strong> Si eliges una opción incorrecta, el jefe contraatacará y perderás 1 corazón de vida.</li>
-            <li><strong>⏳ Gracia de la Resurrección:</strong> Si tus 5 corazones caen a cero, caerás en batalla, pero la gracia de la JVM te protegerá: reaparecerás en la Plaza Central conservando todas tus medallas, espadas, cofres y progreso acumulado para volver a intentarlo.</li>
+            <li><strong><img src="assets/icons/espadas_cruzadas.png" class="pixel-icon" alt="Combate"> Combate de Programación:</strong> Responde acertadamente a las preguntas de Java para asestar tajos críticos. Respuestas consecutivas activan combos con multiplicadores de daño y puntos.</li>
+            <li><strong><img src="assets/icons/alerta.png" class="pixel-icon" alt="Alerta"> Castigo de Sintaxis:</strong> Si eliges una opción incorrecta, el jefe contraatacará y perderás 1 corazón de vida.</li>
+            <li><strong><img src="assets/icons/corazon_lleno.png" class="pixel-icon" alt="Vida"> Gracia de la Resurrección:</strong> Si tus 5 corazones caen a cero, caerás en batalla, pero la gracia de la JVM te protegerá: reaparecerás en la Plaza Central conservando todas tus medallas, espadas, cofres y progreso acumulado para volver a intentarlo.</li>
           </ul>
         `
       },
       {
         badge: "Crónicas de Bytevalia: I",
-        avatar: "🏰",
+        avatar: '<img src="assets/icons/escudo.png" class="pixel-icon pixel-icon-xl" alt="Reino">',
         title: "La Era del Código Sagrado y la Gran JVM",
         html: `
           <p class="story-p">Mucho antes de que tus pasos se escucharan en estas tierras, <span class="story-highlight">${pName}</span>, el Reino de Bytevalia era un cosmos de perfección inquebrantable forjado sobre los cimientos de la <strong>Sagrada Java Virtual Machine</strong>.</p>
@@ -1178,7 +1178,7 @@ class CodeQuestGame {
       },
       {
         badge: "Crónicas de Bytevalia: II",
-        avatar: "👹",
+        avatar: '<img src="assets/icons/impacto.png" class="pixel-icon pixel-icon-xl" alt="Cataclismo">',
         title: "El Cataclismo del Archimago Corrupto",
         html: `
           <p class="story-p">Pero la codicia oscureció el alma del Archimago Supremo de la JVM. Deseando quebrar las leyes sagradas de la compilación y gobernar sobre el caos, invocó a 19 Señores Oscuros y fracturó el Código Primordial.</p>
@@ -1187,7 +1187,7 @@ class CodeQuestGame {
       },
       {
         badge: "Crónicas de Bytevalia: III",
-        avatar: "👑",
+        avatar: '<img src="assets/icons/corona.png" class="pixel-icon pixel-icon-xl" alt="Profecía">',
         title: `La Profecía del Paladín ${pName}`,
         html: `
           <p class="story-p">Inscrito en el Gran Altar de Obsidiana, un antiguo manuscrito profetizaba este momento exacto: <em>'Cuando el reino colapse en la penumbra del error fatal, emergerá de entre los mortales un paladín con el don supremo de la Compilación Limpia. Su nombre es <span class="story-highlight">${pName}</span>'</em>.</p>
@@ -1210,7 +1210,7 @@ class CodeQuestGame {
     if (badgeEl) badgeEl.textContent = chap.badge;
 
     const avatarEl = document.getElementById('story-avatar-icon');
-    if (avatarEl && chap.avatar) avatarEl.textContent = chap.avatar;
+    if (avatarEl && chap.avatar) avatarEl.innerHTML = chap.avatar;
 
     const titleEl = document.getElementById('story-title-text');
     if (titleEl && chap.title) titleEl.textContent = chap.title;
@@ -1220,9 +1220,9 @@ class CodeQuestGame {
 
     const btnNext = document.getElementById('btn-story-next');
     if (this.currentStoryIndex === this.storyChapters.length - 1) {
-      btnNext.textContent = "¡Comenzar Aventura! ✨";
+      btnNext.innerHTML = `¡Comenzar Aventura! <img src="assets/icons/play.png" class="pixel-icon" alt="Comenzar">`;
     } else {
-      btnNext.textContent = "Siguiente ➡️";
+      btnNext.innerHTML = `Siguiente <img src="assets/icons/flecha_derecha.png" class="pixel-icon" alt="Siguiente">`;
     }
   }
 
@@ -1562,7 +1562,7 @@ class CodeQuestGame {
   // Notificación flotante (Toast)
   showToast(message) {
     const toast = document.getElementById('game-toast');
-    toast.textContent = message;
+    toast.innerHTML = message;
     toast.classList.remove('hidden');
     if (this.toastTimer) clearTimeout(this.toastTimer);
     this.toastTimer = setTimeout(() => {
@@ -1701,7 +1701,7 @@ class CodeQuestGame {
           const reqName = reqBoss ? reqBoss.name : `Jefe ${data.requiredBoss}`;
           const currentBoss = BOSSES_DATA.find(b => b.id === data.bossId);
           const currentName = currentBoss ? currentBoss.name : `Jefe ${data.bossId}`;
-          this.showToast(`🔒 ¡Cofre sellado mágicamente en la zona de ${currentName}! Debes derrotar primero al Jefe ${data.requiredBoss}: ${reqName}.`);
+          this.showToast(`<img src="assets/icons/candado.png" class="pixel-icon" alt="Sellado"> ¡Cofre sellado mágicamente en la zona de ${currentName}! Debes derrotar primero al Jefe ${data.requiredBoss}: ${reqName}.`);
           return;
         }
       }
@@ -1712,15 +1712,15 @@ class CodeQuestGame {
       if (data.item === 'sword') {
         audioManager.playSfx('sword');
         this.player.attack += 5; // Aumenta 5 de ataque
-        this.showToast("¡Encontraste una Espada de Acero Templado! Ataque +5 (Total: " + this.player.attack + ")");
+        this.showToast(`<img src="assets/icons/espada.png" class="pixel-icon" alt="Espada"> ¡Encontraste una Espada de Acero Templado! Ataque +5 (Total: ${this.player.attack})`);
       } else if (data.item === 'potion') {
         audioManager.playSfx('potion');
         this.player.potions += 1; // Suma poción
-        this.showToast("¡Encontraste una Poción Curativa! Añadida a tu inventario.");
+        this.showToast(`<img src="assets/icons/pocion.png" class="pixel-icon" alt="Poción"> ¡Encontraste una Poción Curativa! Añadida a tu inventario.`);
       } else if (data.item === 'key') {
         audioManager.playSfx('key');
         this.player.keys += 1; // Suma llave para jefe
-        this.showToast("¡Encontraste una Llave de Mazmorra! Necesaria para retar a los jefes.");
+        this.showToast(`<img src="assets/icons/llave.png" class="pixel-icon" alt="Llave"> ¡Encontraste una Llave de Mazmorra! Necesaria para retar a los jefes.`);
       }
 
       this.updateHud();
@@ -1729,7 +1729,7 @@ class CodeQuestGame {
     } else if (type === 'boss') {
       // 1. Ya derrotado
       if (this.player.defeatedBosses.has(data.id)) {
-        this.showToast(`Ya has derrotado a ${data.name}. ¡Su medalla brilla en tus recompensas!`);
+        this.showToast(`<img src="assets/icons/medalla.png" class="pixel-icon" alt="Medalla"> Ya has derrotado a ${data.name}. ¡Su medalla brilla en tus recompensas!`);
         return;
       }
 
@@ -1738,14 +1738,14 @@ class CodeQuestGame {
         audioManager.playSfx('wrong');
         const prevBoss = BOSSES_DATA.find(b => b.id === data.id - 1);
         const prevName = prevBoss ? prevBoss.name : `Jefe ${data.id - 1}`;
-        this.showToast(`🔒 ¡El santuario de ${data.name} está sellado! Debes derrotar primero al Jefe ${data.id - 1}: ${prevName}.`);
+        this.showToast(`<img src="assets/icons/candado.png" class="pixel-icon" alt="Sellado"> ¡El santuario de ${data.name} está sellado! Debes derrotar primero al Jefe ${data.id - 1}: ${prevName}.`);
         return;
       }
 
       // 3. Desafiar Jefe (Requiere 1 llave por jefe según Requisito 4)
       if (this.player.keys <= 0) {
         audioManager.playSfx('wrong');
-        this.showToast(`¡Necesitas 1 Llave de Mazmorra para desafiar a ${data.name}! Busca cofres en el reino.`);
+        this.showToast(`<img src="assets/icons/llave.png" class="pixel-icon" alt="Llave"> ¡Necesitas 1 Llave de Mazmorra para desafiar a ${data.name}! Busca cofres en el reino.`);
         return;
       }
 
@@ -1869,22 +1869,24 @@ class CodeQuestGame {
           const boss = this.activeInteractEntity.data;
           const isDefeated = this.player.defeatedBosses.has(boss.id);
           const isLocked = !isDefeated && boss.id > 1 && !this.player.defeatedBosses.has(boss.id - 1);
-          if (iconEl) iconEl.textContent = isDefeated ? '🏅' : (isLocked ? '🔒' : '⚔️');
+          if (iconEl) iconEl.innerHTML = isDefeated ? '<img src="assets/icons/medalla.png" class="pixel-icon" alt="Vencido">' : (isLocked ? '<img src="assets/icons/candado.png" class="pixel-icon" alt="Sellado">' : '<img src="assets/icons/espadas_cruzadas.png" class="pixel-icon" alt="Batalla">');
           if (subEl) subEl.textContent = isDefeated ? '¡Vencido!' : (isLocked ? '¡Sellado!' : '¡Batalla!');
         } else if (this.activeInteractEntity.type === 'chest') {
           const chest = this.activeInteractEntity.data;
           const isLocked = !chest.opened && chest.requiredBoss > 0 && !this.player.defeatedBosses.has(chest.requiredBoss);
-          if (iconEl) iconEl.textContent = isLocked ? '🔒' : '📦';
+          if (iconEl) iconEl.innerHTML = isLocked ? '<img src="assets/icons/candado.png" class="pixel-icon" alt="Sellado">' : '<img src="assets/icons/mochila.png" class="pixel-icon" alt="Cofre">';
           if (subEl) subEl.textContent = isLocked ? '¡Sellado!' : '¡Abrir!';
         } else if (this.activeInteractEntity.type === 'sign') {
-          if (iconEl) iconEl.textContent = '📜';
+          if (iconEl) iconEl.innerHTML = '<img src="assets/icons/pergamino.png" class="pixel-icon" alt="Leer">';
           if (subEl) subEl.textContent = '¡Leer!';
         }
       } else {
         touchActionBtn.classList.remove('entity-nearby');
         const iconEl = touchActionBtn.querySelector('.touch-btn-icon');
         const subEl = touchActionBtn.querySelector('.touch-btn-sub');
-        if (iconEl && iconEl.textContent !== '⚔️') iconEl.textContent = '⚔️';
+        if (iconEl && !iconEl.querySelector('img[src*="espadas_cruzadas"]')) {
+          iconEl.innerHTML = '<img src="assets/icons/espadas_cruzadas.png" class="pixel-icon" alt="Acción">';
+        }
         if (subEl && subEl.textContent !== '[E] Acción') subEl.textContent = '[E] Acción';
       }
     }
@@ -1971,6 +1973,7 @@ class CodeQuestGame {
     if (this.activeInteractEntity) {
       let entPos;
       let promptText = "[E] Interactuar";
+      let iconType = null;
 
       if (this.activeInteractEntity.type === 'sign') {
         entPos = this.camera.toScreen(this.activeInteractEntity.data.position.x * 32, this.activeInteractEntity.data.position.y * 32);
@@ -1979,23 +1982,26 @@ class CodeQuestGame {
         const chest = this.activeInteractEntity.data;
         const isLocked = !chest.opened && chest.requiredBoss > 0 && !this.player.defeatedBosses.has(chest.requiredBoss);
         entPos = this.camera.toScreen(chest.x * 32, chest.y * 32);
-        promptText = isLocked ? "🔒 [E] Cofre Sellado" : "[E] Abrir Cofre";
+        promptText = isLocked ? "[E] Cofre Sellado" : "[E] Abrir Cofre";
+        if (isLocked) iconType = 'candado';
       } else if (this.activeInteractEntity.type === 'boss') {
         const boss = this.activeInteractEntity.data;
         const isDefeated = this.player.defeatedBosses.has(boss.id);
         const isLocked = !isDefeated && boss.id > 1 && !this.player.defeatedBosses.has(boss.id - 1);
         entPos = this.camera.toScreen(boss.position.x * 32, boss.position.y * 32);
         if (isDefeated) {
-          promptText = `🏅 [E] ${boss.name} (Vencido)`;
+          promptText = `[E] ${boss.name} (Vencido)`;
+          iconType = 'medalla';
         } else if (isLocked) {
-          promptText = `🔒 [E] Bloqueado (Vence al Jefe ${boss.id - 1})`;
+          promptText = `[E] Bloqueado (Vence al Jefe ${boss.id - 1})`;
+          iconType = 'candado';
         } else {
           promptText = `[E] Batalla (1 Llave)`;
         }
       }
 
       if (entPos) {
-        this.renderer.drawInteractPrompt(entPos.x, entPos.y, promptText);
+        this.renderer.drawInteractPrompt(entPos.x, entPos.y, promptText, iconType);
       }
     }
   }

@@ -11,7 +11,7 @@ ICONS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 
 BACKUP_DIR = os.path.join(ICONS_DIR, 'original_jpeg')
 os.makedirs(BACKUP_DIR, exist_ok=True)
 
-def is_background_pixel(r, g, b):
+def is_background_pixel(r, g, b, lum_min=120):
     # Los contornos oscuros/negros del icono NUNCA son fondo
     if max(r, g, b) < 65:
         return False
@@ -23,14 +23,17 @@ def is_background_pixel(r, g, b):
     lum = (r + g + b) / 3.0
     if lum > 236:
         return False
-    # El fondo checkerboard es gris neutro (luminancia entre 120 y 235, saturación baja)
-    return (120 <= lum <= 235)
+    # El fondo checkerboard es gris neutro (luminancia entre lum_min y 235, saturación baja)
+    return (lum_min <= lum <= 235)
 
-def remove_background_and_square(img_path):
+def remove_background_and_square(img_path, base_name=''):
     img = Image.open(img_path).convert('RGB')
     w, h = img.size
     rgba = img.convert('RGBA')
     pixels = rgba.load()
+    
+    # Para espadas_cruzadas, evitar que la compresión JPEG en row 58 se filtre al interior del acero
+    lum_min = 148 if base_name == 'espadas_cruzadas' else 120
     
     visited = set()
     queue = deque()
@@ -40,14 +43,14 @@ def remove_background_and_square(img_path):
         for y in [0, h - 1]:
             if (x, y) not in visited:
                 r, g, b = img.getpixel((x, y))
-                if is_background_pixel(r, g, b):
+                if is_background_pixel(r, g, b, lum_min):
                     queue.append((x, y))
                     visited.add((x, y))
     for y in range(h):
         for x in [0, w - 1]:
             if (x, y) not in visited:
                 r, g, b = img.getpixel((x, y))
-                if is_background_pixel(r, g, b):
+                if is_background_pixel(r, g, b, lum_min):
                     queue.append((x, y))
                     visited.add((x, y))
                     
@@ -59,49 +62,48 @@ def remove_background_and_square(img_path):
             nx, ny = cx + dx, cy + dy
             if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in visited:
                 r, g, b = img.getpixel((nx, ny))
-                if is_background_pixel(r, g, b):
+                if is_background_pixel(r, g, b, lum_min):
                     visited.add((nx, ny))
                     queue.append((nx, ny))
                     
-    # 2. Detectar huecos interiores bimodales (como el arco del candado)
-    visited_interior = set()
-    for y in range(h):
-        for x in range(w):
-            if (x, y) not in visited and (x, y) not in visited_interior:
-                r, g, b = img.getpixel((x, y))
-                if is_background_pixel(r, g, b) and (max(r, g, b) - min(r, g, b) <= 15):
-                    comp = []
-                    q = deque([(x, y)])
-                    visited_interior.add((x, y))
-                    while q:
-                        px, py = q.popleft()
-                        comp.append((px, py))
-                        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                            nx, ny = px + dx, py + dy
-                            if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in visited and (nx, ny) not in visited_interior:
-                                nr, ng, nb = img.getpixel((nx, ny))
-                                if is_background_pixel(nr, ng, nb) and (max(nr, ng, nb) - min(nr, ng, nb) <= 15):
-                                    visited_interior.add((nx, ny))
-                                    q.append((nx, ny))
-                    # Si tiene el patrón bimodal del checkerboard (tanto gris ~160 como gris ~210)
-                    has_dark = any(145 <= (img.getpixel(p)[0] + img.getpixel(p)[1] + img.getpixel(p)[2]) / 3 <= 175 for p in comp)
-                    has_light = any(200 <= (img.getpixel(p)[0] + img.getpixel(p)[1] + img.getpixel(p)[2]) / 3 <= 230 for p in comp)
-                    if has_dark and has_light and len(comp) > 100:
-                        for px, py in comp:
-                            pixels[px, py] = (0, 0, 0, 0)
-                            visited.add((px, py))
+    # 2. Detectar huecos interiores bimodales EXCLUSIVAMENTE para candado (el arco del grillete)
+    # Evita perforar hojas de espadas o altavoces metálicos que tienen tonos grises legítimos de acero
+    if base_name == 'candado':
+        visited_interior = set()
+        for y in range(h):
+            for x in range(w):
+                if (x, y) not in visited and (x, y) not in visited_interior:
+                    r, g, b = img.getpixel((x, y))
+                    if is_background_pixel(r, g, b, lum_min) and (max(r, g, b) - min(r, g, b) <= 15):
+                        comp = []
+                        q = deque([(x, y)])
+                        visited_interior.add((x, y))
+                        while q:
+                            px, py = q.popleft()
+                            comp.append((px, py))
+                            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                                nx, ny = px + dx, py + dy
+                                if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in visited and (nx, ny) not in visited_interior:
+                                    nr, ng, nb = img.getpixel((nx, ny))
+                                    if is_background_pixel(nr, ng, nb, lum_min) and (max(nr, ng, nb) - min(nr, ng, nb) <= 15):
+                                        visited_interior.add((nx, ny))
+                                        q.append((nx, ny))
+                        has_dark = any(145 <= (img.getpixel(p)[0] + img.getpixel(p)[1] + img.getpixel(p)[2]) / 3 <= 175 for p in comp)
+                        has_light = any(200 <= (img.getpixel(p)[0] + img.getpixel(p)[1] + img.getpixel(p)[2]) / 3 <= 230 for p in comp)
+                        if has_dark and has_light and len(comp) > 100:
+                            for px, py in comp:
+                                pixels[px, py] = (0, 0, 0, 0)
+                                visited.add((px, py))
                             
     # 3. Recortar al contenido y centrar en lienzo cuadrado con margen
     bbox = rgba.getbbox()
     if bbox:
         cropped = rgba.crop(bbox)
         cw, ch = cropped.size
-        # Tamaño cuadrado con margen
         dim = max(cw, ch)
         margin = max(4, int(dim * 0.05))
         canvas_dim = dim + margin * 2
         square_img = Image.new('RGBA', (canvas_dim, canvas_dim), (0, 0, 0, 0))
-        # Centrar
         offset_x = (canvas_dim - cw) // 2
         offset_y = (canvas_dim - ch) // 2
         square_img.paste(cropped, (offset_x, offset_y), cropped)
@@ -111,17 +113,22 @@ def remove_background_and_square(img_path):
 print("\n🎨 Procesando Iconos del Usuario y Quitando Fondo...")
 
 jpeg_files = [f for f in os.listdir(ICONS_DIR) if f.endswith(('.jpeg', '.jpg'))]
-print(f"📦 Se encontraron {len(jpeg_files)} iconos JPEG para procesar.")
+source_dir = ICONS_DIR
+if not jpeg_files:
+    jpeg_files = [f for f in os.listdir(BACKUP_DIR) if f.endswith(('.jpeg', '.jpg'))]
+    source_dir = BACKUP_DIR
+
+print(f"📦 Se encontraron {len(jpeg_files)} iconos JPEG para procesar desde {source_dir}.")
 
 for f in sorted(jpeg_files):
-    src_path = os.path.join(ICONS_DIR, f)
+    src_path = os.path.join(source_dir, f)
     # Hacer copia de seguridad del JPEG original
     backup_path = os.path.join(BACKUP_DIR, f)
     if not os.path.exists(backup_path):
         shutil.copy2(src_path, backup_path)
         
     base_name = os.path.splitext(f)[0]
-    processed_img = remove_background_and_square(src_path)
+    processed_img = remove_background_and_square(src_path, base_name)
     
     # Guardar PNG principal
     target_png = os.path.join(ICONS_DIR, f"{base_name}.png")

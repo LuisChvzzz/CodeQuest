@@ -100,6 +100,10 @@ class PixelRenderer {
     for (let i = 1; i <= 20; i++) {
       this.medalImgs[i] = createPixelImage(`assets/images/medalla${i}.png`);
     }
+
+    // 8. Iconos pixel art para HUD y Guías en Canvas
+    this.iconCandado = createPixelImage('assets/icons/candado.png');
+    this.iconObjetivo = createPixelImage('assets/icons/objetivo.png');
   }
 
   update(dt) {
@@ -500,9 +504,13 @@ class PixelRenderer {
         ctx.strokeRect(px + 4, py + 5, 24, 22);
 
         // Icono de candado pequeño sobre el cofre
-        ctx.font = '10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('🔒', px + 16, py + 3);
+        if (this.iconCandado && this.iconCandado.complete && this.iconCandado.naturalWidth > 0) {
+          ctx.drawImage(this.iconCandado, px + 9, py - 6, 14, 14);
+        } else {
+          ctx.font = '10px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('🔒', px + 16, py + 3);
+        }
       } else {
         // Destello sutil en la cerradura dorada (sin desbordar al suelo)
         const sparkle = (Math.sin(this.animTime * 6) + 1) * 0.5;
@@ -584,39 +592,68 @@ class PixelRenderer {
 
     // Badge de Nivel flotante o Candado
     ctx.fillStyle = '#1e1b4b';
-    ctx.fillRect(px + 2, by - 12, 28, 10);
+    const badgeW = isLocked ? 34 : 28;
+    const badgeX = px + 16 - badgeW / 2;
+    ctx.fillRect(badgeX, by - 13, badgeW, 11);
     ctx.strokeStyle = isLocked ? '#ef4444' : boss.color;
     ctx.lineWidth = 1.5;
-    ctx.strokeRect(px + 2, by - 12, 28, 10);
+    ctx.strokeRect(badgeX, by - 13, badgeW, 11);
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 7px monospace';
-    ctx.textAlign = 'center';
     if (isLocked) {
-      ctx.fillText(`🔒 LV ${boss.level}`, px + 16, by - 4);
+      if (this.iconCandado && this.iconCandado.complete && this.iconCandado.naturalWidth > 0) {
+        ctx.drawImage(this.iconCandado, badgeX + 2, by - 12, 9, 9);
+        ctx.textAlign = 'left';
+        ctx.fillText(`LV ${boss.level}`, badgeX + 13, by - 5);
+      } else {
+        ctx.textAlign = 'center';
+        ctx.fillText(`🔒 LV ${boss.level}`, px + 16, by - 5);
+      }
     } else {
-      ctx.fillText(`LVL ${boss.level}`, px + 16, by - 4);
+      ctx.textAlign = 'center';
+      ctx.fillText(`LVL ${boss.level}`, px + 16, by - 5);
     }
 
     ctx.restore();
   }
 
-  // Indicador interactivo "[E]"
-  drawInteractPrompt(px, py, text = "[E] Interactuar") {
+  // Indicador interactivo "[E]" con soporte para iconos pixel art (candado, medalla, etc.)
+  drawInteractPrompt(px, py, text = "[E] Interactuar", iconType = null) {
     const ctx = this.ctx;
     const bounce = Math.sin(this.animTime * 6) * 3;
 
     ctx.save();
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-    ctx.fillRect(px - 16, py - 20 + bounce, 64, 15);
+    ctx.font = 'bold 8.5px monospace';
+    const textW = ctx.measureText(text).width;
+
+    let iconImg = null;
+    if (iconType === 'candado') iconImg = this.iconCandado;
+    else if (iconType === 'objetivo') iconImg = this.iconObjetivo;
+    else if (iconType === 'medalla') iconImg = createPixelImage('assets/icons/medalla.png');
+
+    const iconW = (iconImg && iconImg.complete && iconImg.naturalWidth > 0) ? 12 : 0;
+    const totalW = textW + (iconW ? iconW + 6 : 0) + 16;
+    const boxX = px + 16 - totalW / 2;
+    const boxY = py - 20 + bounce;
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    ctx.fillRect(boxX, boxY, totalW, 16);
     ctx.strokeStyle = '#fbbf24';
     ctx.lineWidth = 1.5;
-    ctx.strokeRect(px - 16, py - 20 + bounce, 64, 15);
+    ctx.strokeRect(boxX, boxY, totalW, 16);
+
+    let drawTextX = px + 16;
+    if (iconW) {
+      const iconX = boxX + 6;
+      ctx.drawImage(iconImg, iconX, boxY + 2, 12, 12);
+      drawTextX = iconX + 16 + textW / 2;
+    }
 
     ctx.fillStyle = '#fef08a';
-    ctx.font = 'bold 9px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(text, px + 16, py - 9 + bounce);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, drawTextX, boxY + 8);
     ctx.restore();
   }
 
@@ -706,11 +743,13 @@ class PixelRenderer {
 
       ctx.save();
       // Caja de la baliza
-      const label = `🎯 Jefe ${targetBoss.id}: ${targetBoss.name} (${distTiles}m)`;
+      const textOnly = `Jefe ${targetBoss.id}: ${targetBoss.name} (${distTiles}m)`;
       ctx.font = 'bold 8.5px monospace';
-      const textWidth = ctx.measureText(label).width;
-      const badgeW = textWidth + 24;
-      const badgeH = 18;
+      const textWidth = ctx.measureText(textOnly).width;
+      const iconSize = 13;
+      const spacing = 5;
+      const badgeW = textWidth + iconSize + spacing + 18;
+      const badgeH = 20;
 
       ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
       ctx.strokeStyle = targetBoss.color || '#f59e0b';
@@ -724,12 +763,16 @@ class PixelRenderer {
       ctx.fill();
       ctx.stroke();
 
-      // Texto de objetivo y distancia
+      // Icono pixel de objetivo y texto
       ctx.shadowBlur = 0;
+      const startX = edgeX - badgeW / 2 + 8;
+      if (this.iconObjetivo && this.iconObjetivo.complete && this.iconObjetivo.naturalWidth > 0) {
+        ctx.drawImage(this.iconObjetivo, startX, edgeY - iconSize / 2, iconSize, iconSize);
+      }
       ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
+      ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(label, edgeX, edgeY);
+      ctx.fillText(textOnly, startX + iconSize + spacing, edgeY);
       ctx.restore();
     }
   }
