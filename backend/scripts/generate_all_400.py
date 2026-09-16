@@ -492,8 +492,15 @@ js_output = "// Banco Oficial de 400 Preguntas de Fundamentos de Java de Code Qu
 js_output += "// Exactamente 20 preguntas secuenciales y sin repetición para cada uno de los 20 Jefes (20 x 20 = 400)\n\n"
 js_output += "const QUESTIONS_DATA = " + json.dumps(questions_dict, ensure_ascii=False, indent=2) + ";\n"
 
-with open('js/data/questions.js', 'w', encoding='utf-8') as out_f:
+import os
+
+target_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'frontend', 'js', 'data')
+if not os.path.exists(target_dir):
+    target_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'js', 'data')
+out_filepath = os.path.join(target_dir, 'questions.js')
+
+with open(out_filepath, 'w', encoding='utf-8') as out_f:
     out_f.write(js_output)
 
-print(f'js/data/questions.js successfully generated with {total_q} ordered unique questions!')
+print(f'{out_filepath} successfully generated with {total_q} ordered unique questions!')
 

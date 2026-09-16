@@ -1,19 +1,20 @@
-import http.server
-import socketserver
+# server.py (Root Launcher)
+# Redirige la ejecución al servidor seguro en backend/server.py
+
+import os
 import sys
 
-class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
-    def end_headers(self):
-        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-        self.send_header('Pragma', 'no-cache')
-        self.send_header('Expires', '0')
-        super().end_headers()
+backend_server = os.path.join(os.path.dirname(__file__), 'backend', 'server.py')
 
-PORT = 8085
-socketserver.TCPServer.allow_reuse_address = True
-
-if __name__ == '__main__':
-    with socketserver.TCPServer(("", PORT), NoCacheHandler) as httpd:
-        print(f"Servidor Code Quest con anti-caché corriendo en http://localhost:{PORT}")
-        sys.stdout.flush()
+if os.path.exists(backend_server):
+    with open(backend_server, 'rb') as f:
+        code = compile(f.read(), backend_server, 'exec')
+        exec(code)
+else:
+    import http.server
+    import socketserver
+    PORT = 8085
+    socketserver.TCPServer.allow_reuse_address = True
+    with socketserver.TCPServer(("", PORT), http.server.SimpleHTTPRequestHandler) as httpd:
+        print(f"Servidor en http://localhost:{PORT}")
         httpd.serve_forever()

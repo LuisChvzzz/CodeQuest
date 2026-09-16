@@ -57,6 +57,11 @@
         <span class="hud-label">PUNTOS:</span>
         <strong id="hud-score-val">0</strong>
       </div>
+      <div id="hud-target-badge" class="hud-badge target-badge" title="Próximo Jefe a Derrotar">
+        <span class="hud-icon">🎯</span>
+        <span class="hud-label">OBJETIVO:</span>
+        <strong id="hud-target-val">Jefe 1</strong>
+      </div>
     </div>
 
     <div class="hud-actions">
@@ -638,6 +643,18 @@
     <div class="modal-box defeat-box">
       <h2>💀 Has Caído en Batalla 💀</h2>
       <p>Tus conocimientos de Java necesitan reforzarse. ¡No te rindas!</p>
+      
+      <!-- Recomendación Pedagógica al Caer en Batalla -->
+      <div class="defeat-tip-box">
+        <div class="defeat-tip-header">
+          <span class="defeat-tip-icon">📜💡</span>
+          <strong>Sabiduría del Reino de Java:</strong>
+        </div>
+        <p class="defeat-tip-text">
+          ¡Explora los caminos del reino y <strong>lee detenidamente todos los carteles de datos curiosos</strong>! Cada letrero contiene sabiduría clave sobre Java que te revelará las respuestas para derrotar a los guardianes.
+        </p>
+      </div>
+
       <p class="defeat-warning-note">🛡️ ¡El espíritu del código te protege! Reaparecerás en la Plaza Central con todas tus medallas, espadas y progreso a salvo.</p>
       <div class="modal-actions">
         <button id="btn-revive" class="btn-retro btn-primary">✨ Reaparecer y Continuar</button>
@@ -688,6 +705,23 @@
       <p class="ranking-registered-note">
         ✅ ¡Tu récord ha sido registrado exitosamente en el <strong>Ranking Global</strong>!
       </p>
+
+      <!-- Cuadro de Encuesta de Satisfacción y Retroalimentación -->
+      <div class="feedback-survey-card">
+        <div class="feedback-survey-header">
+          <span class="feedback-survey-icon">📋✨</span>
+          <h3>¡Tu opinión como Gran Maestro es fundamental!</h3>
+        </div>
+        <p class="feedback-survey-text">
+          Te invitamos a responder nuestra breve encuesta de satisfacción y retroalimentación para ayudarnos a seguir mejorando Code Quest:
+        </p>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfGfoxCKGXVBroAAKhBpFmF7vGwrPvR18Z6CM_5hcFkBNxZ7g/viewform?usp=header" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="btn-feedback-survey">
+          📝 Responder Encuesta de Retroalimentación ↗
+        </a>
+      </div>
 
       <!-- 2 Opciones Solicitadas: Consultar Ranking y Volver al Menú Principal -->
       <div class="modal-actions grand-victory-actions">

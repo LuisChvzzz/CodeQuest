@@ -619,4 +619,118 @@ class PixelRenderer {
     ctx.fillText(text, px + 16, py - 9 + bounce);
     ctx.restore();
   }
+
+  // Guía visual de flechas hacia el próximo Jefe (Brújula y Waypoint)
+  drawBossGuide(playerScreenPos, targetBoss, camera, playerWorldX, playerWorldY) {
+    if (!targetBoss || !targetBoss.position) return;
+    const ctx = this.ctx;
+
+    // Coordenadas mundiales del héroe y del jefe objetivo
+    const pwx = playerWorldX + 14;
+    const pwy = playerWorldY + 16;
+    const bwx = targetBoss.position.x * 32 + 16;
+    const bwy = targetBoss.position.y * 32 + 16;
+
+    const dx = bwx - pwx;
+    const dy = bwy - pwy;
+    const distPx = Math.hypot(dx, dy);
+    const distTiles = Math.round(distPx / 32);
+    const angle = Math.atan2(dy, dx);
+
+    // Centro del jugador en pantalla
+    const scx = playerScreenPos.x + 14;
+    const scy = playerScreenPos.y + 16;
+
+    // 1. Flecha mágica orbital alrededor del héroe
+    const pulse = (Math.sin(this.animTime * 5) + 1) * 0.5;
+    const orbitR = 36 + pulse * 4;
+    const arrowX = scx + Math.cos(angle) * orbitR;
+    const arrowY = scy + Math.sin(angle) * orbitR;
+
+    ctx.save();
+    ctx.translate(arrowX, arrowY);
+    ctx.rotate(angle);
+
+    // Resplandor dorado
+    ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
+    ctx.shadowBlur = 10;
+
+    // Flecha dorada
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath();
+    ctx.moveTo(9, 0);
+    ctx.lineTo(-7, -7);
+    ctx.lineTo(-3, 0);
+    ctx.lineTo(-7, 7);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.restore();
+
+    // 2. Destellos rúnicos en el sendero inmediato (rastro de guía)
+    if (distPx > 70) {
+      for (let i = 1; i <= 3; i++) {
+        const dotR = orbitR + i * 14 + (this.animTime * 22) % 14;
+        const dotX = scx + Math.cos(angle) * dotR;
+        const dotY = scy + Math.sin(angle) * dotR;
+        const dotAlpha = Math.max(0, 0.8 - (i * 0.22));
+
+        ctx.save();
+        ctx.fillStyle = `rgba(254, 240, 138, ${dotAlpha})`;
+        ctx.shadowColor = 'rgba(245, 158, 11, 0.8)';
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, 2.2 - i * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // 3. Indicador de baliza en los bordes de la pantalla si el jefe está fuera de vista
+    const bossScreenPos = camera.toScreen(bwx, bwy);
+    const canvasW = this.canvas.width;
+    const canvasH = this.canvas.height;
+    const isOffScreen = bossScreenPos.x < 40 || bossScreenPos.x > canvasW - 40 || bossScreenPos.y < 70 || bossScreenPos.y > canvasH - 40;
+
+    if (isOffScreen && distTiles > 4) {
+      const marginX = 85;
+      const marginY = 65;
+      const midX = canvasW / 2;
+      const midY = canvasH / 2;
+
+      const edgeX = Math.max(marginX, Math.min(canvasW - marginX, midX + Math.cos(angle) * (canvasW * 0.42)));
+      const edgeY = Math.max(marginY, Math.min(canvasH - 35, midY + Math.sin(angle) * (canvasH * 0.38)));
+
+      ctx.save();
+      // Caja de la baliza
+      const label = `🎯 Jefe ${targetBoss.id}: ${targetBoss.name} (${distTiles}m)`;
+      ctx.font = 'bold 8.5px monospace';
+      const textWidth = ctx.measureText(label).width;
+      const badgeW = textWidth + 24;
+      const badgeH = 18;
+
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+      ctx.strokeStyle = targetBoss.color || '#f59e0b';
+      ctx.lineWidth = 1.8;
+      ctx.shadowColor = targetBoss.color || '#f59e0b';
+      ctx.shadowBlur = 10;
+
+      // Rectángulo redondeado
+      ctx.beginPath();
+      ctx.roundRect(edgeX - badgeW / 2, edgeY - badgeH / 2, badgeW, badgeH, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      // Texto de objetivo y distancia
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, edgeX, edgeY);
+      ctx.restore();
+    }
+  }
 }

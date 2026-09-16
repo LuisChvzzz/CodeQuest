@@ -2755,4 +2755,127 @@ html, body {
   text-align: center;
 }
 
+/* ==========================================================================
+   INSIGNIA DE OBJETIVO EN HUD & CONSEJO AL MORIR & ENCUESTA DE VICTORIA
+   ========================================================================== */
+
+/* Badge de Objetivo en HUD */
+.target-badge {
+  border-color: #f59e0b !important;
+  background: rgba(245, 158, 11, 0.15) !important;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+}
+
+.target-badge strong {
+  color: #fbbf24 !important;
+}
+
+/* Consejo Pedagógico en Pantalla de Derrota */
+.defeat-tip-box {
+  margin: 14px 0 18px 0;
+  padding: 14px 18px;
+  background: rgba(254, 243, 199, 0.08);
+  border: 2px dashed rgba(245, 158, 11, 0.6);
+  border-radius: 8px;
+  text-align: left;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
+  animation: tipPulse 3s infinite ease-in-out;
+}
+
+@keyframes tipPulse {
+  0%, 100% { border-color: rgba(245, 158, 11, 0.5); }
+  50% { border-color: rgba(251, 191, 36, 0.9); }
+}
+
+.defeat-tip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fbbf24;
+  font-family: var(--font-retro);
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+.defeat-tip-icon {
+  font-size: 18px;
+}
+
+.defeat-tip-text {
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  color: #fef08a !important;
+  margin: 0 !important;
+}
+
+.defeat-tip-text strong {
+  color: #ffffff;
+  text-decoration: underline;
+  text-decoration-color: #fbbf24;
+}
+
+/* Tarjeta de Encuesta en Gran Victoria Final */
+.feedback-survey-card {
+  margin: 20px 0;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border: 2px solid var(--gold-primary);
+  border-radius: 12px;
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.35);
+  text-align: center;
+}
+
+.feedback-survey-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.feedback-survey-header h3 {
+  font-family: var(--font-retro);
+  font-size: 13px;
+  color: #fbbf24;
+  margin: 0;
+}
+
+.feedback-survey-icon {
+  font-size: 22px;
+}
+
+.feedback-survey-text {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.btn-feedback-survey {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+  color: #ffffff !important;
+  font-family: var(--font-retro);
+  font-size: 11px;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 6px;
+  border: 2px solid #fde047;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.5);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-feedback-survey:hover {
+  background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.7);
+  color: #ffffff !important;
+}
+
+
 

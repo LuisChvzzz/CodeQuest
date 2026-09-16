@@ -1357,6 +1357,9 @@ class CodeQuestGame {
     audioManager.startMusic('explore');
     this.saveGameProgress();
     this.showToast(`¡Has reaparecido en la Plaza Central! Tu progreso, medallas y espadas están a salvo.`);
+    setTimeout(() => {
+      this.showToast(`💡 Consejo: ¡Lee con atención los carteles de datos curiosos en los senderos para descubrir cómo vencer a los jefes!`);
+    }, 3800);
   }
 
   pauseGame() {
@@ -1434,6 +1437,17 @@ class CodeQuestGame {
     document.getElementById('hud-potions-val').textContent = this.player.potions;
     document.getElementById('hud-keys-val').textContent = this.player.keys;
     document.getElementById('hud-score-val').textContent = this.player.totalScore.toLocaleString();
+
+    // Actualizar indicador de objetivo / próximo jefe en el HUD
+    const targetValEl = document.getElementById('hud-target-val');
+    if (targetValEl && typeof BOSSES_DATA !== 'undefined' && this.player) {
+      const nextBoss = BOSSES_DATA.find(b => !this.player.defeatedBosses.has(b.id));
+      if (nextBoss) {
+        targetValEl.textContent = `Jefe ${nextBoss.id}: ${nextBoss.name}`;
+      } else {
+        targetValEl.textContent = '¡Todos Vencidos! 👑';
+      }
+    }
   }
 
   // Mostrar vitrina de recompensas (Requisito 7)
@@ -1828,6 +1842,14 @@ class CodeQuestGame {
     // 5. Dibujar al Jugador
     const playerScreenPos = this.camera.toScreen(this.player.x, this.player.y);
     this.renderer.drawPlayer(playerScreenPos.x, playerScreenPos.y, this.player.direction, this.player.isMoving, 0);
+
+    // 5.5 Flechas y Baliza Guía hacia el próximo jefe a enfrentar
+    if (this.player && typeof BOSSES_DATA !== 'undefined') {
+      const nextBoss = BOSSES_DATA.find(b => !this.player.defeatedBosses.has(b.id));
+      if (nextBoss) {
+        this.renderer.drawBossGuide(playerScreenPos, nextBoss, this.camera, this.player.x, this.player.y);
+      }
+    }
 
     // 6. Indicador de Interacción si hay un objeto cercano
     if (this.activeInteractEntity) {
