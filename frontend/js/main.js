@@ -420,6 +420,14 @@ class CodeQuestGame {
 
     // Atajos de teclado y eventos
     window.addEventListener('keydown', (e) => {
+      // Atajo secreto de administrador para probar victoria final: Ctrl+Alt+V, Cmd+Alt+V o Ctrl+Shift+V
+      const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+      if (isCtrlOrCmd && (e.altKey || e.shiftKey) && (e.key === 'V' || e.key === 'v')) {
+        e.preventDefault();
+        this.triggerAdminVictoryTest();
+        return;
+      }
+
       // Avanzar prólogo con Enter o Espacio si el modal de historia está abierto
       const storyModal = document.getElementById('story-lore-modal');
       if (storyModal && !storyModal.classList.contains('hidden')) {
@@ -1561,6 +1569,52 @@ class CodeQuestGame {
     this.saveGameProgress();
   }
 
+  // Modo de prueba administrativo para previsualizar la pantalla de victoria final sin jugar los 20 niveles
+  triggerAdminVictoryTest() {
+    if (!this.player) {
+      this.initPlayer('Administrador');
+    }
+
+    // Si el jugador no tiene todas las medallas cargadas, simular las 20 medallas y jefes
+    if (!this.player.medals || this.player.medals.length < 20) {
+      this.player.defeatedBosses = new Set(BOSSES_DATA.map(b => b.id));
+      this.player.medals = BOSSES_DATA.map(b => ({
+        bossId: b.id,
+        bossName: b.name,
+        medalName: b.reward.medal,
+        score: b.reward.score
+      }));
+      this.player.totalScore = 25000;
+    }
+
+    this.gameState = 'complete';
+    audioManager.playSfx('victory');
+
+    const modal = document.getElementById('game-complete-modal');
+    document.getElementById('comp-player-name').textContent = this.player.name || "Administrador";
+    document.getElementById('comp-score-final').textContent = `${this.player.totalScore.toLocaleString()} PTS`;
+    document.getElementById('comp-medals-count').textContent = `${this.player.medals.length} / 20`;
+
+    // Lista de medallas en la pantalla final con sprites reales
+    const medalsList = document.getElementById('comp-medals-list');
+    medalsList.innerHTML = '';
+    this.player.medals.forEach(m => {
+      const mBadge = document.createElement('div');
+      mBadge.className = 'final-medal-badge';
+      mBadge.innerHTML = `<img class="final-medal-img" src="assets/images/medalla${m.bossId}.png" alt="${m.medalName}"> <strong>${m.medalName}</strong> (+${m.score} pts)`;
+      medalsList.appendChild(mBadge);
+    });
+
+    // Iniciar lluvia de medallas cayendo en pantalla
+    if (this.medalsRain) {
+      this.medalsRain.start(this.player.medals);
+    }
+
+    modal.classList.remove('hidden');
+    this.updateMobileControlsVisibility();
+    this.showToast('🏆 [Admin] Mostrando Pantalla de Victoria Final para Pruebas.');
+  }
+
   // Interacción del jugador con objetos y personajes
   handleInteraction() {
     if (!this.activeInteractEntity) return;
@@ -1944,10 +1998,21 @@ let activeGameSession = null;
 function startCodeQuest() {
   if (!activeGameSession) {
     activeGameSession = new CodeQuestGame();
-    // Solo exponer en el objeto window si el modo desarrollador está explícitamente activo (?dev=true)
+    // Solo exponer en el objeto window si el modo desarrollador está explícitamente activo (?dev=true o ?admin=true)
     if (window.__CODE_QUEST_DEV__) {
       window.gameInstance = activeGameSession;
-      console.log("🎮 Code Quest iniciado en Modo Desarrollador (?dev=true).");
+      console.log("🎮 Code Quest iniciado en Modo Desarrollador / Administrador.");
+    }
+
+    // Atajos de consola y disparador por URL para el Administrador
+    window.testVictory = () => activeGameSession.triggerAdminVictoryTest();
+    window.testVictoryScreen = () => activeGameSession.triggerAdminVictoryTest();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('test') === 'victory' || urlParams.get('admin') === 'victory') {
+      setTimeout(() => {
+        activeGameSession.triggerAdminVictoryTest();
+      }, 700);
     }
   }
 }

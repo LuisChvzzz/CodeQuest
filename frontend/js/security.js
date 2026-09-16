@@ -3,13 +3,18 @@
 (function() {
   'use strict';
 
-  // 1. Verificación de Modo Desarrollador (?dev=true o ?debug=1 en la URL)
+  // 1. Verificación de Modo Desarrollador / Administrador (?dev=true, ?admin=true o ?test=victory)
   const urlParams = new URLSearchParams(window.location.search);
-  const isDev = urlParams.get('dev') === 'true' || urlParams.get('debug') === '1';
+  const isDev = urlParams.get('dev') === 'true' || 
+                urlParams.get('debug') === '1' || 
+                urlParams.get('admin') === 'true' || 
+                urlParams.get('admin') === '1' || 
+                urlParams.get('admin') === 'victory' || 
+                urlParams.get('test') === 'victory';
   window.__CODE_QUEST_DEV__ = isDev;
 
   if (isDev) {
-    console.info("🛠️ [Code Quest Security] Modo desarrollador activo (?dev=true). Inspección y atajos habilitados.");
+    console.info("🛠️ [Code Quest Security] Modo Desarrollador / Administrador activo. Inspección y atajos habilitados.");
     return;
   }
 
