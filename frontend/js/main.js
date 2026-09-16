@@ -1571,48 +1571,79 @@ class CodeQuestGame {
 
   // Modo de prueba administrativo para previsualizar la pantalla de victoria final sin jugar los 20 niveles
   triggerAdminVictoryTest() {
-    if (!this.player) {
-      this.initPlayer('Administrador');
+    try {
+      if (!this.player) {
+        this.initPlayer('Administrador');
+      }
+
+      // Cerrar cualquier otro modal o pantalla previa
+      document.querySelectorAll('.modal-backdrop').forEach(m => {
+        if (m.id !== 'game-complete-modal') m.classList.add('hidden');
+      });
+      const mainMenu = document.getElementById('main-menu-overlay');
+      if (mainMenu) mainMenu.classList.add('hidden');
+      const battleScreen = document.getElementById('battle-screen');
+      if (battleScreen) battleScreen.classList.add('hidden');
+
+      // Si el jugador no tiene todas las medallas cargadas, simular las 20 medallas y jefes
+      if (!this.player.medals || this.player.medals.length < 20) {
+        this.player.defeatedBosses = new Set(BOSSES_DATA.map(b => b.id));
+        this.player.medals = BOSSES_DATA.map(b => ({
+          bossId: b.id,
+          bossName: b.name,
+          medalName: b.medal || `Medalla de ${b.name}`,
+          medalIcon: b.medalIcon || '🏅',
+          score: 1000 + b.id * 100
+        }));
+        this.player.totalScore = 25000;
+      }
+
+      this.gameState = 'complete';
+      if (typeof audioManager !== 'undefined' && audioManager.playSfx) {
+        audioManager.playSfx('victory');
+      }
+
+      const modal = document.getElementById('game-complete-modal');
+      if (!modal) {
+        console.error("No se encontró el elemento #game-complete-modal en el DOM");
+        return;
+      }
+
+      const nameEl = document.getElementById('comp-player-name');
+      if (nameEl) nameEl.textContent = this.player.name || "Administrador";
+
+      const scoreEl = document.getElementById('comp-score-final');
+      if (scoreEl) scoreEl.textContent = `${this.player.totalScore.toLocaleString()} PTS`;
+
+      const countEl = document.getElementById('comp-medals-count');
+      if (countEl) countEl.textContent = `${this.player.medals.length} / 20`;
+
+      // Lista de medallas en la pantalla final con sprites reales
+      const medalsList = document.getElementById('comp-medals-list');
+      if (medalsList) {
+        medalsList.innerHTML = '';
+        this.player.medals.forEach(m => {
+          const mBadge = document.createElement('div');
+          mBadge.className = 'final-medal-badge';
+          mBadge.innerHTML = `<img class="final-medal-img" src="assets/images/medalla${m.bossId}.png" alt="${m.medalName}"> <strong>${m.medalName}</strong> (+${m.score} pts)`;
+          medalsList.appendChild(mBadge);
+        });
+      }
+
+      // Iniciar lluvia de medallas cayendo en pantalla
+      if (this.medalsRain) {
+        this.medalsRain.start(this.player.medals);
+      }
+
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+      this.updateMobileControlsVisibility();
+      this.updateHud();
+      this.showToast('🏆 [Admin] Pantalla de Victoria Final desplegada.');
+    } catch (err) {
+      console.error("[Admin Victory Test Error]:", err);
+      alert("Error al mostrar victoria final: " + err.message);
     }
-
-    // Si el jugador no tiene todas las medallas cargadas, simular las 20 medallas y jefes
-    if (!this.player.medals || this.player.medals.length < 20) {
-      this.player.defeatedBosses = new Set(BOSSES_DATA.map(b => b.id));
-      this.player.medals = BOSSES_DATA.map(b => ({
-        bossId: b.id,
-        bossName: b.name,
-        medalName: b.reward.medal,
-        score: b.reward.score
-      }));
-      this.player.totalScore = 25000;
-    }
-
-    this.gameState = 'complete';
-    audioManager.playSfx('victory');
-
-    const modal = document.getElementById('game-complete-modal');
-    document.getElementById('comp-player-name').textContent = this.player.name || "Administrador";
-    document.getElementById('comp-score-final').textContent = `${this.player.totalScore.toLocaleString()} PTS`;
-    document.getElementById('comp-medals-count').textContent = `${this.player.medals.length} / 20`;
-
-    // Lista de medallas en la pantalla final con sprites reales
-    const medalsList = document.getElementById('comp-medals-list');
-    medalsList.innerHTML = '';
-    this.player.medals.forEach(m => {
-      const mBadge = document.createElement('div');
-      mBadge.className = 'final-medal-badge';
-      mBadge.innerHTML = `<img class="final-medal-img" src="assets/images/medalla${m.bossId}.png" alt="${m.medalName}"> <strong>${m.medalName}</strong> (+${m.score} pts)`;
-      medalsList.appendChild(mBadge);
-    });
-
-    // Iniciar lluvia de medallas cayendo en pantalla
-    if (this.medalsRain) {
-      this.medalsRain.start(this.player.medals);
-    }
-
-    modal.classList.remove('hidden');
-    this.updateMobileControlsVisibility();
-    this.showToast('🏆 [Admin] Mostrando Pantalla de Victoria Final para Pruebas.');
   }
 
   // Interacción del jugador con objetos y personajes
