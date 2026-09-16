@@ -488,7 +488,10 @@ html, body {
 }
 
 .sign-parchment {
-  max-width: 580px;
+  max-width: 620px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .parchment-header {
@@ -512,11 +515,18 @@ html, body {
   margin-left: auto;
 }
 
+.parchment-content {
+  overflow-y: auto;
+  max-height: 60vh;
+  padding-right: 8px;
+}
+
 .parchment-content p {
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.65;
   font-family: var(--font-body);
-  margin-bottom: 20px;
+  white-space: pre-line;
+  margin-bottom: 16px;
 }
 
 .modal-actions {
