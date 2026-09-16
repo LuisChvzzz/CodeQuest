@@ -43,6 +43,12 @@ class SaveSystem {
 
     // Obtener usuario activo si no se especificó
     const activeUser = user || (typeof authManager !== 'undefined' ? authManager.getCurrentUser() : null);
+
+    // No persistir partidas de prueba administrativa sobre usuarios reales
+    if (activeUser && (activeUser.isAdmin || activeUser.email === 'admin@gmail.com' || heroName === 'Administrador')) {
+      return null;
+    }
+
     const userKey = this.getUserKey(activeUser);
     const normHeroName = this.normalizeKey(heroName);
 

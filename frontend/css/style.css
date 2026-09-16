@@ -557,6 +557,12 @@ html, body {
   margin-top: 8px;
 }
 
+/* Modal de Ranking Global: Se asegura de aparecer sobre la victoria final si se consulta desde allí */
+#ranking-modal {
+  z-index: 1200 !important;
+  position: fixed !important;
+}
+
 /* Tabla de Ranking en Tiempo Real */
 .ranking-info-note {
   font-size: 13px;

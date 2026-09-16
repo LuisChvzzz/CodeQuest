@@ -71,6 +71,10 @@ class AuthManager {
       return { success: false, message: 'El nombre de héroe debe tener al menos 2 caracteres.' };
     }
 
+    if (email === 'admin@gmail.com') {
+      return { success: false, message: 'La cuenta admin@gmail.com es de administración reservada. Inicia sesión directamente.' };
+    }
+
     const accounts = this.getAccounts();
     const existing = accounts.find(a => a.email === email);
     if (existing) {
@@ -101,6 +105,21 @@ class AuthManager {
 
     if (!email || !password) {
       return { success: false, message: 'Por favor ingresa tu correo y contraseña.' };
+    }
+
+    // Credenciales Estáticas de Administrador
+    if (email === 'admin@gmail.com' && password === '1234') {
+      const adminUser = {
+        id: 'usr_admin_master',
+        email: 'admin@gmail.com',
+        heroName: 'Administrador',
+        name: 'Administrador',
+        provider: 'admin',
+        isAdmin: true,
+        registeredAt: '2026-01-01T00:00:00.000Z'
+      };
+      this.setSession(adminUser);
+      return { success: true, user: this.sanitizeUser(adminUser) };
     }
 
     const accounts = this.getAccounts();
@@ -331,13 +350,15 @@ class AuthManager {
   // Limpiar datos sensibles antes de exponer el usuario
   sanitizeUser(user) {
     const hName = user.heroName || user.name || 'Héroe';
+    const isAdmin = !!user.isAdmin || (user.email === 'admin@gmail.com');
     return {
       id: user.id,
       email: user.email,
       heroName: hName,
       name: hName,
       provider: user.provider || 'email',
-      isGuest: !!user.isGuest
+      isGuest: !!user.isGuest,
+      isAdmin: isAdmin
     };
   }
 }

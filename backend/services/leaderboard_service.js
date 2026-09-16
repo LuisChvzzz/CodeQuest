@@ -20,9 +20,11 @@ export function isSameUser(a, b) {
 
 export function deduplicateScores(scores) {
   if (!Array.isArray(scores)) return [];
+  // Excluir registros de administrador
+  const filtered = scores.filter(s => s && s.name !== 'Administrador' && s.userEmail !== 'admin@gmail.com' && s.userId !== 'usr_admin_master');
   const unique = [];
 
-  for (const record of scores) {
+  for (const record of filtered) {
     if (!record || !record.name) continue;
     const existingIdx = unique.findIndex(u => isSameUser(u, record));
 
@@ -130,6 +132,11 @@ export async function handleLeaderboardRequest(req, res) {
       userId: body.userId ? String(body.userId).trim().slice(0, 64) : null,
       userEmail: body.userEmail ? String(body.userEmail).trim().toLowerCase().slice(0, 64) : null
     };
+
+    // Si es cuenta de administrador o simulación, responder 200 sin guardar en Redis
+    if (newRecord.userEmail === 'admin@gmail.com' || newRecord.userId === 'usr_admin_master' || newRecord.name === 'Administrador') {
+      return res.status(200).json({ success: true, message: "Puntaje de prueba administrativa omitido del ranking", record: newRecord });
+    }
 
     if (kvUrl && kvToken) {
       try {

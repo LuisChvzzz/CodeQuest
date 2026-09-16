@@ -278,7 +278,11 @@ class CodeQuestGame {
 
     document.getElementById('btn-close-ranking').addEventListener('click', () => {
       audioManager.playSfx('click');
-      document.getElementById('ranking-modal').classList.add('hidden');
+      const rModal = document.getElementById('ranking-modal');
+      if (rModal) {
+        rModal.classList.add('hidden');
+        rModal.style.display = '';
+      }
     });
 
     // Modal de Nombre de Personaje y Carga de Partida Guardada Existente (Aislada por Usuario)
@@ -402,6 +406,16 @@ class CodeQuestGame {
       document.getElementById('pause-modal').classList.add('hidden');
       this.returnToMainMenu();
     });
+
+    // Botón administrativo en pausa para saltar a victoria final
+    const btnAdminVic = document.getElementById('btn-pause-admin-victory');
+    if (btnAdminVic) {
+      btnAdminVic.addEventListener('click', () => {
+        audioManager.playSfx('click');
+        document.getElementById('pause-modal').classList.add('hidden');
+        this.triggerAdminVictoryTest();
+      });
+    }
 
     // Inventario Fuera de Batalla (Requisito 2)
     const handleCloseInv = () => {
@@ -535,7 +549,11 @@ class CodeQuestGame {
       btnCompRanking.addEventListener('click', () => {
         audioManager.playSfx('click');
         cloudRanking.renderLeaderboard('ranking-table-body');
-        document.getElementById('ranking-modal').classList.remove('hidden');
+        const rModal = document.getElementById('ranking-modal');
+        if (rModal) {
+          rModal.classList.remove('hidden');
+          rModal.style.display = 'flex';
+        }
       });
     }
 
@@ -1374,6 +1392,18 @@ class CodeQuestGame {
     this.gameState = 'paused';
     this.updateMobileControlsVisibility();
     audioManager.playSfx('pause'); // assets/audio/pause.mp3
+
+    // Mostrar botón de victoria administrativa solo si el usuario es admin
+    const btnAdminVictory = document.getElementById('btn-pause-admin-victory');
+    if (btnAdminVictory) {
+      const u = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
+      if (u && (u.isAdmin || u.email === 'admin@gmail.com')) {
+        btnAdminVictory.classList.remove('hidden');
+      } else {
+        btnAdminVictory.classList.add('hidden');
+      }
+    }
+
     document.getElementById('pause-modal').classList.remove('hidden');
   }
 
@@ -1390,8 +1420,11 @@ class CodeQuestGame {
     audioManager.stopMusic();
     if (this.medalsRain) this.medalsRain.stop();
 
-    // Guardar progreso y registrar estadísticas en ranking si hay avance
-    if (this.player && this.player.name) {
+    // Guardar progreso y registrar estadísticas en ranking si hay avance (omitido para admin)
+    const u = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
+    const isAdmin = u && (u.isAdmin || u.email === 'admin@gmail.com');
+
+    if (!isAdmin && this.player && this.player.name) {
       const hasProgress = (this.player.totalScore > 0) || 
                           (this.player.medals && this.player.medals.length > 0) || 
                           (this.player.defeatedBosses && this.player.defeatedBosses.size > 0);
@@ -1399,13 +1432,12 @@ class CodeQuestGame {
         this.saveGameProgress();
         if (typeof cloudRanking !== 'undefined' && typeof cloudRanking.registerOrUpdateProgress === 'function') {
           const isComplete = this.player.defeatedBosses && this.player.defeatedBosses.size >= 20;
-          const user = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
           cloudRanking.registerOrUpdateProgress(
             this.player.name,
             this.player.totalScore,
             this.player.medals ? this.player.medals.length : 0,
             isComplete,
-            user
+            u
           );
         }
       }
@@ -1569,13 +1601,10 @@ class CodeQuestGame {
     this.saveGameProgress();
   }
 
-  // Modo de prueba administrativo para previsualizar la pantalla de victoria final sin jugar los 20 niveles
+  // Modo de prueba administrativo para previsualizar la pantalla de victoria final
+  // Simula la interfaz completa SIN alterar el progreso real del jugador ni guardar en el ranking
   triggerAdminVictoryTest() {
     try {
-      if (!this.player) {
-        this.initPlayer('Administrador');
-      }
-
       // Cerrar cualquier otro modal o pantalla previa
       document.querySelectorAll('.modal-backdrop').forEach(m => {
         if (m.id !== 'game-complete-modal') m.classList.add('hidden');
@@ -1585,18 +1614,17 @@ class CodeQuestGame {
       const battleScreen = document.getElementById('battle-screen');
       if (battleScreen) battleScreen.classList.add('hidden');
 
-      // Si el jugador no tiene todas las medallas cargadas, simular las 20 medallas y jefes
-      if (!this.player.medals || this.player.medals.length < 20) {
-        this.player.defeatedBosses = new Set(BOSSES_DATA.map(b => b.id));
-        this.player.medals = BOSSES_DATA.map(b => ({
-          bossId: b.id,
-          bossName: b.name,
-          medalName: b.medal || `Medalla de ${b.name}`,
-          medalIcon: b.medalIcon || '🏅',
-          score: 1000 + b.id * 100
-        }));
-        this.player.totalScore = 25000;
-      }
+      // Generar medallas y puntaje simulado SOLO para la vista del modal, SIN modificar el jugador real
+      const mockMedals = (typeof BOSSES_DATA !== 'undefined' && Array.isArray(BOSSES_DATA))
+        ? BOSSES_DATA.map(b => ({
+            bossId: b.id,
+            bossName: b.name,
+            medalName: b.medal || `Medalla de ${b.name}`,
+            medalIcon: b.medalIcon || '🏅',
+            score: 1000 + b.id * 100
+          }))
+        : [];
+      const mockScore = 25400;
 
       this.gameState = 'complete';
       if (typeof audioManager !== 'undefined' && audioManager.playSfx) {
@@ -1610,19 +1638,20 @@ class CodeQuestGame {
       }
 
       const nameEl = document.getElementById('comp-player-name');
-      if (nameEl) nameEl.textContent = this.player.name || "Administrador";
+      const activeU = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
+      if (nameEl) nameEl.textContent = (activeU && (activeU.heroName || activeU.name)) ? (activeU.heroName || activeU.name) : (this.player ? this.player.name : "Administrador");
 
       const scoreEl = document.getElementById('comp-score-final');
-      if (scoreEl) scoreEl.textContent = `${this.player.totalScore.toLocaleString()} PTS`;
+      if (scoreEl) scoreEl.textContent = `${mockScore.toLocaleString()} PTS`;
 
       const countEl = document.getElementById('comp-medals-count');
-      if (countEl) countEl.textContent = `${this.player.medals.length} / 20`;
+      if (countEl) countEl.textContent = `20 / 20`;
 
       // Lista de medallas en la pantalla final con sprites reales
       const medalsList = document.getElementById('comp-medals-list');
       if (medalsList) {
         medalsList.innerHTML = '';
-        this.player.medals.forEach(m => {
+        mockMedals.forEach(m => {
           const mBadge = document.createElement('div');
           mBadge.className = 'final-medal-badge';
           mBadge.innerHTML = `<img class="final-medal-img" src="assets/images/medalla${m.bossId}.png" alt="${m.medalName}"> <strong>${m.medalName}</strong> (+${m.score} pts)`;
@@ -1632,14 +1661,13 @@ class CodeQuestGame {
 
       // Iniciar lluvia de medallas cayendo en pantalla
       if (this.medalsRain) {
-        this.medalsRain.start(this.player.medals);
+        this.medalsRain.start(mockMedals);
       }
 
       modal.classList.remove('hidden');
       modal.style.display = 'flex';
       this.updateMobileControlsVisibility();
-      this.updateHud();
-      this.showToast('🏆 [Admin] Pantalla de Victoria Final desplegada.');
+      this.showToast('🏆 [Admin] Mostrando Vista Previa de Victoria (Sin afectar tu partida).');
     } catch (err) {
       console.error("[Admin Victory Test Error]:", err);
       alert("Error al mostrar victoria final: " + err.message);

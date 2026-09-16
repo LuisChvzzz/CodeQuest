@@ -41,6 +41,20 @@ class LeaderboardSystem {
 
   // Inicializar ranking con jugadores legendarios si está vacío
   initDefaultLeaderboard() {
+    // Limpiar registros de administrador si existieran en localStorage
+    const raw = localStorage.getItem(this.storageKey);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(s => s && s.name !== 'Administrador' && s.userEmail !== 'admin@gmail.com' && s.userId !== 'usr_admin_master');
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem(this.storageKey, JSON.stringify(cleaned));
+          }
+        }
+      } catch (e) {}
+    }
+
     if (!localStorage.getItem(this.storageKey)) {
       const defaultRecords = [
         {
@@ -118,9 +132,11 @@ class LeaderboardSystem {
   // Limpia y deduplica la lista de registros consolidando el mejor progreso
   deduplicateScores(scores) {
     if (!Array.isArray(scores)) return [];
+    // Filtrar cualquier intento de registro de administrador o simulación
+    const filtered = scores.filter(s => s && s.name !== 'Administrador' && s.userEmail !== 'admin@gmail.com' && s.userId !== 'usr_admin_master');
     const unique = [];
 
-    for (const record of scores) {
+    for (const record of filtered) {
       if (!record || !record.name) continue;
       const existingIdx = unique.findIndex(u => this.isSameUser(u, record));
 
@@ -180,6 +196,18 @@ class LeaderboardSystem {
     const activeUser = user || (typeof authManager !== 'undefined' ? authManager.getCurrentUser() : null);
     const userId = activeUser ? activeUser.id : null;
     const userEmail = activeUser ? activeUser.email : null;
+
+    // BLOQUEO ESTRICTO: La cuenta administradora jamás se registra en el ranking
+    if (activeUser && (activeUser.isAdmin || activeUser.email === 'admin@gmail.com' || playerName === 'Administrador')) {
+      return {
+        name: playerName,
+        score: totalScore,
+        medals: medalsCount,
+        title: this.getTitleForMedals(medalsCount, completed),
+        date: new Date().toLocaleDateString('es-ES'),
+        completed: !!completed
+      };
+    }
 
     let scores = this.getScores();
 
@@ -254,8 +282,19 @@ class LeaderboardSystem {
     return targetRecord;
   }
 
-  // Registrar partida finalizada (Tras derrotar al jefe 20)
+  // Registrar récord al completar el juego (Requisito 7 y 8)
   registerCompletedGame(playerName, totalScore, medalsCount, user = null) {
+    const activeUser = user || (typeof authManager !== 'undefined' ? authManager.getCurrentUser() : null);
+    if (activeUser && (activeUser.isAdmin || activeUser.email === 'admin@gmail.com' || playerName === 'Administrador')) {
+      return {
+        name: playerName,
+        score: totalScore,
+        medals: medalsCount,
+        title: "Gran Maestro Java",
+        date: new Date().toLocaleDateString('es-ES'),
+        completed: true
+      };
+    }
     return this.registerOrUpdateProgress(playerName, totalScore, medalsCount, true, user);
   }
 
