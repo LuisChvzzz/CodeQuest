@@ -117,7 +117,7 @@ class PixelRenderer {
     const py = Math.floor(y);
 
     switch (tileType) {
-      case 0: { // Pasto medieval base con textura pixel-art rica (Requisito 1 y 6)
+      case 0: { // Pasto base con detalles visuales
         ctx.fillStyle = '#265130';
         ctx.fillRect(px, py, size, size);
 
@@ -147,8 +147,8 @@ class PixelRenderer {
         break;
       }
 
-      case 5: // Compatibilidad para arenas de jefes con tierra_relleno.png
-      case 1: { // Camino empedrado con tierra_relleno.png y flecos de pasto (Requisito 1)
+      case 5: // Arenas de combate
+      case 1: { // Camino empedrado
         ctx.fillStyle = '#5c4a38';
         ctx.fillRect(px, py, size, size);
 
@@ -211,7 +211,7 @@ class PixelRenderer {
         break;
       }
 
-      case 2: { // Delimitación sólida de roca.png (Requisito 2)
+      case 2: { // Bloque de roca sólida
         ctx.fillStyle = '#1e293b';
         ctx.fillRect(px, py, size, size);
         const rockImg = this.terrainSprites.rock;
@@ -229,7 +229,7 @@ class PixelRenderer {
         break;
       }
 
-      case 3: { // Agua de río y lago con agua_relleno.png (Requisito 6)
+      case 3: { // Agua con oleaje dinámico
         const waterImg = this.terrainSprites.water;
         if (waterImg.complete && waterImg.naturalWidth > 0) {
           ctx.drawImage(waterImg, px, py, size, size);
@@ -252,7 +252,7 @@ class PixelRenderer {
         break;
       }
 
-      case 4: { // Borde impenetrable del mapa delimitado con arbol_grande.png (Requisito 4)
+      case 4: { // Árbol perimetral impenetrable
         const grassImg = this.terrainSprites.grass;
         if (grassImg.complete && grassImg.naturalWidth > 0) {
           ctx.drawImage(grassImg, px, py, size, size);
@@ -280,7 +280,7 @@ class PixelRenderer {
         break;
       }
 
-      case 7: { // Agua con ondas decoradas con agua_decorada.png (Requisito 6)
+      case 7: { // Agua con ondas decoradas
         const waterImg = this.terrainSprites.water;
         const waterDecorImg = this.terrainSprites.waterDecor;
 
@@ -314,7 +314,7 @@ class PixelRenderer {
     }
   }
 
-  // Dibujar montículos y mesetas orgánicas de pasto con profundidad y sombreado 2.5D (Requisito 1 y 7)
+  // Renderiza mesetas elevadas con sombra y profundidad
   drawPlateaus(plateaus, camera) {
     if (!plateaus || plateaus.length === 0) return;
     const ctx = this.ctx;

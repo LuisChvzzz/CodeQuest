@@ -282,7 +282,7 @@ class LeaderboardSystem {
     return targetRecord;
   }
 
-  // Registrar récord al completar el juego (Requisito 7 y 8)
+  // Registrar récord al completar el juego
   registerCompletedGame(playerName, totalScore, medalsCount, user = null) {
     const activeUser = user || (typeof authManager !== 'undefined' ? authManager.getCurrentUser() : null);
     if (activeUser && (activeUser.isAdmin || activeUser.email === 'admin@gmail.com' || playerName === 'Administrador')) {

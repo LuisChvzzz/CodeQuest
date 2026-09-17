@@ -268,7 +268,7 @@ html, body {
 }
 
 /* ==========================================================================
-   1. MENÚ PRINCIPAL (REQUISITO 1)
+   MENÚ PRINCIPAL
    ========================================================================== */
 
 .menu-overlay {
@@ -642,7 +642,7 @@ html, body {
 }
 .rank-bronze .td-rank { color: #f97316; }
 
-/* Menú de Pausa (Requisito 7) */
+/* Menú de Pausa */
 .pause-box {
   text-align: center;
   max-width: 380px;
@@ -1471,7 +1471,7 @@ html, body {
   text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
 }
 
-/* Pantalla de Gran Victoria Final (Requisito 8) */
+/* Pantalla de Gran Victoria Final */
 .grand-victory-backdrop {
   z-index: 1000 !important;
   overflow-y: auto !important;
@@ -2331,7 +2331,7 @@ html, body {
    ESTILOS DE HISTORIA / LORE INICIAL Y MOCHILA DE INVENTARIO
    ========================================================================== */
 
-/* 1. Modal de Historia / Prólogo (Requisito 5) */
+/* Modal de Historia / Prólogo */
 .story-parchment {
   max-width: 620px;
   background: linear-gradient(145deg, #1e1b4b 0%, #0f172a 100%);
@@ -2441,7 +2441,7 @@ html, body {
   gap: 12px;
 }
 
-/* 2. Modal de Inventario Fuera de Combate (Requisito 2) */
+/* Modal de Inventario Fuera de Combate */
 .inventory-box {
   max-width: 480px;
   background: #0f172a;
@@ -2595,7 +2595,7 @@ html, body {
   color: #fef08a;
 }
 
-/* 3. Nota de Advertencia en Game Over (Requisito 4) */
+/* Nota de Advertencia en Game Over */
 .defeat-warning-note {
   font-size: 12px;
   color: #f87171;

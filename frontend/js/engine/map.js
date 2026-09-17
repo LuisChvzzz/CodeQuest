@@ -21,7 +21,7 @@ class WorldMap {
   initTerrain() {
     this.tiles = Array.from({ length: this.height }, () => Array(this.width).fill(0));
 
-    // 1. Bordes exteriores del mapa: 2 capas de árbol grande impenetrable (Requisito 4)
+    // Bordes exteriores del mapa con árboles impenetrables
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         if (x <= 1 || x >= this.width - 2 || y <= 1 || y >= this.height - 2) {
@@ -49,7 +49,7 @@ class WorldMap {
     fillRect(15, 31, 13, 2, 1); // Avenida Oeste
     fillRect(36, 31, 13, 2, 1); // Avenida Este
 
-    // 4. Arenas de los 20 Jefes (Requisito 3)
+    // Arenas de combate de los jefes
     const arenas = [
       // Cuadrante 1: Noroeste (Jefes 1-5)
       { id: 1, x: 8, y: 8, w: 5, h: 5 },
@@ -87,7 +87,7 @@ class WorldMap {
       fillRect(startX, startY, a.w, a.h, t);
     });
 
-    // 5. Caminos empedrados con tierra_relleno.png conectando a cada jefe (Requisitos 1 y 3)
+    // Caminos empedrados que conectan con cada jefe
     // Red Noroeste (Jefes 1-5):
     fillRect(14, 8, 2, 24, 1);
     fillRect(8, 7, 15, 2, 1);
@@ -191,7 +191,7 @@ class WorldMap {
       { x: 49, y: 37 }, { x: 55, y: 37 }, { x: 61, y: 37 }
     ], 2);
 
-    // 7. Delimitar caminos y salas con roca.png (tile 2) con colisión sólida (Requisito 2)
+    // Muros de roca con colisión para delimitar caminos y salas
     // Cualquier casilla de pasto (0) adyacente a un camino o sala (1 o 5) se convierte en roca
     const toRock = [];
     for (let y = 0; y < this.height; y++) {
@@ -219,7 +219,7 @@ class WorldMap {
     }
     toRock.forEach(p => { this.tiles[p.y][p.x] = 2; });
 
-    // 8. Mesetas elevadas de pasto con bordes encajados (Requisito 7)
+    // Mesetas elevadas decorativas
     this.plateaus = [
       { x: 24, y: 14, w: 4, h: 3 },
       { x: 36, y: 14, w: 4, h: 3 },
@@ -228,7 +228,7 @@ class WorldMap {
     ];
   }
 
-  // Elementos de vegetación estáticos y no superpuestos (Requisito 5)
+  // Vegetación y elementos estáticos del mapa
   initVegetation() {
     this.decorations = [];
     const used = new Set();
@@ -395,10 +395,7 @@ class WorldMap {
     };
   }
 
-  // Comprobar colisión para movimiento (x, y en coordenadas de tile)
-  // Requisito 2: Las rocas (2) delimitan los caminos e impiden salir del camino
-  // Requisito 4: Los árboles grandes (4) delimitan el borde exterior e impiden salir
-  // Requisito 6: Los cuerpos de agua (3 y 7) son impenetrables
+  // Rocas (2), árboles exteriores (4) y agua (3, 7) tienen colisión sólida
   isSolid(tileX, tileY) {
     if (tileX < 0 || tileX >= this.width || tileY < 0 || tileY >= this.height) {
       return true;

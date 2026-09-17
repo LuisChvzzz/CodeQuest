@@ -187,7 +187,7 @@ class CodeQuestGame {
     this.gameState = 'menu'; // 'menu', 'playing', 'battle', 'paused', 'complete'
     this.lastTime = 0;
 
-    // Estado del Jugador (Requisitos: 5 corazones, 25 ataque, espadas +5, pociones curan 1 corazón)
+    // Estado inicial del jugador
     this.player = {
       name: "Héroe Java",
       x: 9 * 32,
@@ -336,7 +336,7 @@ class CodeQuestGame {
       this.player.name = val || "Caballero Java";
       audioManager.playSfx('click');
       document.getElementById('name-prompt-modal').classList.add('hidden');
-      this.startStoryIntro(); // Desplegar historia narrativa (Requisito 5)
+      this.startStoryIntro(); // Prólogo e introducción inicial
     });
 
     // Eventos de la Historia Inicial / Lore
@@ -417,7 +417,7 @@ class CodeQuestGame {
       });
     }
 
-    // Inventario Fuera de Batalla (Requisito 2)
+    // Modal de inventario
     const handleCloseInv = () => {
       audioManager.playSfx('click');
       this.hideInventoryModal();
@@ -1242,7 +1242,7 @@ class CodeQuestGame {
     this.startNewGame();
   }
 
-  // Inventario accesible en cualquier momento (Requisito 2)
+  // Abre el inventario del jugador
   showInventoryModal(fromPause = false) {
     const modal = document.getElementById('inventory-modal');
     const isAlreadyOpen = modal && !modal.classList.contains('hidden');
@@ -1317,11 +1317,11 @@ class CodeQuestGame {
   }
 
   startNewGame() {
-    audioManager.stopSfx('gameover'); // Quitar música de game over al revivir (Requisito 3)
+    audioManager.stopSfx('gameover'); // Detener audio de derrota al reiniciar
     audioManager.stopSfx('pause');
     audioManager.stopMusic();
 
-    // Reset de estadísticas según especificación (Requisitos 3 y 4)
+    // Reiniciar estadísticas del jugador
     this.player.hearts = 5;
     this.player.maxHearts = 5;
     this.player.attack = 25;
@@ -1493,7 +1493,7 @@ class CodeQuestGame {
     }
   }
 
-  // Mostrar vitrina de recompensas (Requisito 7)
+  // Despliega la vitrina de medallas y logros
   showRewardsModal(fromPause = false) {
     const modal = document.getElementById('rewards-modal');
     const isAlreadyOpen = modal && !modal.classList.contains('hidden');
@@ -1570,12 +1570,12 @@ class CodeQuestGame {
     }, 3500);
   }
 
-  // Finalización del juego (Requisito 8: Victoria tras derrotar a todos o al jefe 20)
+  // Manejo de fin del juego tras derrotar a todos los jefes
   handleGameComplete() {
     this.gameState = 'complete';
     audioManager.playSfx('victory');
 
-    // Registrar en el Ranking de la Nube (Requisito 7: Solo se registra si termina el juego)
+    // Registrar récord en el ranking global al completar la aventura
     const user = (typeof authManager !== 'undefined') ? authManager.getCurrentUser() : null;
     const record = cloudRanking.registerCompletedGame(this.player.name, this.player.totalScore, this.player.medals.length, user);
 
@@ -1684,7 +1684,7 @@ class CodeQuestGame {
     const { type, data } = this.activeInteractEntity;
 
     if (type === 'sign') {
-      // Leer Letrero con Dato Curioso de Java (Requisito 4)
+      // Mostrar contenido del cartel con dato curioso
       audioManager.playSfx('read');
       document.getElementById('sign-title').textContent = data.title;
       document.getElementById('sign-category').textContent = `Categoría: ${data.category}`;
@@ -1706,7 +1706,7 @@ class CodeQuestGame {
         }
       }
 
-      // Abrir Cofre y obtener 1 de 3 items: espada, poción o llaves (Requisito 4)
+      // Abrir cofre y otorgar el ítem correspondiente
       data.opened = true;
 
       if (data.item === 'sword') {
@@ -1742,7 +1742,7 @@ class CodeQuestGame {
         return;
       }
 
-      // 3. Desafiar Jefe (Requiere 1 llave por jefe según Requisito 4)
+      // Iniciar combate contra el jefe si tiene llaves disponibles
       if (this.player.keys <= 0) {
         audioManager.playSfx('wrong');
         this.showToast(`<img src="assets/icons/llave.png" class="pixel-icon" alt="Llave"> ¡Necesitas 1 Llave de Mazmorra para desafiar a ${data.name}! Busca cofres en el reino.`);
@@ -1922,7 +1922,7 @@ class CodeQuestGame {
       }
     }
 
-    // 1.5 Dibujar Mesetas decorativas de pasto elevadas (Requisito 7)
+    // Dibujar mesetas decorativas elevadas
     if (this.map.plateaus) {
       this.renderer.drawPlateaus(this.map.plateaus, this.camera);
     }
@@ -2006,7 +2006,7 @@ class CodeQuestGame {
     }
   }
 
-  // Fondo animado temático para el Menú de Inicio (Requisito 1)
+  // Fondo animado del menú principal
   renderMenuBackground() {
     const ctx = this.renderer.ctx;
     const w = this.canvas.width;

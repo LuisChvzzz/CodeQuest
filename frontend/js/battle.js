@@ -23,7 +23,7 @@ class BattleManager {
     this.playerSpriteCanvas = document.getElementById('battle-player-sprite');
     this.battleDialogEl = document.getElementById('battle-dialog-text');
 
-    // Elementos del HUD del Jugador en Batalla (Requisito 9)
+    // HUD del jugador en batalla
     this.playerNameEl = document.getElementById('battle-player-name');
     this.playerAttackEl = document.getElementById('battle-player-attack-stat');
     this.playerHpFillEl = document.getElementById('battle-player-hp-fill');
@@ -142,7 +142,7 @@ class BattleManager {
     // Iniciar loop de animación de combate
     this.startCombatAnimationLoop();
 
-    // Inicializar HUD de jefe y del jugador (Requisito 9)
+    // Inicializar marcadores de jefe y jugador
     this.bossNameEl.textContent = boss.name;
     this.bossLevelEl.textContent = `NIVEL ${boss.level}`;
     this.updateBossHpBar();
@@ -273,7 +273,7 @@ class BattleManager {
     this.bossHpTextEl.textContent = `${Math.max(0, this.bossCurrentHp)} / ${this.bossMaxHp} HP`;
   }
 
-  // Actualizar estadísticas visibles del jugador en batalla (Requisito 9)
+  // Actualiza las estadísticas visuales del jugador
   updatePlayerBattleStats() {
     if (this.playerNameEl) this.playerNameEl.textContent = this.game.player.name;
     if (this.playerAttackEl) this.playerAttackEl.innerHTML = `<img src="assets/icons/espada.png" class="pixel-icon" alt="Ataque"> ATQ: ${this.game.player.attack}`;
@@ -542,7 +542,7 @@ class BattleManager {
     }
   }
 
-  // Animación secuencial de espadazo usando los 3 sprites recortados de ataque con embestida hacia adelante (Requisito 8)
+  // Secuencia de ataque con avance hacia el frente
   triggerPlayerAttackAnimation() {
     this.isAttacking = true;
     this.attackFrame = 0; // jugador_ataque_1.png (elevación de espada y anticipación)
@@ -638,7 +638,7 @@ class BattleManager {
       const defeatedBossId = this.activeBoss ? this.activeBoss.id : null;
       this.closeBattle();
 
-      // Verificar si venció a todos los 20 jefes para terminar el juego (Requisito: no basta solo con vencer al jefe 20)
+      // Comprobar si se han derrotado todos los jefes
       if (this.game.player.defeatedBosses.size >= 20) {
         this.game.handleGameComplete();
       } else if (defeatedBossId === 20) {
@@ -761,7 +761,7 @@ class BattleManager {
       bCtx.fillRect(30, 30 + bHover, 100, 100);
     }
 
-    // 2. Player Sprite Canvas (Mirando hacia arriba al jefe - Requisito 6)
+    // Sprite del jugador mirando hacia el jefe
     const pCtx = this.playerSpriteCanvas.getContext('2d');
     pCtx.imageSmoothingEnabled = false;
     pCtx.clearRect(0, 0, 160, 160);
@@ -803,7 +803,7 @@ class BattleManager {
         }
       }
     } else {
-      // Reposo en combate mirando HACIA ARRIBA (hacia el jefe - Requisito 6)
+      // Estado de reposo orientado hacia el jefe
       const playerImg = this.game.renderer.playerSprites.idle.up;
 
       if (playerImg && playerImg.complete && playerImg.naturalWidth > 0) {

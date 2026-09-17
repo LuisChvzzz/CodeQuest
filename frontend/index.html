@@ -231,7 +231,7 @@
     </div>
   </div>
 
-  <!-- 1. Menú Principal (Requisito 1) -->
+  <!-- Menú Principal -->
   <section id="main-menu-overlay" class="menu-overlay hidden">
     <div class="menu-content">
       <!-- Barra de Usuario Conectado -->
@@ -270,7 +270,7 @@
     </div>
   </section>
 
-  <!-- 2. Modal de Entrada de Nombre del Personaje (Requisito 2) -->
+  <!-- Modal de Entrada de Nombre del Personaje -->
   <div id="name-prompt-modal" class="modal-backdrop hidden">
     <div class="modal-box parchment-box">
       <div class="box-header">
@@ -306,7 +306,7 @@
     </div>
   </div>
 
-  <!-- Modal "Prólogo e Historia de Code Quest" (Requisito 5) -->
+  <!-- Modal "Prólogo e Historia de Code Quest" -->
   <div id="story-lore-modal" class="modal-backdrop hidden">
     <div class="modal-box parchment-box story-parchment">
       <div class="story-header">
@@ -362,7 +362,7 @@
     </div>
   </div>
 
-  <!-- Modal "Ranking Global en Tiempo Real" (Requisito 1 y 7) -->
+  <!-- Modal "Ranking Global en Tiempo Real" -->
   <div id="ranking-modal" class="modal-backdrop hidden">
     <div class="modal-box modal-large">
       <div class="box-header">
@@ -391,7 +391,7 @@
     </div>
   </div>
 
-  <!-- Modal "Letrero de Dato Curioso" (Requisito 4) -->
+  <!-- Modal "Letrero de Dato Curioso" -->
   <div id="sign-modal" class="modal-backdrop hidden">
     <div class="modal-box parchment-box sign-parchment">
       <div class="parchment-header">
@@ -408,7 +408,7 @@
     </div>
   </div>
 
-  <!-- Modal "Menú de Pausa" (Requisito 7) -->
+  <!-- Modal "Menú de Pausa" -->
   <div id="pause-modal" class="modal-backdrop hidden">
     <div class="modal-box pause-box">
       <h2><img src="assets/icons/espadas_cruzadas.png" class="pixel-icon" alt="Pausa"> Juego en Pausa <img src="assets/icons/espadas_cruzadas.png" class="pixel-icon" alt="Pausa"></h2>
@@ -424,7 +424,7 @@
     </div>
   </div>
 
-  <!-- Modal "Inventario del Jugador" (Accesible con tecla G o Pausa - Requisito 2) -->
+  <!-- Modal "Inventario del Jugador" (Accesible con tecla G o Pausa) -->
   <div id="inventory-modal" class="modal-backdrop hidden">
     <div class="modal-box inventory-box">
       <div class="box-header">
@@ -488,7 +488,7 @@
     </div>
   </div>
 
-  <!-- Modal "Vitrina de Recompensas y Medallas" (Requisito 7) -->
+  <!-- Modal "Vitrina de Recompensas y Medallas" -->
   <div id="rewards-modal" class="modal-backdrop hidden">
     <div class="modal-box modal-large">
       <div class="box-header">
@@ -572,7 +572,7 @@
         </div>
       </div>
 
-      <!-- Jugador (Abajo a la derecha con Stats Visibles - Requisito 9) -->
+      <!-- Jugador (Abajo a la derecha con Stats Visibles) -->
       <div id="battle-player-combatant-box" class="combatant-box player-combatant">
         <div class="combatant-hud player-hud">
           <div class="name-row">
@@ -659,7 +659,7 @@
     </div>
   </div>
 
-  <!-- Modal "Victoria sobre el Jefe" (Requisito 6) -->
+  <!-- Modal "Victoria sobre el Jefe" -->
   <div id="boss-victory-modal" class="modal-backdrop hidden">
     <div class="modal-box victory-box">
       <div class="victory-header">
@@ -679,7 +679,7 @@
     </div>
   </div>
 
-  <!-- Modal "Derrota / Game Over" (Requisitos 3 y 4) -->
+  <!-- Modal "Derrota / Game Over" -->
   <div id="game-over-modal" class="modal-backdrop hidden">
     <div class="modal-box defeat-box">
       <h2><img src="assets/icons/error_rojo.png" class="pixel-icon pixel-icon-lg" alt="Derrota"> Has Caído en Batalla <img src="assets/icons/error_rojo.png" class="pixel-icon pixel-icon-lg" alt="Derrota"></h2>
@@ -704,7 +704,7 @@
     </div>
   </div>
 
-  <!-- Modal "Final del Juego y Gran Victoria" (Requisito 8) -->
+  <!-- Modal "Final del Juego y Gran Victoria" -->
   <div id="game-complete-modal" class="modal-backdrop hidden grand-victory-backdrop">
     <!-- Canvas de Lluvia de Medallas en Pantalla Completa -->
     <canvas id="medals-rain-canvas" class="medals-rain-canvas"></canvas>
@@ -764,7 +764,7 @@
         </a>
       </div>
 
-      <!-- 2 Opciones Solicitadas: Consultar Ranking y Volver al Menú Principal -->
+      <!-- Opciones Finales: Consultar Ranking y Volver al Menú Principal -->
       <div class="modal-actions grand-victory-actions">
         <button id="btn-complete-ranking" class="btn-retro btn-secondary pulse-hover">
           <img src="assets/icons/trofeo.png" class="pixel-icon" alt="Ranking"> Consultar Ranking
@@ -777,8 +777,6 @@
   </div>
 
   <!-- Scripts del Juego con control de versión para evitar caché antiguo -->
-  <script src="js/lib/phaser.min.js?v=9"></script>
-  <script src="js/engine/phaser_game.js?v=9"></script>
   <script src="js/audio.js?v=9"></script>
   <script src="js/data/bosses.js?v=9"></script>
   <script src="js/data/questions.js?v=9"></script>
