@@ -1686,8 +1686,15 @@ class CodeQuestGame {
     if (type === 'sign') {
       // Mostrar contenido del cartel con dato curioso
       audioManager.playSfx('read');
+      const isCentral = data && (data.bossLevel === 0 || data.id <= 2);
       document.getElementById('sign-title').textContent = data.title;
-      document.getElementById('sign-category').textContent = `Categoría: ${data.category}`;
+      const catEl = document.getElementById('sign-category');
+      catEl.textContent = isCentral ? `★ Guía Central: ${data.category}` : `Categoría: ${data.category}`;
+      if (isCentral) {
+        catEl.classList.add('central-sign-badge');
+      } else {
+        catEl.classList.remove('central-sign-badge');
+      }
       document.getElementById('sign-body').textContent = data.text;
       document.getElementById('sign-modal').classList.remove('hidden');
       this.updateMobileControlsVisibility();
@@ -1977,7 +1984,8 @@ class CodeQuestGame {
 
       if (this.activeInteractEntity.type === 'sign') {
         entPos = this.camera.toScreen(this.activeInteractEntity.data.position.x * 32, this.activeInteractEntity.data.position.y * 32);
-        promptText = "[E] Leer Dato";
+        const isCentral = this.activeInteractEntity.data && (this.activeInteractEntity.data.bossLevel === 0 || this.activeInteractEntity.data.id <= 2);
+        promptText = isCentral ? "[E] Guía Central" : "[E] Leer Dato";
       } else if (this.activeInteractEntity.type === 'chest') {
         const chest = this.activeInteractEntity.data;
         const isLocked = !chest.opened && chest.requiredBoss > 0 && !this.player.defeatedBosses.has(chest.requiredBoss);

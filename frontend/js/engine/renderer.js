@@ -534,16 +534,57 @@ class PixelRenderer {
   // Dibujar Letrero / Cartel de Dato Curioso
   drawSign(sign, px, py) {
     const ctx = this.ctx;
-    ctx.fillStyle = '#78350f';
-    ctx.fillRect(px + 14, py + 14, 4, 16);
-    ctx.fillStyle = '#d97706';
-    ctx.fillRect(px + 5, py + 6, 22, 14);
-    ctx.fillStyle = '#fef3c7';
-    ctx.fillRect(px + 7, py + 8, 18, 10);
-    ctx.fillStyle = '#92400e';
-    ctx.font = 'bold 8px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('JAVA', px + 16, py + 16);
+    const isCentral = sign && (sign.bossLevel === 0 || sign.id <= 2);
+
+    if (isCentral) {
+      // Cartel especial de la Plaza Central (Color azul rey UV, marco dorado y resplandor de sabiduría)
+      const pulse = (Math.sin(this.animTime * 3.5) + 1) * 0.5;
+
+      // Resplandor celeste suave
+      ctx.save();
+      ctx.fillStyle = `rgba(56, 189, 248, ${0.18 + pulse * 0.22})`;
+      ctx.beginPath();
+      ctx.arc(px + 16, py + 14, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Poste de obsidiana / metal noble
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(px + 14, py + 14, 4, 16);
+
+      // Marco azul rey UV con borde dorado
+      ctx.fillStyle = '#1e40af';
+      ctx.fillRect(px + 4, py + 5, 24, 16);
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px + 4.5, py + 5.5, 23, 15);
+
+      // Superficie de pergamino celestial
+      ctx.fillStyle = '#eff6ff';
+      ctx.fillRect(px + 6, py + 7, 20, 12);
+
+      // Texto "GUÍA" en azul marino UV
+      ctx.fillStyle = '#1e3a8a';
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('GUÍA', px + 16, py + 16);
+
+      // Gema mística flotante
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(px + 15, py + 2 - pulse * 2, 2, 2);
+    } else {
+      // Cartel estándar de madera y ámbar
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(px + 14, py + 14, 4, 16);
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(px + 5, py + 6, 22, 14);
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(px + 7, py + 8, 18, 10);
+      ctx.fillStyle = '#92400e';
+      ctx.font = 'bold 8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('JAVA', px + 16, py + 16);
+    }
   }
 
   // Dibujar los 20 Jefes usando 'assets/images/enemigo{id}.png' (16x16)
