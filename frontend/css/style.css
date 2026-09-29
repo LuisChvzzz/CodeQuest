@@ -2742,6 +2742,30 @@ html, body {
   letter-spacing: 0.2px;
 }
 
+.uv-author-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+
+.uv-author-label {
+  font-size: 11px;
+  color: #94a3b8;
+  font-style: italic;
+  letter-spacing: 0.2px;
+}
+
+.uv-author-name {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.4px;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
 .uv-auth-card-footer {
   display: flex;
   align-items: center;
@@ -2777,6 +2801,17 @@ html, body {
 .uv-footer-meta span {
   font-size: 10px;
   color: #94a3b8;
+}
+
+.uv-footer-author {
+  font-size: 10px;
+  color: #cbd5e1;
+  margin-top: 2px;
+}
+
+.uv-footer-author strong {
+  color: #fbbf24;
+  font-weight: 700;
 }
 
 .uv-menu-affiliation {
