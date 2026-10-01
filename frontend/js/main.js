@@ -201,7 +201,7 @@ class CodeQuestGame {
       maxHearts: 5,
       attack: 25,
       potions: 2,
-      keys: 2,
+      keys: 0,
       medals: [],
       defeatedBosses: new Set(),
       totalScore: 0
@@ -1062,13 +1062,17 @@ class CodeQuestGame {
   loadSavedGame(saveData) {
     if (!saveData) return;
 
+    if (typeof saveSystem !== 'undefined' && typeof saveSystem.sanitizeSaveData === 'function') {
+      saveData = saveSystem.sanitizeSaveData(saveData);
+    }
+
     // 1. Restaurar datos del jugador
     this.player.name = saveData.name || "Caballero Java";
     this.player.hearts = (saveData.hearts !== undefined) ? saveData.hearts : 5;
     this.player.maxHearts = (saveData.maxHearts !== undefined) ? saveData.maxHearts : 5;
     this.player.attack = (saveData.attack !== undefined) ? saveData.attack : 25;
     this.player.potions = (saveData.potions !== undefined) ? saveData.potions : 2;
-    this.player.keys = (saveData.keys !== undefined) ? saveData.keys : 20;
+    this.player.keys = (saveData.keys !== undefined) ? saveData.keys : 0;
     this.player.medals = Array.isArray(saveData.medals) ? [...saveData.medals] : [];
     this.player.defeatedBosses = new Set(Array.isArray(saveData.defeatedBosses) ? saveData.defeatedBosses : []);
     this.player.totalScore = saveData.totalScore ?? 0;
@@ -1326,7 +1330,7 @@ class CodeQuestGame {
     this.player.maxHearts = 5;
     this.player.attack = 25;
     this.player.potions = 2;
-    this.player.keys = 20;
+    this.player.keys = 0;
     this.player.medals = [];
     this.player.defeatedBosses = new Set();
     this.player.totalScore = 0;

@@ -4,6 +4,77 @@
 class SaveSystem {
   constructor() {
     this.savePrefix = 'code_quest_save_';
+    // IDs de cofres que contienen llaves en el mapa oficial de Code Quest
+    this.keyChestIds = new Set([1, 4, 5, 6, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 47, 48]);
+    this.migrateLegacySaves();
+  }
+
+  // Ajustar partida guardada para eliminar las 20 llaves de prueba iniciales
+  // dejando únicamente las llaves legítimamente obtenidas de cofres (descontando jefes retados)
+  sanitizeSaveData(saveData) {
+    if (!saveData || typeof saveData !== 'object') return saveData;
+
+    if (!saveData.v2_keys_migrated) {
+      // 1. Contar llaves obtenidas de cofres de llaves abiertos
+      const openedKeyChests = Array.isArray(saveData.chests)
+        ? saveData.chests.filter(c => c && c.opened && this.keyChestIds.has(c.id)).length
+        : 0;
+
+      // 2. Cantidad de jefes derrotados (cada combate consumió al menos 1 llave)
+      const defeatedBossesCount = Array.isArray(saveData.defeatedBosses)
+        ? saveData.defeatedBosses.length
+        : 0;
+
+      // Llaves legítimas acumuladas: cofres abiertos menos jefes vencidos
+      const netLegitimateKeys = Math.max(0, openedKeyChests - defeatedBossesCount);
+
+      // Llaves calculadas restando las 20 llaves de prueba que se otorgaron inicialmente
+      const currentKeys = Number(saveData.keys !== undefined ? saveData.keys : 0);
+      const subtractedKeys = Math.max(0, currentKeys - 20);
+
+      // Garantizar que no conserve las 20 llaves de prueba, pero conserve todas las que halló en cofres
+      const finalKeys = Math.max(subtractedKeys, netLegitimateKeys);
+
+      saveData.keys = finalKeys;
+      if (saveData.player && typeof saveData.player === 'object') {
+        saveData.player.keys = finalKeys;
+      }
+      saveData.v2_keys_migrated = true;
+    }
+
+    return saveData;
+  }
+
+  // Migrar automáticamente todas las partidas guardadas almacenadas en localStorage
+  migrateLegacySaves() {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      const keysToUpdate = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(this.savePrefix)) {
+          keysToUpdate.push(k);
+        }
+      }
+
+      for (const storageKey of keysToUpdate) {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) continue;
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch (e) {
+          continue;
+        }
+
+        if (data && typeof data === 'object' && !data.v2_keys_migrated) {
+          this.sanitizeSaveData(data);
+          localStorage.setItem(storageKey, JSON.stringify(data));
+        }
+      }
+    } catch (err) {
+      console.warn('Aviso en migración de llaves heredadas de partidas:', err);
+    }
   }
 
   normalizeKey(str) {
@@ -67,7 +138,8 @@ class SaveSystem {
       maxHearts: p.maxHearts !== undefined ? p.maxHearts : 5,
       attack: p.attack !== undefined ? p.attack : 25,
       potions: p.potions !== undefined ? p.potions : 2,
-      keys: p.keys !== undefined ? p.keys : 20,
+      keys: p.keys !== undefined ? p.keys : 0,
+      v2_keys_migrated: true,
       medals: p.medals ? [...p.medals] : [],
       defeatedBosses: Array.from(p.defeatedBosses || []),
       totalScore: p.totalScore || 0,
@@ -81,7 +153,7 @@ class SaveSystem {
         maxHearts: p.maxHearts !== undefined ? p.maxHearts : 5,
         attack: p.attack !== undefined ? p.attack : 25,
         potions: p.potions !== undefined ? p.potions : 2,
-        keys: p.keys !== undefined ? p.keys : 20,
+        keys: p.keys !== undefined ? p.keys : 0,
         medals: p.medals ? [...p.medals] : [],
         defeatedBosses: Array.from(p.defeatedBosses || []),
         totalScore: p.totalScore || 0
@@ -114,7 +186,7 @@ class SaveSystem {
 
     try {
       const raw = localStorage.getItem(`${this.savePrefix}u_${userKey}_latest`);
-      return raw ? JSON.parse(raw) : null;
+      return raw ? this.sanitizeSaveData(JSON.parse(raw)) : null;
     } catch (e) {
       return null;
     }
@@ -134,12 +206,12 @@ class SaveSystem {
       try {
         // 1. Buscar si este usuario tiene una partida con este nombre de héroe
         const byHero = localStorage.getItem(`${this.savePrefix}u_${userKey}_hero_${normHeroName}`);
-        if (byHero) return JSON.parse(byHero);
+        if (byHero) return this.sanitizeSaveData(JSON.parse(byHero));
 
         // 2. Si su última partida guardada coincide con el nombre
         const latest = this.getLatestSaveForUser(activeUser);
         if (latest && this.normalizeKey(latest.name) === normHeroName) {
-          return latest;
+          return this.sanitizeSaveData(latest);
         }
       } catch (e) {
         return null;
@@ -151,11 +223,11 @@ class SaveSystem {
     // Modo anónimo sin usuario
     try {
       const raw = localStorage.getItem(`${this.savePrefix}anon_hero_${normHeroName}`);
-      if (raw) return JSON.parse(raw);
+      if (raw) return this.sanitizeSaveData(JSON.parse(raw));
       const latestAnon = localStorage.getItem(`${this.savePrefix}anon_latest`);
       if (latestAnon) {
         const parsed = JSON.parse(latestAnon);
-        if (this.normalizeKey(parsed.name) === normHeroName) return parsed;
+        if (this.normalizeKey(parsed.name) === normHeroName) return this.sanitizeSaveData(parsed);
       }
       return null;
     } catch (e) {
