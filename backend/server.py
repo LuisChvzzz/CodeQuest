@@ -6,12 +6,13 @@ import socketserver
 import os
 import sys
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..'))
-FRONTEND_DIR = os.path.join(ROOT_DIR, 'frontend')
+CURRENT_FILE = os.path.abspath(__file__)
+PARENT_DIR = os.path.dirname(CURRENT_FILE)
+# Si este archivo está en backend/, la raíz es un nivel arriba
+PROJECT_ROOT = os.path.dirname(PARENT_DIR) if os.path.basename(PARENT_DIR) == 'backend' else PARENT_DIR
+FRONTEND_DIR = os.path.join(PROJECT_ROOT, 'frontend')
 
-# Si la carpeta frontend existe, servir desde ella; si no, servir desde la raíz
-SERVE_DIR = FRONTEND_DIR if os.path.exists(FRONTEND_DIR) else ROOT_DIR
+SERVE_DIR = FRONTEND_DIR if os.path.exists(FRONTEND_DIR) else PROJECT_ROOT
 
 class SecureDevHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):

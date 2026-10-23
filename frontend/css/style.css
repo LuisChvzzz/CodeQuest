@@ -1185,6 +1185,494 @@ html, body {
   color: #ffffff !important;
 }
 
+/* ==========================================================================
+   WORKBENCH DE EJERCICIOS PRÁCTICOS DE JAVA (IDE DE COMBATE)
+   ========================================================================== */
+
+.battle-interface.coding-mode {
+  height: min(450px, 68vh) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 12px 18px !important;
+  gap: 8px !important;
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden !important;
+}
+
+.battle-code-workbench {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  gap: 8px;
+  min-height: 0;
+}
+
+.code-workbench-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(2, 6, 23, 0.85);
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.code-challenge-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.code-challenge-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.code-type-badge {
+  background: linear-gradient(180deg, #b45309 0%, #78350f 100%);
+  color: #fef08a;
+  border: 1px solid #f59e0b;
+  font-family: var(--font-retro);
+  font-size: 8px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: uppercase;
+}
+
+.code-type-badge.type-fix {
+  background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
+  border-color: #f87171;
+  color: #fee2e2;
+}
+
+.code-type-badge.type-fill {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  border-color: #38bdf8;
+  color: #e0f2fe;
+}
+
+.code-type-badge.type-drag {
+  background: linear-gradient(180deg, #7c3aed 0%, #5b21b6 100%);
+  border-color: #a78bfa;
+  color: #ede9fe;
+}
+
+.code-level-badge {
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: var(--gold-light);
+  font-family: var(--font-retro);
+  font-size: 8px;
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+.code-workbench-header h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.code-instruction-text {
+  font-size: 11px;
+  color: #cbd5e1;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.expected-output-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid #475569;
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-top: 2px;
+  align-self: flex-start;
+}
+
+.expected-output-pill .pill-label {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.expected-output-pill code {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  color: #4ade80;
+  background: #020617;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid #166534;
+}
+
+/* Cuerpo del Workbench */
+.code-workbench-body {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Columna Editor */
+.code-editor-column {
+  display: flex;
+  flex-direction: column;
+  background: #090d16;
+  border: 2px solid #334155;
+  border-radius: 6px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.editor-titlebar, .console-titlebar {
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  padding: 4px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.editor-file-tab {
+  color: #e2e8f0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editor-hint-tag {
+  font-size: 9px;
+  color: #38bdf8;
+  font-family: var(--font-retro);
+}
+
+.code-editor-inner {
+  display: flex;
+  flex: 1;
+  background: #050811;
+  overflow: hidden;
+  position: relative;
+}
+
+.code-line-numbers {
+  width: 28px;
+  padding: 8px 4px 8px 8px;
+  background: #0b1120;
+  color: #475569;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: right;
+  user-select: none;
+  border-right: 1px solid #1e293b;
+  white-space: pre-line;
+}
+
+.battle-code-textarea {
+  flex: 1;
+  background: transparent;
+  color: #f1f5f9;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 8px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 18px;
+  white-space: pre;
+  tab-size: 4;
+  overflow: auto;
+}
+
+.battle-code-textarea:focus {
+  outline: none;
+}
+
+/* Rellenar Espacios (Fill in Blanks) */
+.fill-blank-inner {
+  flex: 1;
+  background: #050811;
+  padding: 10px;
+  overflow: auto;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 24px;
+  color: #f8fafc;
+  white-space: pre-wrap;
+}
+
+.fill-blank-input {
+  background: #1e293b;
+  border: 1px solid #0284c7;
+  color: #38bdf8;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  min-width: 60px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 6px rgba(56, 189, 248, 0.25);
+}
+
+.fill-blank-input:focus {
+  border-color: #38bdf8;
+  background: #0f172a;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+}
+
+/* Arrastrar y Soltar (Drag and Drop) */
+.drag-drop-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: #050811;
+  padding: 8px;
+  overflow: auto;
+  gap: 8px;
+}
+
+.drag-drop-code-area {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 24px;
+  color: #f8fafc;
+  background: #0b1120;
+  border: 1px solid #1e293b;
+  border-radius: 4px;
+  padding: 8px;
+  flex: 1;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.code-drop-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  min-height: 22px;
+  border: 1px dashed #f59e0b;
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.1);
+  color: #fef08a;
+  padding: 1px 6px;
+  margin: 0 3px;
+  vertical-align: middle;
+  font-size: 11px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.code-drop-slot.slot-filled {
+  border: 1px solid #38bdf8;
+  background: #0369a1;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.35);
+}
+
+.code-drop-slot.slot-hover {
+  background: rgba(245, 158, 11, 0.35);
+  border-style: solid;
+  transform: scale(1.05);
+}
+
+.drag-drop-tokens-section {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 6px 10px;
+}
+
+.tokens-header-label {
+  font-size: 9px;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.drag-drop-tokens-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 28px;
+  align-items: center;
+}
+
+.code-token-chip {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid var(--gold-primary);
+  color: var(--gold-light);
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.code-token-chip:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+.code-token-chip.selected-token {
+  border-color: #38bdf8;
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+}
+
+.code-token-chip:active {
+  cursor: grabbing;
+}
+
+/* Columna Consola */
+.code-console-column {
+  display: flex;
+  flex-direction: column;
+  background: #030712;
+  border: 2px solid #1e293b;
+  border-radius: 6px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.console-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #f8fafc;
+}
+
+.console-status-led {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.console-status-led.ready {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+}
+
+.console-status-led.success {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.15);
+}
+
+.console-status-led.error {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.15);
+}
+
+.battle-console-output {
+  flex: 1;
+  padding: 8px 10px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 16px;
+  color: #e2e8f0;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.battle-console-output .console-line {
+  margin: 0;
+}
+
+.battle-console-output .console-line.success {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.battle-console-output .console-line.error {
+  color: #f87171;
+}
+
+.battle-console-output .console-line.system-line {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.console-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 3px 8px;
+  background: #0b1120;
+  border-top: 1px solid #1e293b;
+}
+
+.btn-console-tool {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 9px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-console-tool:hover {
+  color: #f8fafc;
+}
+
+/* Botonera inferior del Workbench */
+.code-workbench-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-code-test {
+  border-color: #0284c7;
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+}
+
+.btn-code-test:hover {
+  background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%);
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.5);
+}
+
+.btn-tiny {
+  padding: 3px 8px;
+  font-size: 8px;
+}
+
 /* Panel de Inventario en Combate */
 .battle-inv-box {
   flex: 2.2;
@@ -2148,6 +2636,37 @@ html, body {
 
   .battle-inv-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Workbench en móviles */
+  .battle-interface.coding-mode {
+    height: 75vh !important;
+    padding: 6px 8px !important;
+  }
+
+  .code-workbench-body {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .code-editor-column {
+    min-height: 140px;
+  }
+
+  .code-console-column {
+    min-height: 110px;
+  }
+
+  .code-workbench-actions {
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  .code-workbench-actions button {
+    flex: 1;
+    min-width: 90px;
+    font-size: 9px;
+    padding: 8px 6px;
   }
 }
 

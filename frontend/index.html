@@ -662,7 +662,7 @@
         </button>
       </div>
 
-      <!-- Panel de Preguntas de Java (Al presionar Atacar) -->
+      <!-- Panel de Preguntas de Java (Al presionar Atacar en modo opción múltiple) -->
       <div id="battle-question-panel" class="battle-question-box hidden">
         <div class="question-header">
           <span class="q-badge">Desafío de Programación en Java</span>
@@ -670,6 +670,86 @@
         </div>
         <div id="battle-options-container" class="battle-options-grid">
           <!-- 4 Botones de opciones A, B, C, D -->
+        </div>
+      </div>
+
+      <!-- Panel de Ejercicios Prácticos de Java (Código mal escrito, Rellenar, Arrastrar) -->
+      <div id="battle-code-panel" class="battle-code-workbench hidden">
+        <!-- Encabezado del Workbench -->
+        <div class="code-workbench-header">
+          <div class="code-challenge-topline">
+            <div class="code-challenge-meta">
+              <span id="code-type-badge" class="code-type-badge"><img src="assets/icons/espada.png" class="pixel-icon" alt="Tipo"> Código con Error</span>
+              <span id="code-level-badge" class="code-level-badge">Nivel 1</span>
+            </div>
+            <div class="code-workbench-quick-tools">
+              <button id="btn-code-reset" class="btn-retro btn-tiny" title="Reiniciar código"><img src="assets/icons/reiniciar.png" class="pixel-icon" alt="Reiniciar"> Reiniciar</button>
+            </div>
+          </div>
+          <h3 id="code-challenge-title">Corrige el método main</h3>
+          <p id="code-challenge-instruction" class="code-instruction-text">
+            Corrige el error de sintaxis en el código Java para que compile y muestre la salida esperada.
+          </p>
+          <div class="expected-output-pill">
+            <span class="pill-label"><img src="assets/icons/foco.png" class="pixel-icon" alt="Salida"> Salida Esperada:</span>
+            <code id="code-expected-output-badge">¡Hola Java!</code>
+          </div>
+        </div>
+
+        <!-- Cuerpo del IDE: Área de Código (Izquierda) + Consola (Derecha) -->
+        <div class="code-workbench-body">
+          <!-- Columna Izquierda: Espacio de Trabajo / Editor -->
+          <div class="code-editor-column">
+            <div class="editor-titlebar">
+              <span class="editor-file-tab"><img src="assets/icons/pergamino.png" class="pixel-icon" alt="Archivo"> Solucion.java</span>
+              <span id="editor-hint-tag" class="editor-hint-tag">Modo Editor</span>
+            </div>
+
+            <!-- 1. Contenedor para Código Mal Escrito (Fix Code: Textarea con números de línea) -->
+            <div id="fix-code-container" class="code-editor-inner">
+              <div id="code-line-numbers" class="code-line-numbers">1<br>2<br>3<br>4<br>5</div>
+              <textarea id="battle-code-editor" class="battle-code-textarea" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+            </div>
+
+            <!-- 2. Contenedor para Rellenar Espacios (Fill in the blanks) -->
+            <div id="fill-blank-container" class="fill-blank-inner hidden"></div>
+
+            <!-- 3. Contenedor para Arrastrar y Soltar (Drag and Drop) -->
+            <div id="drag-drop-container" class="drag-drop-inner hidden">
+              <div id="drag-drop-code-area" class="drag-drop-code-area"></div>
+              <div class="drag-drop-tokens-section">
+                <div class="tokens-header-label">Fichas de código disponibles (Arrastra o haz clic para colocar):</div>
+                <div id="drag-drop-tokens-tray" class="drag-drop-tokens-tray"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Consola Java (javac & java) -->
+          <div class="code-console-column">
+            <div class="console-titlebar">
+              <span class="console-title"><img src="assets/icons/foco.png" class="pixel-icon" alt="Consola"> Consola Java (javac & java)</span>
+              <span id="console-status-led" class="console-status-led ready">● Lista</span>
+            </div>
+            <div id="battle-console-output" class="battle-console-output">
+              <div class="console-line system-line">> Esperando compilación... Prueba o ataca cuando estés listo.</div>
+            </div>
+            <div class="console-footer-actions">
+              <button id="btn-console-clear" class="btn-console-tool" title="Limpiar Consola"><img src="assets/icons/error_rojo.png" class="pixel-icon-sm" alt="Limpiar"> Limpiar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra de Acciones del IDE de Batalla -->
+        <div class="code-workbench-actions">
+          <button id="btn-code-back" class="btn-retro btn-secondary">
+            <img src="assets/icons/huida.png" class="pixel-icon" alt="Volver"> Volver
+          </button>
+          <button id="btn-code-test" class="btn-retro btn-code-test">
+            <img src="assets/icons/play.png" class="pixel-icon" alt="Probar"> Probar Código
+          </button>
+          <button id="btn-code-attack" class="btn-retro btn-primary attack-action pulse-hover">
+            <img src="assets/icons/espada.png" class="pixel-icon" alt="Atacar"> ⚔️ ATACAR (Compilar y Ejecutar)
+          </button>
         </div>
       </div>
 
@@ -830,12 +910,14 @@
   <script src="js/audio.js?v=9"></script>
   <script src="js/data/bosses.js?v=9"></script>
   <script src="js/data/questions.js?v=9"></script>
+  <script src="js/data/challenges.js?v=13"></script>
   <script src="js/data/lore.js?v=9"></script>
+  <script src="js/engine/java_evaluator.js?v=13"></script>
   <script src="js/engine/renderer.js?v=9"></script>
   <script src="js/engine/input.js?v=9"></script>
   <script src="js/engine/camera.js?v=9"></script>
   <script src="js/engine/map.js?v=9"></script>
-  <script src="js/battle.js?v=11"></script>
+  <script src="js/battle.js?v=13"></script>
   <script src="js/leaderboard.js?v=11"></script>
   <!-- Firebase SDK (Google Identity & Authentication) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
