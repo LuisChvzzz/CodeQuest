@@ -146,6 +146,67 @@ class JavaEvaluator {
       .trim();
   }
 
+  normalizeForTokenMatch(str) {
+    if (!str || typeof str !== 'string') return '';
+    const tokens = [];
+    let i = 0;
+    const len = str.length;
+    let currentNonStr = '';
+
+    while (i < len) {
+      const ch = str[i];
+      if (ch === '"' || ch === "'") {
+        if (currentNonStr) {
+          const norm = currentNonStr
+            .replace(/\s+/g, ' ')
+            .replace(/\s*([=+\-*/%&|!<>?:;,(){}\[\]])\s*/g, '$1')
+            .trim();
+          if (norm) tokens.push(norm);
+          currentNonStr = '';
+        }
+        let lit = ch;
+        i++;
+        while (i < len) {
+          const c2 = str[i];
+          lit += c2;
+          if (c2 === '\\') {
+            i++;
+            if (i < len) lit += str[i];
+          } else if (c2 === ch) {
+            i++;
+            break;
+          }
+          i++;
+        }
+        tokens.push(lit);
+      } else {
+        currentNonStr += ch;
+        i++;
+      }
+    }
+
+    if (currentNonStr) {
+      const norm = currentNonStr
+        .replace(/\s+/g, ' ')
+        .replace(/\s*([=+\-*/%&|!<>?:;,(){}\[\]])\s*/g, '$1')
+        .trim();
+      if (norm) tokens.push(norm);
+    }
+
+    return tokens.join('');
+  }
+
+  matchesToken(code, token) {
+    if (!token) return true;
+    if (!code) return false;
+    if (code.includes(token)) return true;
+
+    const normCode = this.normalizeForTokenMatch(code);
+    const normToken = this.normalizeForTokenMatch(token);
+    if (!normToken) return true;
+    return normCode.includes(normToken);
+  }
+
   // Evaluar código en entorno emulado seguro
   evaluate(code, challenge) {
     const logs = [];
@@ -168,9 +229,9 @@ class JavaEvaluator {
     // 2. Comprobar tokens requeridos específicos del desafío
     if (challenge && Array.isArray(challenge.requiredTokens)) {
       for (const token of challenge.requiredTokens) {
-        if (!code.includes(token)) {
-          const msg = "Solucion.java: error: El código debe incluir el elemento requerido: '" + token + "'";
-          logs.push("❌ Error de requisitos pedagógicos:");
+        if (!this.matchesToken(code, token)) {
+          const msg = "Solucion.java: error: La instrucción requerida para este ejercicio no fue detectada o la sintaxis es incompleta. Revisa el enunciado del reto.";
+          logs.push("❌ Error de verificación:");
           logs.push(msg);
           return {
             success: false,
@@ -186,8 +247,8 @@ class JavaEvaluator {
     // 3. Comprobar tokens prohibidos (ej. bugs iniciales)
     if (challenge && Array.isArray(challenge.forbiddenTokens)) {
       for (const token of challenge.forbiddenTokens) {
-        if (code.includes(token)) {
-          const msg = "Solucion.java: error: El código aún conserva el error original o elemento inválido: '" + token + "'";
+        if (this.matchesToken(code, token)) {
+          const msg = "Solucion.java: error: El código aún conserva el fallo de sintaxis original sin corregir. Corrige la instrucción indicada.";
           logs.push("❌ Error de corrección:");
           logs.push(msg);
           return {
@@ -210,7 +271,7 @@ class JavaEvaluator {
         return {
           success: false,
           errorType: 'custom_validation_error',
-          errorMsg: customRes.error,
+          errorMsg: customRes.error || "La solución no cumple las condiciones del ejercicio.",
           logs: logs,
           output: ''
         };
@@ -272,12 +333,12 @@ class JavaEvaluator {
     } else {
       logs.push("========================================");
       logs.push("❌ La salida obtenida no coincide con la esperada.");
-      logs.push("  Esperada: \"" + normExpected + "\"");
       logs.push("  Obtenida: \"" + normObtained + "\"");
+      logs.push("  (Verifica la lógica de tu programa para generar el resultado esperado)");
       return {
         success: false,
         errorType: 'output_mismatch',
-        errorMsg: "La salida obtenida no coincide con la esperada.\nEsperada: " + normExpected + "\nObtenida: " + normObtained,
+        errorMsg: "La salida obtenida (\"" + normObtained + "\") no coincide con la esperada.",
         obtained: normObtained,
         expected: normExpected,
         logs: logs,

@@ -7,18 +7,29 @@ class InputHandler {
     this.touchInteract = false;
 
     window.addEventListener('keydown', (e) => {
+      // Permitir escritura natural (barra espaciadora, flechas, etc.) en campos de texto y editores de código
+      const tag = e.target && e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) {
+        return;
+      }
+
       if (!this.keys[e.code]) {
         this.justPressed[e.code] = true;
       }
       this.keys[e.code] = true;
 
-      // Prevenir scroll con flechas y espacio
+      // Prevenir scroll con flechas y espacio en el juego
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
         e.preventDefault();
       }
     });
 
     window.addEventListener('keyup', (e) => {
+      const tag = e.target && e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) {
+        return;
+      }
+
       this.keys[e.code] = false;
       this.justPressed[e.code] = false;
     });

@@ -157,6 +157,7 @@ class BattleManager {
       });
 
       this.codeEditor.addEventListener('keydown', (e) => {
+        e.stopPropagation();
         if (e.key === 'Tab') {
           e.preventDefault();
           const start = this.codeEditor.selectionStart;
@@ -165,6 +166,10 @@ class BattleManager {
           this.codeEditor.selectionStart = this.codeEditor.selectionEnd = start + 4;
           this.updateLineNumbers();
         }
+      });
+
+      this.codeEditor.addEventListener('keyup', (e) => {
+        e.stopPropagation();
       });
     }
 
@@ -512,6 +517,8 @@ class BattleManager {
         input.placeholder = blankDef.placeholder || '...';
         input.autocomplete = 'off';
         input.spellcheck = false;
+        input.addEventListener('keydown', (e) => e.stopPropagation());
+        input.addEventListener('keyup', (e) => e.stopPropagation());
         input.addEventListener('input', () => {
           input.style.width = Math.max(60, (input.value.length + 1) * 9) + 'px';
         });
